@@ -1,80 +1,76 @@
-
 'use client'
-
-import { useState } from "react";
+import {
+  Tabs,
+  TabsHeader,
+  TabsBody,
+  Tab,
+  TabPanel,
+} from "@material-tailwind/react";
  
 const page =  () => {
-  const [activeTab, setActiveTab] = useState(1); // Initial active tab (index starts from 1)
-
-  const handleTabChange = (event) => {
-    setActiveTab(parseInt(event.target.value)); // Convert value to integer for indexing
-  };
+  const data = [
+    {
+      label: "HTML",
+      value: "html",
+      desc: `It really matters and then like it really doesn't matter.
+      What matters is the people who are sparked by it. And the people 
+      who are like offended by it, it doesn't matter.`,
+    },
+    {
+      label: "React",
+      value: "react",
+      desc: `Because it's about motivating the doers. Because I'm here
+      to follow my dreams and inspire other people to follow their dreams, too.`,
+    },
+    {
+      label: "Vue",
+      value: "vue",
+      desc: `We're not always in the position that we want to be at.
+      We're constantly growing. We're constantly making mistakes. We're
+      constantly trying to express ourselves and actualize our dreams.`,
+    },
+    {
+      label: "Angular",
+      value: "angular",
+      desc: `Because it's about motivating the doers. Because I'm here
+      to follow my dreams and inspire other people to follow their dreams, too.`,
+    },
+    {
+      label: "Svelte",
+      value: "svelte",
+      desc: `We're not always in the position that we want to be at.
+      We're constantly growing. We're constantly making mistakes. We're
+      constantly trying to express ourselves and actualize our dreams.`,
+    },
+  ];
+ 
+  
   
   return (
     <>
   
-  <div role="tablist" className="tabs tabs-bordered">
-      <input
-        type="radio"
-        id={`tab-${1}`} // Unique ID for each tab
-        name="my_tabs"
-        value={1} // Tab index
-        role="tab"
-        className="tab"
-        aria-selected={activeTab === 1} // Set aria-selected for accessibility
-        aria-controls={`tab-content-${1}`} // Link tab to content panel
-        checked={activeTab === 1} // Set checked for active tab
-        onChange={handleTabChange}
-      />
-      <label htmlFor={`tab-${1}`}>Tab 1</label> {/* Label associated with the radio button */}
-
-      <input
-        type="radio"
-        id={`tab-${2}`}
-        name="my_tabs"
-        value={2}
-        role="tab"
-        className="tab"
-        aria-selected={activeTab === 2}
-        aria-controls={`tab-content-${2}`}
-        checked={activeTab === 2}
-        onChange={handleTabChange}
-      />
-      <label htmlFor={`tab-${2}`}>Tab 2</label>
-
-      <input
-        type="radio"
-        id={`tab-${3}`}
-        name="my_tabs"
-        value={3}
-        role="tab"
-        className="tab"
-        aria-selected={activeTab === 3}
-        aria-controls={`tab-content-${3}`}
-        checked={activeTab === 3}
-        onChange={handleTabChange}
-      />
-      <label htmlFor={`tab-${3}`}>Tab 3</label>
-
-      <div role="tabpanel" id={`tab-content-${1}`} className={`tab-content p-10 ${activeTab === 1 ? '' : 'hidden'}`}>
-        Tab content 1
-      </div>
-
-      <div role="tabpanel" id={`tab-content-${2}`} className={`tab-content p-10 ${activeTab === 2 ? '' : 'hidden'}`}>
-        Tab content 2
-      </div>
-
-      <div role="tabpanel" id={`tab-content-${3}`} className={`tab-content p-10 ${activeTab === 3 ? '' : 'hidden'}`}>
-        Tab content 3
-      </div>
-    </div>
-
+ 
 
 
 
    <div class="h-screen overflow-scroll    snap-y snap-mandatory ">
   <div class=" bg-blue-500 h-full snap-start inline-block w-full">
-  
+  <Tabs value="html">
+      <TabsHeader>
+        {data.map(({ label, value }) => (
+          <Tab key={value} value={value}>
+            {label}
+          </Tab>
+        ))}
+      </TabsHeader>
+      <TabsBody>
+        {data.map(({ value, desc }) => (
+          <TabPanel key={value} value={value}>
+            {desc}
+          </TabPanel>
+        ))}
+      </TabsBody>
+    </Tabs>
   </div>
   <div class=" bg-green-500 h-full snap-start inline-block w-full">Item 2</div>
   <div class=" bg-red-500 h-full snap-start inline-block w-full">Item 3</div>

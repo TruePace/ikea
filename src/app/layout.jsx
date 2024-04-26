@@ -4,6 +4,7 @@ import NavBar from "@/components/navForAll/NavBar";
 
 
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
         {children}
 <NavBar/>
         </body>
+    
     </html>
   );
 }
