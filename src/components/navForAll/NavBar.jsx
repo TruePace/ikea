@@ -40,12 +40,11 @@ const NavBar= () => {
     ]
     return (
         <>
-        <div class="bg-slate-50 w-full fixed bottom-0 left-0 right-0 py-3.5 flex flex-nowrap justify-evenly">
+        <div class="bg-white w-full fixed bottom-0 left-0 right-0 py-3.5 flex flex-nowrap justify-evenly">
           {links.map((link)=>(
             
-            <div key={link.title} class={` w-1/4 flex flex-col justify-center items-center ${pathName === link.path && 'w-1/5  border-2 border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 flex flex-col justify-center py-1.5 font-semibold'   }`}>
+            <div key={link.title} class={` w-1/4 flex flex-col justify-center items-center ${pathName === link.path && 'w-1/5  border border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 flex flex-col justify-center py-1.5 font-semibold'   }`}>
                 <Link href={link.path} key={link.title} >{link.title} </Link>
-                <Link href={link.path} key={link.title} >{link.experiment} </Link>
    <Link href={link.path} class=" text-xs text-center w-3/4  ">{link.titleName}</Link>
    
 

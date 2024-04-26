@@ -10,7 +10,7 @@ const BeThumb = () => {
  <Header/>{/*header component */}
 
         <div class="w-full  py-3">{/* bg-yellow-300 was used*/}
-<div class=' border-2  relative h-52 saturate-150'>{/*border-black was used */}
+<div class=' border-2  relative h-52 saturate-200'>{/*border-black was used */}
 <Image src='/rubber.jpg'  fill alt="Picture of the author"  />
 </div>
 
