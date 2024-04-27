@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { MessageCircle,Heart,Eye,Dot } from 'lucide-react';
 
-import Header from "../beyond-header/Header";
+
 
 
 const BeThumb = () => {
     return (
         <>
- <Header/>{/*header component */}
+ 
 
         <div class="w-full  py-3">{/* bg-yellow-300 was used*/}
 <div class=' border-2  relative h-52 saturate-200'>{/*border-black was used */}

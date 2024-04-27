@@ -18,7 +18,8 @@ module.exports = {
   },
   plugins: [
     require("daisyui"),
-    require("@material-tailwind/react/utils/withMT")
+    require('tailwindcss-react-aria-components')
+   
   ],
 
 }
