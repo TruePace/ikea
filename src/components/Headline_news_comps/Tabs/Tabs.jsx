@@ -20,24 +20,15 @@ let tabs = [
   ) },
   { id: 'Just In', label: 'Just In' ,contents:(
     <>
-    <div className='border-2 border-blue-400 rounded-lg p-4 overflow-x-scroll snap-x snap-mandatory'>
-      <div className='inline-block whitespace-nowrap overflow-x-scroll'>
-      <h1 className='text-3xl text-blue-600'>hello Dear</h1>
-      <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis
-         quo ratione explicabo quidem porro commodi voluptatum dicta enim iste? Illum dolore dolorum et eligendi 
-         laboriosam alias officia, tenetur quod itaque.</p>
+    <div className='border-2 border-blue-400 rounded-lg  overflow-x-hidden overscroll-y-auto whitespace-nowrap snap-x snap-mandatory w-full'>
+      <div className='inline-block w-full bg-green-400 h-16  snap-start'>
+     
          </div>
-         <div  className='inline-block  whitespace-nowrap overflow-x-scroll'>
-      <h1 className='text-3xl text-blue-600'>Ttile text 1</h1>
-      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis
-         quo ratione explicabo quidem porro commodi voluptatum dicta enim iste? Illum dolore dolorum et eligendi 
-         laboriosam alias officia, tenetur quod itaque.</p>
+         <div  className='inline-block  w-full bg-red-400 h-16 snap-start'>
+     
          </div>
-         <div  className='inline-block  whitespace-nowrap overflow-x-scroll'>
-      <h1 className='text-3xl text-blue-600'>Ttile text 1</h1>
-      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis
-         quo ratione explicabo quidem porro commodi voluptatum dicta enim iste? Illum dolore dolorum et eligendi 
-         laboriosam alias officia, tenetur quod itaque.</p>
+         <div  className='inline-block  w-full bg-yellow-300 h-16 snap-start'>
+     
          </div>
     </div>
     </>
