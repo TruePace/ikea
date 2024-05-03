@@ -7,7 +7,7 @@ const Header = () => {
 <div className="navbar bg-base-100">
   <div className="flex-1">
   
-    <Link href='' className="btn  btn-ghost text-xl   "> <Image src='/TruePace.svg' height={25} width={25} /> <p>TruePace</p></Link>
+    <Link href='' className="btn  btn-ghost text-lg   "> <Image src='/TruePace.svg' height={25} width={25} /> <p>TruePace</p></Link>
   </div>
   <div className="flex-none gap-2">
     <div className="form-control">

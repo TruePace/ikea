@@ -1,4 +1,6 @@
-import Tablet from "@/components/Headline_news_comps/Tabs";
+import Tablet from "@/components/Headline_news_comps/Tabs/Tabs";
+import Header from "@/components/Headline_news_comps/header/HeadlineHeader";
+
 
 const page =  () => {
   
@@ -10,9 +12,10 @@ const page =  () => {
  
 
 
-
-   <div class="h-screen overflow-scroll  snap-both snap-mandatory ">
+  <Header/>
+   <div class="h-screen overflow-scroll  snap-y snap-mandatory ">
   <div class=" bg-blue-500 h-full snap-start inline-block w-full">
+  
   <Tablet/>
   </div>
   <div class=" bg-green-500 h-full snap-start inline-block w-full">Item 2</div>
