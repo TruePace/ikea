@@ -20,14 +20,14 @@ let tabs = [
   ) },
   { id: 'Just In', label: 'Just In' ,contents:(
     <>
-    <div className='border-2 border-blue-400 rounded-lg  overflow-x-hidden overscroll-y-auto whitespace-nowrap snap-x snap-mandatory w-full'>
-      <div className='inline-block w-full bg-green-400 h-16  snap-start'>
+    <div className='border-2 border-blue-400 rounded-lg  overflow-x-scroll  whitespace-nowrap snap-x snap-mandatory w-full'>
+      <div className='inline-block w-full bg-green-400 h-96  snap-start'>
      
          </div>
-         <div  className='inline-block  w-full bg-red-400 h-16 snap-start'>
+         <div  className='inline-block  w-full bg-red-400 h-96 snap-start'>
      
          </div>
-         <div  className='inline-block  w-full bg-yellow-300 h-16 snap-start'>
+         <div  className='inline-block  w-full bg-yellow-300 h-96 snap-start'>
      
          </div>
     </div>
