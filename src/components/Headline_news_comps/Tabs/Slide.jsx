@@ -141,8 +141,10 @@
 
 // export default Slide;
 
+// import { useState, useEffect, useRef } from 'react';
+// import { animated, useSpring } from '@react-spring/web'; // Animation library
+
 import { useState, useEffect, useRef } from 'react';
-import { animated, useSpring } from '@react-spring/web'; // Animation library
 
 let items = [
   { title: 'Headline News 1', label: 'Headline News', content: (<><h1>hello Dear</h1><p>Lorem ipsum...</p></>) },
@@ -151,22 +153,28 @@ let items = [
 
 const Slide = () => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const contentRef = useRef(null); // Ref for the content container
-  const swipeStartX = useRef(null); // Store starting swipe position
-  const translateX = useSpring(0); // Animated transform for swipe transition
+  const contentRef = useRef(null);
+  const swipeStartX = useRef(null);
+  const swipeDirection = useRef(null); // Track swipe direction (left/right)
 
   const handleTouchStart = (event) => {
-    swipeStartX.current = event.touches[0].clientX; // Get initial X position
+    swipeStartX.current = event.touches[0].clientX;
+    // Check for single touch (click) and update selectedTab based on index
+    if (event.touches.length === 1) {
+      const clickedTabIndex = Math.floor((event.nativeEvent.offsetX / event.target.offsetWidth) * items.length);
+      setSelectedTab(clickedTabIndex);
+    }
   };
 
   const handleTouchMove = (event) => {
     const swipeEndX = event.touches[0].clientX;
-    const deltaX = swipeEndX - swipeStartX.current; // Calculate swipe distance
+    const deltaX = swipeEndX - swipeStartX.current;
 
-    if (Math.abs(deltaX) > 50) { // Minimum swipe distance threshold
-      if (deltaX > 0) { // Swiped left (previous tab)
+    if (Math.abs(deltaX) > 50) {
+      swipeDirection.current = deltaX > 0 ? 'left' : 'right'; // Update swipe direction
+      if (swipeDirection.current === 'left') {
         setSelectedTab((prev) => Math.max(prev - 1, 0));
-      } else { // Swiped right (next tab)
+      } else if (swipeDirection.current === 'right') {
         setSelectedTab((prev) => Math.min(prev + 1, items.length - 1));
       }
     }
@@ -178,7 +186,7 @@ const Slide = () => {
       contentElement.addEventListener('touchstart', handleTouchStart);
       contentElement.addEventListener('touchmove', handleTouchMove);
 
-      return () => { // Cleanup on unmount
+      return () => {
         contentElement.removeEventListener('touchstart', handleTouchStart);
         contentElement.removeEventListener('touchmove', handleTouchMove);
       };
@@ -189,34 +197,31 @@ const Slide = () => {
     <>
       <div className="bg-sky-100 flex justify-center items-center py-12">
         <div className="max-w-md flex flex-col gap-y-2 w-full">
-          <animated.div
-            className="bg-blue-400 p-1 rounded-xl flex justify-between items-center gap-x-2 font-bold text-white"
-            
-          >
+          <div className="bg-blue-400 p-1 rounded-xl flex justify-between items-center gap-x-2 font-bold text-white">
             {items.map((item, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedTab(index)}
-                className={`outline-none w-full p-2 hover:bg-blue-300 rounded-xl text-center focus:ring-2 focus:bg-white focus:text-blue-600 ${
-                  selectedTab === index ? 'ring-2 bg-white text-blue-600' : ''
-                }`}
-              >
-                {item.title}
-              </button>
-            ))}
-          </animated.div>
-
-          <animated.div className="bg-white p-2 rounded-xl" ref={contentRef}    >
-            {items.map((item, index) => (
-              <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
-                {item.content}
-              </div>
-            ))}
-          </animated.div>
+                className={`outline-none w-full p-2 hover:bg-blue-300 rounded-xl text-center focus:ring-2 focus:bg-white focus:text-blue-60 ${
+                    selectedTab === index ? 'ring-2 bg-white text-blue-600' : ''
+                  }`}
+                >
+                  {item.title}
+                </button>
+              ))}
+            </div>
+  
+            <div className="bg-white p-2 rounded-xl" ref={contentRef}>
+              {items.map((item, index) => (
+                <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
+                  {item.content}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </>
-  );
-};
-
-export default Slide;
+      </>
+    );
+  };
+  
+  export default Slide;
