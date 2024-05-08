@@ -1,4 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+  
 
+/* i used the below for css instead of utility */
+/* [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] */
+
+
+/* css utility */
+
+/* @layer utilities { */
+    /* Chrome, Safari and Opera */
+    /* .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none; IE and Edge */
+      /* scrollbar-width: none; Firefox */
+    /* }
+} */

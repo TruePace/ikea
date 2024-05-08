@@ -1,3 +1,4 @@
+// import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import Tablet from "@/components/Headline_news_comps/Tabs/Tabs";
 import Header from "@/components/Headline_news_comps/header/HeadlineHeader";
 
@@ -17,6 +18,7 @@ const page =  () => {
   <div class=" bg-blue-500 h-full snap-start inline-block w-full">
   
   <Tablet/>
+  {/* <Slide/> */}
   </div>
   <div class=" bg-green-500 h-full snap-start inline-block w-full">Item 2</div>
   <div class=" bg-red-500 h-full snap-start inline-block w-full">Item 3</div>

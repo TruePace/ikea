@@ -16,11 +16,12 @@ let tabs = [
       <p> Lorem ipsum dolor sit amet consectetur adipisicing elit. Veritatis
          quo ratione explicabo quidem porro commodi voluptatum dicta enim iste? Illum dolore dolorum et eligendi 
          laboriosam alias officia, tenetur quod itaque.</p>
+     
     </>
   ) },
   { id: 'Just In', label: 'Just In' ,contents:(
     <>
-    <div className='border-2 border-blue-400 rounded-lg  overflow-x-scroll  whitespace-nowrap snap-x snap-mandatory w-full'>
+    <div className='border-2 border-blue-400 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll  whitespace-nowrap snap-x snap-mandatory w-full'>
       <div className='inline-block w-full bg-green-400 h-96  snap-start'>
      
          </div>
@@ -110,7 +111,7 @@ setIsClient(true)
   // the scroll position to the newly selected tab panel.
   let animationRef = useRef(null);
   let onSelectionChange = (selectedKey) => {
-    setSelectedKey((selectedKey));
+    setSelectedKey(console.log((selectedKey)));
 
 
     
@@ -133,7 +134,7 @@ setIsClient(true)
         bounce: 0.2,
         duration: 0.6,
         onUpdate: (v) => {
-          tabPanel.scrollLeft = v;
+          tabPanel.scrollLeft =v 
         },
         onPlay: () => {
           // Disable scroll snap while the animation is going or weird things happen.
@@ -161,6 +162,7 @@ setIsClient(true)
             <Tab className="cursor-default px-3 py-1.5  text-md transition outline-none touch-none">
               {({ isSelected, isFocusVisible }) => (
                 <>
+               
                   {tab.label}
                   {isFocusVisible && isSelected && (
                     // Focus ring.
@@ -191,12 +193,15 @@ setIsClient(true)
               shouldForceMount
               className="flex-shrink-0 w-full bg-red-300 h-screen px-2 box-border snap-start outline-none -outline-offset-2 rounded focus-visible:outline-black"
             >
-
-              <h2>{tab.contents} </h2>
+              
+              <h2>{tab.contents} </h2> 
               
                             <div >{tab.hcontent}</div>
               
             </TabPanel>
+
+
+
           )}
         </Collection>
          
