@@ -128,7 +128,7 @@ const Slide = () => {
 
           <div className="bg-white p-2 rounded-xl" ref={contentRef}>
             {items.map((item, index) => (
-              <div className={`${selectedTab === index ? '' : 'hidden'}`}>
+              <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
                 {item.content}
               </div>
             ))}
