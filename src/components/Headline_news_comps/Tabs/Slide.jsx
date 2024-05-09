@@ -72,8 +72,12 @@
 import { useState, useEffect, useRef } from 'react';
 
 let items = [
-  { title: 'Headline News 1', label: 'Headline News', content: (<><h1>hello Dear</h1><p>Lorem ipsum...</p></>) },
-  { title: 'Headline News 2', label: 'Headline News', content: (<><h1>Tab 2</h1><p>We are the covenant...</p></>) }
+  { title: 'Headline News 1', label: 'Headline News', content: (<><h1>hello Dear</h1><p>Lorem ipsum... Lorem ipsum, dolor sit amet consectetur adipisicing elit. Odio eligendi minus
+     magnam quas maxime ad error laboriosam. Ab, voluptate
+     nostrum, ullam animi, ratione repellendus ad unde facere perferendis delectus deserunt.</p></>) },
+  { title: 'Headline News 2', label: 'Headline News', content: (<><h1>Tab 2</h1><p>Lorem ipsum... Lorem ipsum, dolor sit amet consectetur adipisicing elit. Odio eligendi minus
+     magnam quas maxime ad error laboriosam. Ab, voluptate
+     nostrum, ullam animi, ratione repellendus ad unde facere perferendis delectus deserunt.</p></>) }
 ];
 
 const Slide = () => {
