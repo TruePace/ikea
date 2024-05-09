@@ -144,7 +144,7 @@ const Slide = () => {
               <button
                 key={index}
                 onClick={() => setSelectedTab(index)}
-                className={`outline-none w-full p-2 hover:bg-blue-300 rounded-xl text-center focus:ring-2 focus:bg-white focus:text-blue-60 ${
+                className={`outline-none w-full p-2 hover:bg-blue-300 rounded-xl text-center focus:ring-2 focus:bg-white focus:text-blue-60 transition duration-300 ease-in-out ${
                     selectedTab === index ? 'ring-2 bg-white text-blue-600' : ''
                   }`}
                 >
