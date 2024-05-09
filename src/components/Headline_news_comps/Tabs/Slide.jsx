@@ -83,13 +83,30 @@ const Slide = () => {
   const swipeDirection = useRef(null); // Track swipe direction (left/right)
 
   const handleTouchStart = (event) => {
-    swipeStartX.current = event.touches[0].clientX;
-    // Check for single touch (click) and update selectedTab based on index
-    if (event.touches.length === 1) {
-      const clickedTabIndex = Math.floor((event.nativeEvent.offsetX / event.target.offsetWidth) * items.length);
-      // setSelectedTab(clickedTabIndex);
-    }
-  };
+  swipeStartX.current = event.touches[0].clientX;
+  const MIN_SWIPE_DISTANCE = 50; // Minimum swipe distance for tab change
+
+  // Check for single touch (click) and update selectedTab based on index
+  if (event.touches.length === 1) {
+    const clickedTabIndex = Math.floor((event.nativeEvent.offsetX / event.target.offsetWidth) * items.length);
+    setSelectedTab(clickedTabIndex);
+  } else {
+    // Check for swipe gesture (considering minimum distance)
+    swipeDirection.current = null; // Reset swipe direction on touch start
+    event.persist(); // Persist event object for later reference in handleTouchMove
+    const onTouchMove = (moveEvent) => {
+      const swipeEndX = moveEvent.touches[0].clientX;
+      const deltaX = swipeEndX - swipeStartX.current;
+
+      if (Math.abs(deltaX) > MIN_SWIPE_DISTANCE) {
+        swipeDirection.current = deltaX > 0 ? 'left' : 'right';
+        setSelectedTab((prev) => Math.max(prev - 1, 0));
+        document.removeEventListener('touchmove', onTouchMove); // Remove temporary listener
+      }
+    };
+    document.addEventListener('touchmove', onTouchMove, { once: true }); // Add temporary listener
+  }
+};
 
   const handleTouchMove = (event) => {
     const swipeEndX = event.touches[0].clientX;
@@ -103,7 +120,6 @@ const Slide = () => {
         setSelectedTab((prev) => Math.min(prev + 1, items.length - 1));
       }
     }
-    setSelectedTab(clickedTabIndex);
   };
 
   useEffect(() => {
