@@ -103,7 +103,11 @@ setIsClient(true)
   // so that the correct tab panel becomes interactive.
   useMotionValueEvent(scrollXProgress, 'change', (x) => {
     if (animationRef.current || !tabElements.length) return;
-    setSelectedKey(tabs[getIndex(x)].id);
+    if (x === 0) { // Check if scroll position is 0 (initial load)
+      setSelectedKey(tabs[0].id);
+    } else {
+      setSelectedKey(tabs[getIndex(x)].id);
+    }
   });
   
 
