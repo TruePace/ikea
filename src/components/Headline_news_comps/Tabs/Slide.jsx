@@ -87,7 +87,7 @@ const Slide = () => {
     // Check for single touch (click) and update selectedTab based on index
     if (event.touches.length === 1) {
       const clickedTabIndex = Math.floor((event.nativeEvent.offsetX / event.target.offsetWidth) * items.length);
-      setSelectedTab(clickedTabIndex);
+      // setSelectedTab(clickedTabIndex);
     }
   };
 
@@ -103,6 +103,7 @@ const Slide = () => {
         setSelectedTab((prev) => Math.min(prev + 1, items.length - 1));
       }
     }
+    setSelectedTab(clickedTabIndex);
   };
 
   useEffect(() => {
@@ -124,18 +125,16 @@ const Slide = () => {
         <div className="max-w-md flex flex-col gap-y-2 w-full">
           <div className="bg-blue-400 p-1 rounded-xl flex justify-between items-center gap-x-2 font-bold text-white">
             {items.map((item, index) => (
-  <button
-    key={index}
-    onClick={() => setSelectedTab(index)}
-    className={`outline-none w-full p-2 hover:bg-blue-300 rounded-xl text-center focus:ring-2 focus:bg-white focus:text-blue-600 ${
-      selectedTab === index || (swipeDirection.current === 'right' && index === selectedTab + 1) || (swipeDirection.current === 'left' && index === selectedTab - 1)
-        ? 'ring-2 bg-white text-blue-600'
-        : ''
-    }`}
-  >
-    {item.title}
-  </button>
-))}
+              <button
+                key={index}
+                onClick={() => setSelectedTab(index)}
+                className={`outline-none w-full p-2 hover:bg-blue-300 rounded-xl text-center focus:ring-2 focus:bg-white focus:text-blue-60 ${
+                    selectedTab === index ? 'ring-2 bg-white text-blue-600' : ''
+                  }`}
+                >
+                  {item.title}
+                </button>
+              ))}
             </div>
   
             <div className="" ref={contentRef}>
