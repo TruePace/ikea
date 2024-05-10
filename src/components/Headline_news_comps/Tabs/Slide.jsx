@@ -62,25 +62,35 @@ const Slide = () => {
   }
 };
 
-const removeActiveStyles = (currentIndex) => {
-  const buttons = document.querySelectorAll('.bg-blue-400 button');
-  buttons.forEach((button, index) => {
-    if (index !== currentIndex) {
-      button.classList.remove('ring-2', 'bg-white', 'text-blue-600');
-    }
-  });
-};
+// const removeActiveStyles = (currentIndex) => {
+//   const buttons = document.querySelectorAll('.bg-blue-400 button');
+//   buttons.forEach((button, index) => {
+//     if (index !== currentIndex) {
+//       button.classList.remove('ring-2', 'bg-white', 'text-blue-600');
+//     }
+//   });
+// };
 
   const handleTouchMove = (event) => {
     const swipeEndX = event.touches[0].clientX;
     const deltaX = swipeEndX - swipeStartX.current;
 
     if (Math.abs(deltaX) > 50) {
-      swipeDirection.current = deltaX > 0 ? 'left' : 'right';
-      const newSelectedTab = Math.max(prev + (swipeDirection.current === 'left' ? -1 : 1), 0);
-      removeActiveStyles(prev); // Remove active styles from previous tab
-      setSelectedTab(newSelectedTab);
+      swipeDirection.current = deltaX > 0 ? 'left' : 'right'; // Update swipe direction
+      if (swipeDirection.current === 'left') {
+        setSelectedTab((prev) => Math.max(prev - 1, 0));
+      } else if (swipeDirection.current === 'right') {
+        setSelectedTab((prev) => Math.min(prev + 1, items.length - 1));
+      }
     }
+
+    // if (Math.abs(deltaX) > 50) {
+    //   swipeDirection.current = deltaX > 0 ? 'left' : 'right';
+    //   const newSelectedTab = Math.max(prev + (swipeDirection.current === 'left' ? -1 : 1), 0);
+    //   removeActiveStyles(prev); // Remove active styles from previous tab
+    //   setSelectedTab(newSelectedTab);
+    // }
+
   };
 
   useEffect(() => {
