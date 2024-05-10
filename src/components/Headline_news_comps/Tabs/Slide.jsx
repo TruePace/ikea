@@ -62,14 +62,14 @@ const Slide = () => {
   }
 };
 
-// const removeActiveStyles = (currentIndex) => {
-//   const buttons = document.querySelectorAll('.bg-blue-400 button');
-//   buttons.forEach((button, index) => {
-//     if (index !== currentIndex) {
-//       button.classList.remove('ring-2', 'bg-white', 'text-blue-600');
-//     }
-//   });
-// };
+const removeActiveStyles = (currentIndex) => {
+  const buttons = document.querySelectorAll('.bg-blue-400 button');
+  buttons.forEach((button, index) => {
+    if (index !== currentIndex) {
+      button.classList.remove('ring-2', 'bg-white', 'text-blue-600');
+    }
+  });
+};
 
   const handleTouchMove = (event) => {
     const swipeEndX = event.touches[0].clientX;
@@ -82,6 +82,7 @@ const Slide = () => {
       } else if (swipeDirection.current === 'right') {
         setSelectedTab((prev) => Math.min(prev + 1, items.length - 1));
       }
+      removeActiveStyles(prev)
     }
 
     // if (Math.abs(deltaX) > 50) {
@@ -127,8 +128,8 @@ const Slide = () => {
             <div className="" ref={contentRef}>
               {items.map((item, index) => (
                 <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
-                 <p>{item.hcontent}</p>
-                 <p>{item.content}</p>
+                 {item.hcontent}
+                 {item.content}
                 </div>
               ))}
             </div>
