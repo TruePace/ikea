@@ -40,11 +40,12 @@ let tabs = [
 
 const Tablet = () => {
 
-const [isClient , setIsClient]= useState(false)
+// const [isClient , setIsClient]= useState(false)
 
-useEffect(()=>{
-setIsClient(true)
-},[])
+// useEffect(()=>{
+// setIsClient(true)
+// },[])
+
 
     let [selectedKey, setSelectedKey] = useState(tabs[0].id);
 
