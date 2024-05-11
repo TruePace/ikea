@@ -15,7 +15,7 @@ let items = [
   ) },
   { title: 'Just In', label: 'Just In' ,content:(
     <>
-    <div className='border-2 border-blue-400 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll  whitespace-nowrap snap-x snap-mandatory w-full'>
+    <div className='border-2 border-blue-400 rounded-lg [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll  whitespace-nowrap snap-x snap-mandatory w-80 m-auto'>
       <div className='inline-block w-full bg-green-400 h-96  snap-start'>
      
          </div>
@@ -62,14 +62,14 @@ const Slide = () => {
   }
 };
 
-const removeActiveStyles = (currentIndex) => {
-  const buttons = document.querySelectorAll('.bg-blue-400 button');
-  buttons.forEach((button, index) => {
-    if (index !== currentIndex) {
-      button.classList.remove('ring-2', 'bg-white', 'text-blue-600');
-    }
-  });
-};
+// const removeActiveStyles = (currentIndex) => {
+//   const buttons = document.querySelectorAll('.bg-blue-400 button');
+//   buttons.forEach((button, index) => {
+//     if (index !== currentIndex) {
+//       button.classList.remove('ring-2', 'bg-white', 'text-blue-600');
+//     }
+//   });
+// };
 
   const handleTouchMove = (event) => {
     const swipeEndX = event.touches[0].clientX;
@@ -82,7 +82,7 @@ const removeActiveStyles = (currentIndex) => {
       } else if (swipeDirection.current === 'right') {
         setSelectedTab((prev) => Math.min(prev + 1, items.length - 1));
       }
-      removeActiveStyles(prev)
+      // removeActiveStyles(prev)
     }
 
     // if (Math.abs(deltaX) > 50) {
