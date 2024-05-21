@@ -67,7 +67,7 @@ const Slide = () => {
 
         <div className=''>
           {items.map((item, index) => (
-            <div className={`${selectedTab === index ? '' : 'hidden'}`}>
+            <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
               {item.content}
             </div>
           ))}
