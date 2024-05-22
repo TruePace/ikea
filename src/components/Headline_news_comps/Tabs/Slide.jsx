@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState,  useRef } from 'react';
 
 const items =[
   {
@@ -39,24 +39,25 @@ const items =[
   
 ]
 
+
 const Slide = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const firstBtnRef = useRef();
 
-  useEffect(() => {
-    firstBtnRef.current.focus();
-  }, []);
+  // useEffect(() => {
+  //   firstBtnRef.current.focus();
+  // }, []);
 
   return (
-    <div className='bg-sky-100 h-full  flex justify-center py-12'>
-      <div className='max-w-md flex flex-col gap-y-2 w-full'>
-        <div className='bg-neutral-900 p-1   rounded-xl flex justify-between items-center gap-x-2 font-bold text-white'>
+    <div className='bg-sky-100 h-full  flex justify-center  py-12'>
+      <div className='max-w-md flex flex-col  w-full'>
+        <div className='bg-neutral-900 p-1   rounded-lg flex justify-between items-center gap-x-2 font-bold text-white '>
           {items.map((item, index) => (
             <button
               ref={index === 0 ? firstBtnRef : null}
               key={index}
               onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-2 hover:bg-neutral-800 rounded-xl text-cneter focus:ring-2 focus:bg-white focus:text-neutral-800  ${
+              className={`outline-none w-full p-1.5 hover:bg-neutral-800 rounded-lg text-center focus:ring-2 focus:bg-white focus:text-neutral-800  ${
                 selectedTab === index ? 'ring-2 bg-white text-neutral-800' : ''
               } `}
             >
@@ -78,3 +79,6 @@ const Slide = () => {
 };
 
 export default Slide;
+
+
+

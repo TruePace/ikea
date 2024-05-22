@@ -12,9 +12,8 @@ const page =  () => {
     <>
   <Header/>
    <div class="h-screen overflow-scroll  snap-y snap-mandatory ">
+    
   <div class=" bg-blue-500 h-full snap-start inline-block w-full">
-  
-  
   <Slide/>
   </div>
   <div class=" bg-green-500 h-full snap-start inline-block w-full">
