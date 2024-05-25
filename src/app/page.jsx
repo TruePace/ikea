@@ -13,13 +13,13 @@ const page =  () => {
   <Header/>
    <div class="h-screen overflow-scroll  snap-y snap-mandatory ">
     
-  <div class=" bg-blue-500 h-full snap-start inline-block w-full">
+  <div class=" h-full snap-start inline-block w-full">{/*bg-blue-500 */}
   <Slide/>
   </div>
-  <div class=" bg-green-500 h-full snap-start inline-block w-full">
+  <div class="  h-full snap-start inline-block w-full">{/*bg-green-500 */}
   <Slide/>
   </div>
-  <div class=" bg-red-500 h-full snap-start inline-block w-full">
+  <div class="  h-full snap-start inline-block w-full">{/*bg-red-500 */}
   <Slide/>
   </div>
   

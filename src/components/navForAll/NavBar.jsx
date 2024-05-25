@@ -1,5 +1,9 @@
 'use client'
-import { BadgePercent, FileClock, GalleryVerticalEnd, Newspaper, Notebook } from "lucide-react";
+// import { GiNewspaper,RiShieldFlashFill,GrDocumentMissing, FaHistory  } from "react-icons"
+import {GiNewspaper} from 'react-icons/gi';
+import {RiShieldFlashFill} from 'react-icons/ri';
+import {GrDocumentMissing} from 'react-icons/gr';
+import {FaHistory} from 'react-icons/fa';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,24 +14,24 @@ const NavBar= () => {
     const links=[
        
         {
-            title:<Notebook size={26}  strokeWidth={1} />,
+            title:<GiNewspaper size='1.4em' /> ,
             path:'/beyond_news',
             titleName:'Beyond Headlines', 
         },
     {
-        title:<Newspaper size={26}  strokeWidth={1} />,
+        title:<RiShieldFlashFill size='1.4em' />,
         path:'/',
         titleName:'Headline News',
       
 },
 
 {
-    title:<FileClock size={26}  strokeWidth={1}/>,
+    title:<GrDocumentMissing  size='1.4em'/>,
     path:'/missed_just_in',
     titleName:'Missed Just In'
 },
 {
-    title:<GalleryVerticalEnd size={26}  strokeWidth={1}/>,
+    title:< FaHistory size='1.4em'/>,
     path:'/histories',
     titleName: ' TruePace History'
 },
@@ -40,12 +44,12 @@ const NavBar= () => {
     ]
     return (
         <>
-        <div class="bg-white w-full fixed bottom-0 left-0 right-0 py-3.5 flex flex-nowrap justify-evenly">
+        <div class="bg-white w-full fixed bottom-0 left-0 right-0 py-3 flex flex-nowrap justify-evenly">
           {links.map((link)=>(
             
-            <div key={link.title} class={` w-1/4 flex flex-col justify-center items-center ${pathName === link.path && 'w-1/5  border border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 flex flex-col justify-center py-1.5 font-semibold'   }`}>
+            <div key={link.title} class={` w-1/4 flex flex-col justify-center items-center ${pathName === link.path && 'w-1/5  border border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 flex flex-col justify-center py-1 font-semibold'   }`}>
                 <Link href={link.path} key={link.title} >{link.title} </Link>
-   <Link href={link.path} class=" text-xs text-center w-3/4  ">{link.titleName}</Link>
+   <Link href={link.path} class=" text-xs text-center w-2/3  mt-1">{link.titleName}</Link>
    
 
             </div>

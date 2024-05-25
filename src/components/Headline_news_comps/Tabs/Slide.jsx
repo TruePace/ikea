@@ -1,19 +1,18 @@
 'use client';
 import { useState,  useRef } from 'react';
+import SubscribeFeed from './Headline_Tabs_Comps/SubscribeFeed';
+import ContentFeed from './Headline_Tabs_Comps/ContentFeed';
+import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 
 const items =[
   {
     title:'Headline News',
   content:(
     <>
-    <div className='border-2 border-blue-400 rounded-lg p-4'>
-      <h1>Title Test 1</h1>
-      <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolores, nulla. 
-        Repellendus, quas. Possimus nesciunt error dolor, 
-        laudantium repellat ab fugiat nemo voluptatibus enim perspiciatis 
-        deserunt ea impedit sed aperiam veniam.
-        </p>
-
+    <div className=' border-blue-400 rounded-lg px-3.5 py-2'>{/* border-2*/}
+    <SubscribeFeed/>
+     <ContentFeed/>
+     <EngagementFeed/>
     </div>
     </>
   )
@@ -49,15 +48,15 @@ const Slide = () => {
   // }, []);
 
   return (
-    <div className='bg-sky-100 h-full  flex justify-center  py-12'>
+    <div className='  h-full  flex justify-center  py-12'>{/*bg-sky-100 removed */}
       <div className='max-w-md flex flex-col  w-full'>
-        <div className='bg-neutral-900 p-1   rounded-lg flex justify-between items-center gap-x-2 font-bold text-white '>
+        <div className='bg-red-600 p-1   rounded-lg flex justify-between items-center gap-x-2 font-bold text-white '>
           {items.map((item, index) => (
             <button
               ref={index === 0 ? firstBtnRef : null}
               key={index}
               onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-1.5 hover:bg-neutral-800 rounded-lg text-center focus:ring-2 focus:bg-white focus:text-neutral-800  ${
+              className={`outline-none w-full p-1.5 hover:bg-red-500 rounded-lg text-center focus:ring-2 focus:bg-white focus:text-neutral-800  ${
                 selectedTab === index ? 'ring-2 bg-white text-neutral-800' : ''
               } `}
             >
