@@ -42,7 +42,10 @@ const items =[
 const Slide = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const slideRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
+  
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
