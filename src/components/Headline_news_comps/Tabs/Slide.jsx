@@ -1,5 +1,5 @@
 'use client';
-import { useState,  useRef } from 'react';
+import { useState,  useRef,useEffect } from 'react';
 import SubscribeFeed from './Headline_Tabs_Comps/SubscribeFeed';
 import ContentFeed from './Headline_Tabs_Comps/ContentFeed';
 import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
@@ -41,23 +41,43 @@ const items =[
 
 const Slide = () => {
   const [selectedTab, setSelectedTab] = useState(0);
-  const firstBtnRef = useRef();
+  const slideRef = useRef(null);
 
-  // useEffect(() => {
-  //   firstBtnRef.current.focus();
-  // }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setSelectedTab(0); // Reset to default tab when the container is in view
+          }
+        });
+      },
+      { threshold: 0.5 } // Adjust threshold as needed
+    );
+
+    if (slideRef.current) {
+      observer.observe(slideRef.current);
+    }
+
+    return () => {
+      if (slideRef.current) {
+        observer.unobserve(slideRef.current);
+      }
+    };
+  }, []);
+  
 
   return (
-    <div className='  h-full  flex justify-center  py-12'>{/*bg-sky-100 removed */}
+    <div ref={slideRef} className='  h-full  flex justify-center  py-12'>{/*bg-sky-100 removed */}
       <div className='max-w-md flex flex-col  w-full'>
         <div className='bg-red-600 p-1   rounded-lg flex justify-between items-center gap-x-2 font-bold text-white '>
           {items.map((item, index) => (
             <button
-              ref={index === 0 ? firstBtnRef : null}
+           
               key={index}
               onClick={() => setSelectedTab(index)}
               className={`outline-none w-full p-1.5 hover:bg-red-500 rounded-lg text-center focus:ring-2 focus:bg-white focus:text-neutral-800  ${
-                selectedTab === index ? 'ring-2 bg-white text-neutral-800' : ''
+                selectedTab === index ? 'ring-2 bg-white text-neutral-800' : 'focus:ring-0 focus:bg-transparent focus:text-white hover:bg-red-white'
               } `}
             >
               {item.title}
