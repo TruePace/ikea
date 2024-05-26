@@ -42,10 +42,7 @@ const items =[
 const Slide = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const slideRef = useRef(null);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
 
-  
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -69,29 +66,9 @@ const Slide = () => {
     };
   }, []);
   
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartX.current - touchEndX.current > 50) {
-      // Swiped left
-      setSelectedTab((prevTab) => (prevTab + 1) % items.length);
-    }
-    if (touchEndX.current - touchStartX.current > 50) {
-      // Swiped right
-      setSelectedTab((prevTab) => (prevTab - 1 + items.length) % items.length);
-    }
-  };
 
   return (
-    <div ref={slideRef} className='  h-full  flex justify-center  py-10'  onTouchStart={handleTouchStart}
-    onTouchMove={handleTouchMove}
-    onTouchEnd={handleTouchEnd}>{/*bg-sky-100 removed */}
+    <div ref={slideRef} className='  h-full  flex justify-center  py-10' >{/*bg-sky-100 removed */}
       <div className='max-w-md flex flex-col  w-full'>
         <div className='bg-red-600 p-1   rounded-lg flex justify-between items-center gap-x-2 font-bold text-white '>
           {items.map((item, index) => (
