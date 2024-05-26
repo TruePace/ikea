@@ -66,9 +66,29 @@ const Slide = () => {
     };
   }, []);
   
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current - touchEndX.current > 50) {
+      // Swiped left
+      setSelectedTab((prevTab) => (prevTab + 1) % items.length);
+    }
+    if (touchEndX.current - touchStartX.current > 50) {
+      // Swiped right
+      setSelectedTab((prevTab) => (prevTab - 1 + items.length) % items.length);
+    }
+  };
 
   return (
-    <div ref={slideRef} className='  h-full  flex justify-center  py-12'>{/*bg-sky-100 removed */}
+    <div ref={slideRef} className='  h-full  flex justify-center  py-10'  onTouchStart={handleTouchStart}
+    onTouchMove={handleTouchMove}
+    onTouchEnd={handleTouchEnd}>{/*bg-sky-100 removed */}
       <div className='max-w-md flex flex-col  w-full'>
         <div className='bg-red-600 p-1   rounded-lg flex justify-between items-center gap-x-2 font-bold text-white '>
           {items.map((item, index) => (
@@ -76,9 +96,10 @@ const Slide = () => {
            
               key={index}
               onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-1.5 hover:bg-red-500 rounded-lg text-center focus:ring-2 focus:bg-white focus:text-neutral-800  ${
-                selectedTab === index ? 'ring-2 bg-white text-neutral-800' : 'focus:ring-0 focus:bg-transparent focus:text-white hover:bg-red-white'
+              className={`outline-none w-full p-1.5 rounded-lg text-center   ${
+                selectedTab === index ? ' bg-white text-neutral-800' : ''
               } `}
+           
             >
               {item.title}
             </button>

@@ -4,8 +4,8 @@ import Link from "next/link";
 const Header = () => {
     return (
         <>
-            <div className="bg-white  fixed w-full z-10 top-0  ">
-  <Link href='' className="btn  btn-ghost text-lg  btn-md  ">
+            <div className="bg-white py-1  fixed w-full z-10 top-0  ">
+  <Link href='' className="btn  btn-ghost text-lg  btn-sm  ">
      <Image src='/TruePace.svg' height={25} width={25} />
       <p >TruePace</p>
      </Link>

@@ -13,7 +13,7 @@ const page =  () => {
   return (
     <>
   <Header/>
-   <div class="h-screen overflow-scroll  snap-y snap-mandatory ">
+   <div class="h-screen overflow-scroll  snap-y snap-mandatory">
     
   
    <div class="  h-full snap-start inline-block w-full">{/*bg-blue-500 */}
