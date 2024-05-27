@@ -1,22 +1,22 @@
 import Image from "next/image";
-// import { MessageCircle,Heart,Eye,Dot } from 'lucide-react';
+
 import { FaRegComment } from "react-icons/fa";
 import { BiLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 
 
-const BeThumb = () => {
+const BeThumbVideo = () => {
     return (
         <>
  
 
-        <div class="w-full   py-3">{/* bg-yellow-300 was used*/}
-<div class=' border-2 relative h-56 saturate-200'>{/*border-black was used */}
+        <div class="w-full    py-3">{/* bg-yellow-300 was used*/}
+<div class=' border-black relative h-56 '>{/* border-2 was used */}
 <Image src='/rubber.jpg'  fill alt="Picture of the author"  />
 </div>
 
-<div class='border-2  pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>{/*avatar and text div and border-red-400 was used */ }
+<div class='border-2 border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>{/*avatar and text div and border-2 was used */ }
 {/*avatar container */}
 <div className="avatar">
   <div className="w-full h-10 rounded-full">
@@ -38,4 +38,4 @@ const BeThumb = () => {
     );
 }
 
-export default BeThumb;
+export default BeThumbVideo;
