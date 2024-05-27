@@ -3,7 +3,7 @@ import Image from "next/image";
 const ContentFeed = () => {
     return (
         <>
-          <p className="text-md text-gray-600"> Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolores, nulla. 
+          <p className="text-md text-gray-600 "> Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolores, nulla. 
         Repellendus, quas. Possimus nesciunt error dolor, 
         laudantium repellat ab fugiat nemo voluptatibus enim perspiciatis 
         deserunt ea impedit sed aperiam veniam.
