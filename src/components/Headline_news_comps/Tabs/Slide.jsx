@@ -9,7 +9,7 @@ const items =[
     title:'Headline News',
   content:(
     <>
-    <div className=' border-blue-400 rounded-lg px-3.5 py-2'>{/* border-2*/}
+    <div className='  border-blue-400 rounded-lg px-3.5 py-2 '>{/* border-2*/}
     <SubscribeFeed/>
      <ContentFeed/>
      <EngagementFeed/>
@@ -76,7 +76,7 @@ const Slide = () => {
            
               key={index}
               onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-1.5 rounded-lg text-center   ${
+              className={`outline-none w-full p-1 rounded-lg text-center   ${
                 selectedTab === index ? ' bg-white text-neutral-800' : ''
               } `}
            
