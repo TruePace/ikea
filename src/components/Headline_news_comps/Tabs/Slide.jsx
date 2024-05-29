@@ -9,7 +9,7 @@ const items =[
     title:'Headline News',
   content:(
     <>
-    <div className='  border-blue-400 rounded-lg px-3.5 py-2 '>{/* border-2*/}
+    <div className='  border-blue-400 rounded-lg px-4 py-2  break-words'>{/* border-2*/}
     <SubscribeFeed/>
      <ContentFeed/>
      <EngagementFeed/>
@@ -68,7 +68,7 @@ const Slide = () => {
   
 
   return (
-    <div ref={slideRef} className='  h-full  flex justify-center  py-10' >{/*bg-sky-100 removed */}
+    <div ref={slideRef} className='  h-full  flex justify-center ' >{/*bg-sky-100 removed */}
       <div className='max-w-md flex flex-col  w-full'>
         <div className='bg-red-600 p-1   rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white '>
           {items.map((item, index) => (

@@ -12,10 +12,9 @@ const page =  () => {
 
   return (
     <>
-  <Header/>
+  {/* <Header/> */}
    <div class="h-screen overflow-scroll  snap-y  snap-mandatory">
     
-  
    <div class="  h-full snap-start inline-block w-full ">{/*bg-blue-500 */}
   <Slide />
   </div>
