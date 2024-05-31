@@ -2,19 +2,21 @@ import Image from "next/image";
 import { FaRegComment } from "react-icons/fa";
 import { BiLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
+import { LuDot } from "react-icons/lu";
 
 const BeThumbArticle = () => {
     return (
         <>
              <div class="w-full px-3 mb-20">{/* bg-red-300 was used*/}
              {/* about creator  */}
-             <div className= " border-gray-200 gap-3 flex items-center ">{/*border-2  removed*/}
+             <div className= "  border-gray-200 gap-3 flex items-center ">{/*border-2  removed*/}
             <div className="avatar">
   <div className="w-11 rounded-full">
     <img src="/sponge.jpg" />
   </div>
 </div>
-<p className="font-semibold text-sm whitespace-nowrap">@Sport Essential</p>
+<p className="font-semibold text-sm ">@Sport Essential</p>
+<p className="text-sm text-gray-400 flex"> < LuDot size='1.2em'/> 10 mins ago</p>
 </div>
 
 {/* engagement content */}
