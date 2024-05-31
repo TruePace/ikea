@@ -3,6 +3,9 @@ import { useState,  useRef,useEffect } from 'react';
 import SubscribeFeed from './Headline_Tabs_Comps/SubscribeFeed';
 import ContentFeed from './Headline_Tabs_Comps/ContentFeed';
 import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
+import JustInSubscribeFeed from './Headline_Tabs_Comps/JustInSubscribeFeed';
+import JustInContentFeed from './Headline_Tabs_Comps/JustInContentFeed';
+import JustInEngagementFeed from './Headline_Tabs_Comps/JustInEngagementFeed';
 
 const items =[
   {
@@ -21,15 +24,27 @@ const items =[
     title:'Just In',
   content:(
     <>
-    <div className='border-2  [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll  whitespace-nowrap snap-x snap-mandatory w-full'>
-      <div className='inline-block w-full  bg-green-400 h-screen  snap-start'>
-     
+    <div className='border-2  [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll  whitespace-nowrap snap-x  snap-mandatory w-full '>
+      <div className=' w-full inline-block align-top  snap-start  h-screen whitespace-normal'>{/* bg-green-400*/}
+     <div className='  border-blue-400 rounded-lg px-4 py-2  break-words'>{/* border-2*/}
+    <JustInSubscribeFeed/>
+     <JustInContentFeed/>
+     <JustInEngagementFeed/>
+    </div>
          </div>
-         <div  className='inline-block  w-full bg-red-400 h-screen snap-start'>
-     
+         <div className=' w-full inline-block align-top  snap-start  h-screen whitespace-normal'>{/* bg-red-400*/}
+         <div className='  border-blue-400 rounded-lg px-4 py-2  break-words'>{/* border-2*/}
+    <JustInSubscribeFeed/>
+     <JustInContentFeed/>
+     <JustInEngagementFeed/>
+    </div>
          </div>
-         <div  className='inline-block  w-full bg-yellow-300 h-screen snap-start'>
-     
+         <div className=' w-full inline-block align-top  snap-start  h-screen whitespace-normal'>{/* bg-yellow-400*/}
+         <div className='  border-blue-400 rounded-lg px-4 py-2  break-words'>{/* border-2*/}
+    <JustInSubscribeFeed/>
+     <JustInContentFeed/>
+     <JustInEngagementFeed/>
+    </div>
          </div>
     </div>
     </>

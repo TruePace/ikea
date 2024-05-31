@@ -14,11 +14,11 @@ const Header = () => {
       <input type="text" placeholder="Search" className="input input-bordered input-error w-24 md:w-auto " />
     </div>
     <div className="dropdown dropdown-end">
-      <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-        <div className="w-10 rounded-full">
-          <img alt="Tailwind CSS Navbar component" src="sponge.jpg" />
-        </div>
-      </div>
+    <div tabIndex={0} role="button" className="avatar placeholder">
+  <div className="bg-neutral text-neutral-content rounded-full w-9">
+    <span className="text-sm">TP</span>
+  </div>
+</div>
       <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
         <li>
           <a className="justify-between">

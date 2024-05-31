@@ -16,7 +16,7 @@ const BeThumbVideo = () => {
 <Image src='/rubber.jpg'  fill alt="Picture of the author"  />
 </div>
 
-<div class='border-2 border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>{/*avatar and text div and border-2 was used */ }
+<div class='border border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>{/*avatar and text div and border-2 was used */ }
 {/*avatar container */}
 <div className="avatar">
   <div className="w-full h-10 rounded-full">
