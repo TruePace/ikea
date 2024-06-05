@@ -28,7 +28,7 @@ const BeThumbArticle = () => {
        
         </p>
 <div className=" relative   border-red-400 h-64 mt-2 ">{/*border-2  removed*/}
-        <Image src='/sponge.jpg' fill alt="Picture of the author " className="rounded-md"/>
+        <Image src='/bruno.jpg' fill alt="Picture of the author " className="rounded-md"/>
         </div>
 
         <div class=" flex justify-between text-sm mt-2 text-gray-400"><p class='flex gap-0.5'>

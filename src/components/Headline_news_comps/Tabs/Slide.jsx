@@ -83,9 +83,9 @@ const Slide = () => {
   
 
   return (
-    <div ref={slideRef} className='  h-full  flex justify-center ' >{/*bg-sky-100 removed */}
+    <div ref={slideRef} className=' h-full  flex justify-center ' >{/*bg-sky-100 removed */}
       <div className='max-w-md flex flex-col  w-full'>
-        <div className='bg-red-600 p-1   rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white '>
+        <div className='bg-red-600  p-1   rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white '>
           {items.map((item, index) => (
             <button
            
