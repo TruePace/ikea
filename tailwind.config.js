@@ -13,7 +13,8 @@ module.exports = {
   theme: {
     extend: {},
     fontFamily:{
-      'sans':['sohne','Helvetica' ,'Neue','Helvetica', 'Arial', 'sans-serif']
+      'sans':['sohne','Helvetica' ,'Neue','Helvetica', 'Arial', 'sans-serif'],
+      'serif':['Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Open Sans','Helvetica Neue','sans-serif']
     },
   },
   plugins: [

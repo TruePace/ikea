@@ -1,8 +1,8 @@
 
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
-// import Tablet from "@/components/Headline_news_comps/Tabs/Tabs";
 
-import Header from "@/components/Headline_news_comps/header/HeadlineHeader";
+
+// import Header from "@/components/Headline_news_comps/header/HeadlineHeader";
 
 
 const page =  () => {
