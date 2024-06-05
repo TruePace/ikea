@@ -11,7 +11,7 @@ const ContentFeed = () => {
        
         </p>
 <div className=" relative  border-red-400 h-64 mt-2 ">{/*border-2  removed*/}
-        <Image src='/sponge.jpg' fill alt="Picture of the author " className="rounded-md"/>
+        <Image src='/personal.jpg' fill alt="Picture of the author " className="rounded-md object-cover"/>
         </div>
         </>
     );

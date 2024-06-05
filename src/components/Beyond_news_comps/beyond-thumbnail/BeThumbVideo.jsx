@@ -13,7 +13,7 @@ const BeThumbVideo = () => {
 
         <div class="w-full    py-3">{/* bg-yellow-300 was used*/}
 <div class=' border-black relative h-56 '>{/* border-2 was used */}
-<Image src='/rubber.jpg'  fill alt="Picture of the author"  />
+<Image src='/rubber.jpg'  fill alt="Picture of the author"  className="object-cover" />
 </div>
 
 <div class='border border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>{/*avatar and text div and border-2 was used */ }
