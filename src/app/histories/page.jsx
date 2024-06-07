@@ -1,8 +1,16 @@
+import HistoryContent from "@/components/history_comps/HistoryContent";
+import HistoryHeader from "@/components/history_comps/HistoryHeader";
+
 const page = () => {
     return (
-        <div>
-            histories
-        </div>
+        <>
+        <HistoryHeader/>
+            <HistoryContent/>
+            <HistoryContent/>
+            <HistoryContent/>
+            <HistoryContent/>
+            
+        </>
     );
 }
 

@@ -29,7 +29,7 @@ const MissedJustInContainer = () => {
           <ContentMissed/>
           <TimeMissed/>
             </div>
-            <div className="w-11/12 border-b-2 border-gray-200 py-4 m-auto ">
+            <div className="w-11/12 border-b-2 border-gray-200 py-4 m-auto mb-20 ">{/*remember margin -bottom while fetching data */}
             <SubscribeMissed/>
           <ContentMissed/>
           <TimeMissed/>

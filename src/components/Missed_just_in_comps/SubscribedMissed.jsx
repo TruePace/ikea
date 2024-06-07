@@ -11,7 +11,7 @@ const SubscribeMissed = () => {
 </div>
 </div>
 
-<p className="font-semibold text-sm  capitalize ">Thomas Tuchel</p>
+<p className="font-semibold text-sm  capitalize text-gray-600">Thomas Tuchel</p>
 
 <button className="btn btn-sm font-bold bg-neutral-content">Subscribe</button>
 
