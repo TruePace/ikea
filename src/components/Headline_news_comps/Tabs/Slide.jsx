@@ -6,30 +6,29 @@ import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 import JustInSubscribeFeed from './Headline_Tabs_Comps/JustInSubscribeFeed';
 import JustInContentFeed from './Headline_Tabs_Comps/JustInContentFeed';
 import JustInEngagementFeed from './Headline_Tabs_Comps/JustInEngagementFeed';
+import { fetchChannels,fetchContents } from '@/components/Utils/HeadlineNewsFetch';
 
 const items =[
   {
     title:'Headline News',
-  content:(
-    <>
-    <div className='  border-blue-400 rounded-lg px-4 py-2  break-words'>{/* border-2*/}
-    <SubscribeFeed/>
-     <ContentFeed/>
-     <EngagementFeed/>
-    </div>
-    </>
-  )
+    renderContent: (channels, contents) => (
+      <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
+        <SubscribeFeed channels={channels} />
+        <ContentFeed contents={contents} />
+        <EngagementFeed  contents={contents} />
+      </div>
+    )
   },
   {
     title:'Just In',
-  content:(
+    renderContent: (channels, contents) => (
     <>
     <div className='border-2  [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll  whitespace-nowrap snap-x  snap-mandatory w-full '>
       <div className=' w-full inline-block align-top  snap-start  h-screen whitespace-normal'>{/* bg-green-400*/}
      <div className='  border-blue-400 rounded-lg px-4 py-2  break-words'>{/* border-2*/}
-    <JustInSubscribeFeed/>
-     <JustInContentFeed/>
-     <JustInEngagementFeed/>
+     <JustInSubscribeFeed channels={channels} />
+            <JustInContentFeed contents={contents} />
+            <JustInEngagementFeed  contents={contents} />
     </div>
          </div>
          <div className=' w-full inline-block align-top  snap-start  h-screen whitespace-normal'>{/* bg-red-400*/}
@@ -55,8 +54,49 @@ const items =[
 
 
 const Slide = () => {
-  const [selectedTab, setSelectedTab] = useState(0);
-  const slideRef = useRef(null);
+
+// fetching data variables
+
+const [channels, setChannels] = useState([]);
+const [contents, setContents] = useState([]);
+const [isLoading, setIsLoading] = useState(true);
+const [error, setError] = useState(null);
+const [selectedTab, setSelectedTab] = useState(0);
+const slideRef = useRef(null);
+
+
+useEffect(() => {
+  async function fetchData() {
+    try {
+      const [channelsData, contentsData] = await Promise.all([
+        fetchChannels(),
+        fetchContents()
+        
+      ]);
+      setChannels(channelsData);
+      setContents(contentsData);
+      
+    
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  fetchData();
+}, []);
+
+useEffect(() => {
+  console.log('Channels:', channels);
+  console.log('Contents:', contents);
+}, [channels, contents]);
+
+
+
+
+ 
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -81,6 +121,24 @@ const Slide = () => {
     };
   }, []);
   
+//   if (isLoading) return <div>Loading...</div>;
+// if (error) return <div>Error: {error}</div>;
+// // end of fetching data variables
+
+const renderContent = () => {
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div className=''>
+      {items.map((item, index) => (
+        <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
+          {item.renderContent(channels, contents)}
+        </div>
+      ))}
+    </div>
+  );
+};
 
   return (
     <div ref={slideRef} className=' h-full  flex justify-center ' >{/*bg-sky-100 removed */}
@@ -105,9 +163,11 @@ const Slide = () => {
           {items.map((item, index) => (
             <div className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
               {item.content}
+              
             </div>
           ))}
         </div>
+        {renderContent()}
       </div>
     </div>
   );

@@ -4,10 +4,13 @@ import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 
 // import Header from "@/components/Headline_news_comps/header/HeadlineHeader";
 
+export const metadata = {
+  title: "TruePace Headline News title",
+  description: "Headline News description",
+}
+
 
 const page =  () => {
-  
-  
   
 
   return (
