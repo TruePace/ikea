@@ -1,8 +1,10 @@
+
 import HistoryContent from "@/components/history_comps/HistoryContent";
 import HistoryHeader from "@/components/history_comps/HistoryHeader";
 
 
-export const metadata = {
+
+ export const metadata = {
     title: "TruePace History title",
     description: "History description",
 }
@@ -15,6 +17,7 @@ const page = () => {
             <HistoryContent/>
             <HistoryContent/>
             <HistoryContent/>
+         
             
         </>
     );
