@@ -21,7 +21,7 @@ const items = [
       <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
         <SubscribeFeed channel={channel} />
         <ContentFeed content={content}/>
-        <EngagementFeed />
+        <EngagementFeed content={content}/>
       </div>
     )
   },

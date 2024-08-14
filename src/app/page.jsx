@@ -1,7 +1,7 @@
 'use client'
-import store from "@/Redux/Index";
+import {store,persistor} from "../Redux/Store"
 import { Provider } from "react-redux";
-import NotifyFakeExample from "@/Redux/NotifyFakeExample";
+import { PersistGate } from 'redux-persist/integration/react';
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { fetchChannels,fetchContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useState,useEffect } from "react";
@@ -60,19 +60,20 @@ if (error) return <div>Error: {error}</div>;
     <>
    
   {/* <Header/> */}
+  <Provider store={store}>
+<PersistGate loading={null} persistor={persistor}>
    <div class="h-screen overflow-scroll  snap-y  snap-mandatory">
    {channels.map((channel, index) => (
           <div key={channel.id} className="h-full snap-start inline-block w-full">
             <Slide 
               channel={channel}
               content={contents[index] || {}}
+              // comments={comments[index] || []}
             />
           </div>
         ))}
 </div>
-
-<Provider store={store}>
-            <NotifyFakeExample/>
+      </PersistGate>  
                </Provider>
 
   </>
@@ -81,10 +82,3 @@ if (error) return <div>Error: {error}</div>;
 
 
 export default page;
-// {channels.map(
-//   ({name,picture})=>
-//     ( <div class="  h-full snap-start inline-block w-full ">{/*bg-blue-500 */}
-// <Slide name={name} picture={picture} key={channels.id} />
-// </div>
-//  )
-// )} 
