@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { BiLike, BiDislike } from "react-icons/bi";
 import { setLikeDislike } from '../../../../../Redux/Slices/LikeDislikeSlice';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount }) => {
     const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount })
 
     const handleLikeDislike = async (action) => {
         try {
-            const response = await fetch(`http://localhost:4000/api/HeadlineNews/Content/${action}`, {
+            const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${action}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

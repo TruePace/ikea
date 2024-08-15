@@ -1,5 +1,5 @@
 'use client'
-import {store,persistor} from "../Redux/Store"
+import {store,persistor} from "../Redux/store"
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
