@@ -1,7 +1,9 @@
 'use client';
 
+import Header from '@/components/TruePacerProfileComp/Header';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const TruepaceProfile = () => {
   const params = useParams();
@@ -11,7 +13,7 @@ const TruepaceProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/api/HeadlineNews/Channel/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${id}`);
         if (!response.ok) throw new Error('Failed to fetch profile');
         const data = await response.json();
         setProfile(data);
@@ -26,10 +28,13 @@ const TruepaceProfile = () => {
   if (!profile) return <div>Loading...</div>;
 
   return (
-    <div>
+    <>
+    <Header/>
       Truepace profile for ID: {id}
       {/* Render profile data here */}
-    </div>
+
+
+    </>
   );
 };
 

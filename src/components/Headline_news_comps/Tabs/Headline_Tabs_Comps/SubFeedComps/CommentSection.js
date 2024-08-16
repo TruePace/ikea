@@ -100,22 +100,29 @@ const CommentItem = ({ comment, onReply, onLike, currentUsername }) => (
     if (!isOpen) return null;
   
     return (
-      <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out">
-        <div className="bg-white w-full h-3/4 rounded-t-3xl p-4 relative overflow-y-auto">
-          <button 
-            onClick={onClose} 
-            className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
-          >
-            <IoMdClose size="1.5em" />
-          </button>
-          <h2 className="text-xl font-bold mb-4">Comments ({commentCount})</h2>
-          
-          <div className="mb-4">
-            {comments.map(comment => (
-              <CommentItem key={comment._id} comment={comment} onReply={handleReply} onLike={handleLike} currentUsername={username} />
-            ))}
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out">
+        <div className="bg-white w-full h-3/4 rounded-t-3xl overflow-hidden flex flex-col">
+          {/* Sticky header */}
+          <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b">
+            <button 
+              onClick={onClose} 
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
+            >
+              <IoMdClose size="1.5em" />
+            </button>
+            <h2 className="text-xl font-bold">Comments ({commentCount})</h2>
           </div>
-  
+
+      {/* Scrollable comment area */}
+      <div className="flex-grow overflow-y-auto p-4">
+        <div className="mb-4">
+          {comments.map(comment => (
+            <CommentItem key={comment._id} comment={comment} onReply={handleReply} onLike={handleLike} currentUsername={username} />
+          ))}
+        </div>
+      </div>
+
+
           <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-2">
             <input
               type="text"

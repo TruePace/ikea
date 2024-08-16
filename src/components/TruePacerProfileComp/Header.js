@@ -1,7 +1,7 @@
 'use client'
-import ToggleSearchBar from "@/components/SearchBar/ToggleSearchBar";
 import Image from "next/image";
 import Link from "next/link";
+import ToggleSearchBar from "../SearchBar/ToggleSearchBar";
 const Header = () => {
     return (
         <>
@@ -12,7 +12,7 @@ const Header = () => {
     <Link href='' className="btn  btn-ghost text-lg   "> <Image src='/TruePace.svg' height={25} width={25} /> <p>TruePace</p></Link>
   </div>
   <div className="flex-none gap-7  w-2/6">{/*border */ }
-    <ToggleSearchBar/> 
+    <ToggleSearchBar/>
 
     <div className="dropdown dropdown-end">
     <div tabIndex={0} role="button" className="avatar placeholder">
