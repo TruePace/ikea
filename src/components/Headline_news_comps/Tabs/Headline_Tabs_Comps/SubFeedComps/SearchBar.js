@@ -60,7 +60,7 @@ const SearchBar = ({ onClose, channels }) => {
         {filteredChannels.map(channel => (
            <Link 
            key={channel._id} 
-           href={`/profile/${channel._id}`}
+           href={`/truepacer_profile/${channel._id}`}
            className="block p-2 hover:bg-gray-100"
          >
            {channel.name}

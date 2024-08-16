@@ -29,7 +29,7 @@ const SubscribeFeed = ({channel}) => {
                     </div>
                 </div>
 
-             <Link   href={`/profile/${channel._id}`}>  <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p></Link> 
+             <Link   href={`/truepacer_profile/${channel._id}`}>  <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p></Link> 
 
                 <button className="btn btn-sm font-bold bg-neutral-content">Subscribe</button>
 
