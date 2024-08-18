@@ -20,7 +20,7 @@ const BeThumbVideo = () => {
 {/*avatar container */}
 <div className="avatar">
   <div className="w-full h-10 rounded-full">
-    <img src="sponge.jpg" />
+  <Image src='/rubber.jpg' alt="Avatar" width={40} height={40} className="rounded-full" />
   </div>
 </div>
 <div class='w-4/5 font-sans  '>{/*text div con  'bg-slate-400' was there*/}

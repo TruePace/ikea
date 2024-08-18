@@ -1,6 +1,7 @@
 'use client';
 
-import Header from '@/components/TruePacerProfileComp/Header';
+import Header from '@/components/TruePacerProfileComp/Header/Header/Header';
+import ProfileContent from '@/components/TruePacerProfileComp/Header/ProfileContent/ProfileContent';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -24,12 +25,17 @@ const TruepaceProfile = () => {
 
     fetchProfile();
   }, [id]);
+  useEffect(() => {
+    console.log('profile:', profile);
+   
+  }, [profile]);
 
   if (!profile) return <div>Loading...</div>;
 
   return (
     <>
     <Header/>
+    <ProfileContent profile={profile}/>
       Truepace profile for ID: {id}
       {/* Render profile data here */}
 

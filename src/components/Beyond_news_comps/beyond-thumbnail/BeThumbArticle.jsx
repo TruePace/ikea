@@ -12,7 +12,7 @@ const BeThumbArticle = () => {
              <div className= "  border-gray-200 gap-3 flex items-center ">{/*border-2  removed*/}
             <div className="avatar">
   <div className="w-11 rounded-full">
-    <img src="/sponge.jpg" />
+  <Image src='/sponge.jpg' alt="Avatar" width={40} height={40} className="rounded-full" />
   </div>
 </div>
 <p className="font-semibold text-sm ">@Sport Essential</p>

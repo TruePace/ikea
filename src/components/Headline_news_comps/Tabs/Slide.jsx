@@ -85,7 +85,7 @@ const items = [
            
               key={index}
               onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-1 rounded-lg text-center   ${
+              className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300  ${
                 selectedTab === index ? ' bg-white text-neutral-800' : ''
               } `}
            

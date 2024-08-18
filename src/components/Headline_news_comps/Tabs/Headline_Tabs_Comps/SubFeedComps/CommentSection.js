@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { IoMdClose } from 'react-icons/io';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const CommentItem = ({ comment, onReply, onLike, currentUsername }) => (
     <div className="mb-4">
       <div className="flex items-center mb-2">
-        <img src={comment.picture || 'sponge.png'} alt="User" className="w-8 h-8 rounded-full mr-2" />
+      <Image  src={comment.picture || '/NopicAvatar.png'} alt="User" width={32} height={32} className="rounded-full mr-2" />
         <p className="font-bold">{comment.username || 'Anonymous'}</p>
       </div>
       <p>{comment.text}</p>

@@ -1,4 +1,4 @@
-
+import Image from "next/image";
 
 const SubscribeMissed = () => {
     return (
@@ -6,8 +6,8 @@ const SubscribeMissed = () => {
        
        <div className= " border-gray-200 w-full  flex items-center gap-4 ">{/*border-2  removed*/}
 <div className="avatar">
-<div className="w-9 rounded-full">
-<img src="/sponge.jpg" />
+<div className="w-9 h-9 relative rounded-full overflow-hidden">
+  <Image src="/sponge.jpg" alt="Sponge" fill className="object-cover"/>
 </div>
 </div>
 

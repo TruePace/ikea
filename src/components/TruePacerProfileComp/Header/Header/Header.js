@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 import Link from "next/link";
-import ToggleSearchBar from "../SearchBar/ToggleSearchBar";
+import ToggleSearchBar from "../../../SearchBar/ToggleSearchBar";
 const Header = () => {
     return (
         <>
@@ -16,14 +16,14 @@ const Header = () => {
 
     <div className="dropdown dropdown-end">
     <div tabIndex={0} role="button" className="avatar placeholder">
-  <div className="bg-neutral text-neutral-content rounded-full w-9">
+  <div className="bg-red-600 text-neutral-content rounded-full w-9">
     <span className="text-sm">TP</span>
   </div>
 </div>
       <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
         <li>
           <a className="justify-between">
-            Profile
+          My Profile
             <span className="badge">New</span>
           </a>
         </li>
