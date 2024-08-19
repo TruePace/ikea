@@ -3,7 +3,7 @@ import {store,persistor} from "../Redux/store"
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
-import { fetchChannels,fetchContents } from "@/components/Utils/HeadlineNewsFetch";
+import { fetchChannels,fetchContents ,fetchJustInContents,fetchHeadlineContents} from "@/components/Utils/HeadlineNewsFetch";
 import { useState,useEffect } from "react";
 
 
@@ -17,42 +17,74 @@ import { useState,useEffect } from "react";
 const page =  () => {
   // fetching data variables
 
-const [channels, setChannels] = useState([]);
-const [contents, setContents] = useState([]);
-const [isLoading, setIsLoading] = useState(true);
-const [error, setError] = useState(null);
+  const [channels, setChannels] = useState([]);
+  const [headlineContents, setHeadlineContents] = useState([]);
+  const [justInContents, setJustInContents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
 
 
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [channelsData, contentsData] = await Promise.all([
+        const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
           fetchChannels(),
-          fetchContents()
-          
+          fetchContents(),
+          fetchJustInContents(),
+          fetchHeadlineContents()
         ]);
         setChannels(channelsData);
-        setContents(contentsData);
-        
-      
-  
+        setHeadlineContents(headlineContentsData);
+        setJustInContents(justInContentsData);
       } catch (error) {
         setError(error.message);
       } finally {
         setIsLoading(false);
       }
     }
-  
+
     fetchData();
+
+    // / Set up intervals to fetch 'Just In' and 'Headline' content every minute
+    const justInInterval = setInterval(() => {
+      fetchJustInContents().then(setJustInContents);
+    }, 60000);
+
+    const headlineInterval = setInterval(() => {
+      fetchHeadlineContents().then(setHeadlineContents);
+    }, 60000);
+
+    // Clean up intervals on component unmount
+    return () => {
+      clearInterval(justInInterval);
+      clearInterval(headlineInterval);
+    };
+  
+
   }, []);
+
+
   
-  useEffect(() => {
-    console.log('Channels:', channels);
-    console.log('Contents:', contents);
-  }, [channels, contents]);
   
-    if (isLoading) return <div>Loading...</div>;
+
+// to remove expired 'Just In' content:
+useEffect(() => {
+  const timer = setInterval(() => {
+    setJustInContents(prevContents => 
+      prevContents.filter(content => new Date(content.justInExpiresAt) > new Date())
+    );
+  }, 60000); // Check every minute
+
+  return () => clearInterval(timer);
+}, []);
+
+
+
+
+ 
+if (isLoading) return <div>Loading...</div>;
 if (error) return <div>Error: {error}</div>;
 
 
@@ -65,11 +97,11 @@ if (error) return <div>Error: {error}</div>;
    <div class="h-screen overflow-scroll  snap-y  snap-mandatory">
    {channels.map((channel, index) => (
           <div key={channel.id} className="h-full snap-start inline-block w-full">
-            <Slide 
-              channel={channel}
-              content={contents[index] || {}}
-              // comments={comments[index] || []}
-            />
+                 <Slide
+            channel={channel}
+            headlineContent={headlineContents.find(content => content.channelId === channel._id) || {}}
+            justInContents={justInContents}
+          />
           </div>
         ))}
 </div>
