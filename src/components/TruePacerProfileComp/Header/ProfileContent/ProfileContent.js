@@ -43,6 +43,7 @@ const ProfileContent = ({profile}) => {
 
     return (
         <>
+        
             <div className="w-full py-3">
                 <div className='border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex gap-4'>
                     {/*avatar container */}
@@ -65,6 +66,7 @@ const ProfileContent = ({profile}) => {
         <div className="flex gap-2 text-sm mt-2 text-gray-400">
           <p className='flex'>{subscriberCount} Subscriber{subscriberCount !== 1 ? 's' : ''} </p>
           <p className='flex'>< LuDot size='1.2em'/>12 videos</p>
+          
         </div>
         {!isSubscribed ? (
   <button 
@@ -113,6 +115,7 @@ const ProfileContent = ({profile}) => {
             <div className="mt-4 bg-base-200 rounded-lg">
                     {activeTab === "Beyond Headline" ? <BeyondHeadlineContent/> : <HeadlineNewsContent/>}
                 </div>
+                
         </>
     );
 }
