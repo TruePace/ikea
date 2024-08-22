@@ -14,7 +14,8 @@ module.exports = {
     extend: {},
     fontFamily:{
       'sans':['sohne','Helvetica' ,'Neue','Helvetica', 'Arial', 'sans-serif'],
-      'serif':['Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Open Sans','Helvetica Neue','sans-serif']
+      'serif':['Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Open Sans','Helvetica Neue','sans-serif'],
+      'onlyroboto':['Roboto', 'sans-serif'],
     },
     screens:{
       'xss': {'min': '161px', 'max': '320px'},

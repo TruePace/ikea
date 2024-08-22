@@ -31,7 +31,7 @@ const EngagementFeed = ({content}) => {
   
     return (
       <>
-        <div className="w-full flex mt-7 justify-between text-gray-400 text-sm text-center  border-blue-500">{/*border-2 */}
+        <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center  border-blue-500">{/*border-2 */}
           <LikeDislikeButton
             contentId={content._id}
             initialLikeCount={content.likeCount}

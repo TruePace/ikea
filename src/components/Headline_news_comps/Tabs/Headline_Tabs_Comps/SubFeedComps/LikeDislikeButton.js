@@ -64,11 +64,11 @@ const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount })
 
     return (
         <div className="flex justify-between  border-red-500 w-1/4">{/*border-2*/}
-            <button onClick={handleLike} className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-400'}`}>
+            <button onClick={handleLike} className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}>
                 <BiLike size='1.6em' className="m-auto" />
                 <p className="text-xs">{likeCount || 0 }</p>
             </button>
-            <button onClick={handleDislike} className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-400'}`}>
+            <button onClick={handleDislike} className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500'}`}>
                 <BiDislike size='1.6em' className="m-auto" />
                 <p className="text-xs">{dislikeCount || 0}</p>
             </button>

@@ -42,15 +42,15 @@ const Page = () => {
     const moveExpiredContent = () => {
       const now = new Date();
       const expiredContent = justInContents.filter(content => new Date(content.justInExpiresAt) <= now);
-      
+  
       if (expiredContent.length > 0) {
         setJustInContents(prev => prev.filter(content => new Date(content.justInExpiresAt) > now));
         setHeadlineContents(prev => [...expiredContent, ...prev]);
       }
     };
-
+  
     const expirationInterval = setInterval(moveExpiredContent, 60000);
-
+  
     return () => clearInterval(expirationInterval);
   }, [justInContents]);
 
@@ -59,14 +59,14 @@ const Page = () => {
 
   return (
     <>
-      <Provider store={store}>
+        <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <div className="h-screen overflow-scroll snap-y snap-mandatory">
+          <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {channels.map((channel) => (
-              <div key={channel._id} className="h-full snap-start inline-block w-full">
+              <div key={channel._id} className="h-screen snap-start">
                 <Slide
                   channel={channel}
-                  headlineContent={headlineContents.find(content => content.channelId === channel._id) || {}}
+                  headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
                   justInContents={justInContents}
                 />
               </div>
@@ -79,3 +79,4 @@ const Page = () => {
 }
 
 export default Page;
+
