@@ -60,7 +60,7 @@ const Page = () => {
   return (
     <>
         <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
+        <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}>
           <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {channels.map((channel) => (
               <div key={channel._id} className="h-screen snap-start">

@@ -1,5 +1,8 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { markAsViewed, resetViewedForNewContent, selectUnviewedCount } from '../../../Redux/Slices/ViewContentSlice';
+import { FaBell } from 'react-icons/fa';
 import SubscribeFeed from './Headline_Tabs_Comps/SubscribeFeed';
 import ContentFeed from './Headline_Tabs_Comps/ContentFeed';
 import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
@@ -12,19 +15,32 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const [currentJustInContent, setCurrentJustInContent] = useState([]);
   const [channelsMap, setChannelsMap] = useState({});
   const hasJustInContent = currentJustInContent.length > 0;
+  const dispatch = useDispatch();
+  const viewedContent = useSelector(state => state.viewedContent);
+  const unviewedCount = useSelector(state => selectUnviewedCount(state, currentJustInContent));
+
+  console.log("Current Just In Content:", currentJustInContent);
+  console.log("Viewed Content:", viewedContent);
+  console.log("Unviewed Count:", unviewedCount);
+
+  const handleJustInView = (contentId) => {
+    dispatch(markAsViewed(contentId));
+  };
 
   useEffect(() => {
-    // Sort justInContents, prioritizing current channel but without removing duplicates
     const sortedContent = justInContents.sort((a, b) => {
       if (a.channelId === channel._id && b.channelId !== channel._id) return -1;
       if (b.channelId === channel._id && a.channelId !== channel._id) return 1;
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
   
-    // Update the state with the sorted content
     setCurrentJustInContent(sortedContent);
   
-    // Fetch channels for all unique channelIds in justInContents
+    // Only reset viewed content if there is genuinely new content.
+    if (sortedContent.length > 0) {
+      dispatch(resetViewedForNewContent(sortedContent.map(c => c._id)));
+    }
+  
     const uniqueChannelIds = [...new Set(sortedContent.map(content => content.channelId))];
     Promise.all(uniqueChannelIds.map(fetchChannel))
       .then(channels => {
@@ -34,8 +50,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
         });
         setChannelsMap(newChannelsMap);
       });
-  }, [justInContents, channel._id]);
-  
+  }, [justInContents, channel._id, dispatch]);
 
   // Function to fetch a single channel
   const fetchChannel = async (channelId) => {
@@ -81,7 +96,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
             <div key={content._id} className='h-screen snap-start'>
               <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
                 <SubscribeFeed channel={channel} />
-                <ContentFeed content={content}/>
+                <ContentFeed content={content} onView={() => handleJustInView(content._id)} />
                 <EngagementFeed content={content}/>
               </div>
             </div>
@@ -100,8 +115,9 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
                 <div key={content._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
                   <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
                     <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
-                    <ContentFeed content={content}/>
-                    <EngagementFeed content={content}/>
+                    <ContentFeed 
+                      content={content} onView={() => handleJustInView(content._id)} isViewed={viewedContent.includes(content._id)} />
+                    <EngagementFeed content={content} />
                   </div>
                 </div>
               ))
@@ -130,20 +146,26 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
 
   return (
     <div ref={slideRef} className='h-full flex justify-center'>
-      <div className='max-w-md flex flex-col w-full'>
-        <div className='bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white'>
-          {items.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
-                selectedTab === index ? 'bg-white text-neutral-800' : ''
-              }`}
-            >
-              {item.title}
-            </button>
-          ))}
-        </div>
+    <div className='max-w-md flex flex-col w-full'>
+      <div className='bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white'>
+        {items.map((item, index) => (
+          <button
+            key={index}
+            onClick={() => setSelectedTab(index)}
+            className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
+              selectedTab === index ? 'bg-white text-neutral-800' : ''
+            } relative`}
+          >
+            {item.title}
+            {index === 1 && unviewedCount > 0 && (
+              <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
+               <FaBell className="mr-1" />
+                {unviewedCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
         
         <div className=''>
           {items.map((item, index) => (
