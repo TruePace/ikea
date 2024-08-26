@@ -10,7 +10,7 @@ const SubscribeFeed = ({ channel }) => {
   const [subscriberCount, setSubscriberCount] = useState(channel.subscriberCount || 0);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-console.log(channel)
+
   const handleSubscribe = async () => {
     if (isSubscribed) {
       setShowDropdown(!showDropdown);

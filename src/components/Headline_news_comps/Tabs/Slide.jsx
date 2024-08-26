@@ -9,7 +9,7 @@ import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const Slide = ({ channel, headlineContents, justInContents }) => {
+const Slide = ({ channel, justInContents }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const slideRef = useRef(null);
   const [currentJustInContent, setCurrentJustInContent] = useState([]);
