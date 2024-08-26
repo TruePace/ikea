@@ -14,7 +14,7 @@ const TruepaceProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${id}`);
+        const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${id}`);
         if (!response.ok) throw new Error('Failed to fetch profile');
         const data = await response.json();
         setProfile(data);

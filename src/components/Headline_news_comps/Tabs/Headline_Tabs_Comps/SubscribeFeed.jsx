@@ -10,7 +10,7 @@ const SubscribeFeed = ({ channel }) => {
   const [subscriberCount, setSubscriberCount] = useState(channel.subscriberCount || 0);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
-
+console.log(channel)
   const handleSubscribe = async () => {
     if (isSubscribed) {
       setShowDropdown(!showDropdown);
@@ -18,7 +18,7 @@ const SubscribeFeed = ({ channel }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${channel._id}/subscribe`, {
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${channel._id}/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ const SubscribeFeed = ({ channel }) => {
 
   const handleUnsubscribe = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${channel._id}/unsubscribe`, {
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${channel._id}/unsubscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,11 +77,11 @@ const SubscribeFeed = ({ channel }) => {
       <div className="border-gray-200 w-full flex items-center justify-between">
         <div className="avatar">
           <div className="w-11 h-11 relative rounded-full overflow-hidden">
-            <Image src={channel.picture} alt={channel.name} fill className="object-cover" />
+            <Image src={channel.channelPicture} alt={channel.channelName} fill className="object-cover" />
           </div>
         </div>
         <Link href={`/truepacer_profile/${channel._id}`}>
-          <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p>
+          <p className="font-semibold text-sm whitespace-nowrap">{channel.channelName}</p>
         </Link>
         <div className="relative" ref={dropdownRef}>
           <button

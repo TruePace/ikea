@@ -55,7 +55,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   // Function to fetch a single channel
   const fetchChannel = async (channelId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${channelId}`);
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${channelId}`);
       if (!response.ok) throw new Error('Failed to fetch channel');
       return await response.json();
     } catch (error) {
@@ -92,15 +92,10 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
       title: 'Headline News',
       renderContent: () => (
         <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
-          {headlineContents.map((content) => (
-            <div key={content._id} className='h-screen snap-start'>
-              <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
-                <SubscribeFeed channel={channel} />
-                <ContentFeed content={content} onView={() => handleJustInView(content._id)} />
-                <EngagementFeed content={content}/>
-              </div>
-            </div>
-          ))}
+            <SubscribeFeed channel={channel} />
+            <ContentFeed content={channel} onView={() => handleJustInView(channel._id)} /> 
+            <EngagementFeed content={channel}/> 
+        
         </div>
       )
     },
@@ -112,12 +107,12 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
           <div className='border-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll whitespace-nowrap snap-x snap-mandatory w-full'>
             {hasJustInContent ? (
               currentJustInContent.map((content) => (
-                <div key={content._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
+                <div key={channel._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
                   <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
-                    <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
+                    <SubscribeFeed channel={channel} />
                     <ContentFeed 
-                      content={content} onView={() => handleJustInView(content._id)} isViewed={viewedContent.includes(content._id)} />
-                    <EngagementFeed content={content} />
+                      content={channel} onView={() => handleJustInView(channel._id)} isViewed={viewedContent.includes(channel._id)} />
+                    <EngagementFeed content={channel} />
                   </div>
                 </div>
               ))

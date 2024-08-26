@@ -13,7 +13,7 @@ const ProfileContent = ({profile}) => {
 
   const handleSubscribe = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${profile._id}/subscribe`, {
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${profile._id}/subscribe`, {
         method: 'POST',
       });
       const data = await response.json();
@@ -28,7 +28,7 @@ const ProfileContent = ({profile}) => {
 
   const handleUnsubscribe = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${profile._id}/unsubscribe`, {
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${profile._id}/unsubscribe`, {
         method: 'POST',
       });
       const data = await response.json();

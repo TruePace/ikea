@@ -3,7 +3,7 @@ import {store, persistor} from "../Redux/store"
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
-import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
+import { fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useState, useEffect } from "react";
 
 const Page = () => {
@@ -13,11 +13,12 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  
   useEffect(() => {
     async function fetchData() {
       try {
         const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-          fetchChannels(),
+          fetchContents(),
           fetchHeadlineContents(),
           fetchJustInContents()
         ]);
@@ -33,6 +34,7 @@ const Page = () => {
 
     fetchData();
 
+   
     const dataInterval = setInterval(fetchData, 30000);
 
     return () => clearInterval(dataInterval);
@@ -60,7 +62,7 @@ const Page = () => {
   return (
     <>
         <Provider store={store}>
-        <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}>
+      <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}>
           <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {channels.map((channel) => (
               <div key={channel._id} className="h-screen snap-start">
