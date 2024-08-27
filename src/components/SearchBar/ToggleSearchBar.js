@@ -8,7 +8,7 @@ const ToggleSearchBar = ({}) => {
 
     useEffect(() => {
       // Fetch channels from your API
-      fetch(`${API_BASE_URL}/api/HeadlineNews/Content`)
+      fetch(`${API_BASE_URL}/api/HeadlineNews/Channel`)
           .then(response => response.json())
           .then(data => setChannels(data))
           .catch(error => console.error('Error fetching channels:', error));

@@ -19,7 +19,7 @@ const SearchBar = ({ onClose, channels }) => {
   useEffect(() => {
     if (searchQuery) {
       const filtered = channels.filter(channel =>
-        channel.channelName.toLowerCase().includes(searchQuery.toLowerCase())
+        channel.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredChannels(filtered);
     } else {
@@ -63,7 +63,7 @@ const SearchBar = ({ onClose, channels }) => {
            href={`/truepacer_profile/${channel._id}`}
            className="block p-2 hover:bg-gray-100"
          >
-           {channel.channelName}
+           {channel.name}
          </Link>
         ))}
       </div>

@@ -3,7 +3,7 @@ import {store, persistor} from "../Redux/store"
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
-import { fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
+import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useState, useEffect } from "react";
 
 const Page = () => {
@@ -13,12 +13,11 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
   useEffect(() => {
     async function fetchData() {
       try {
         const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-          fetchContents(),
+          fetchChannels(),
           fetchHeadlineContents(),
           fetchJustInContents()
         ]);
@@ -34,7 +33,6 @@ const Page = () => {
 
     fetchData();
 
-   
     const dataInterval = setInterval(fetchData, 30000);
 
     return () => clearInterval(dataInterval);

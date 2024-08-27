@@ -9,7 +9,7 @@ import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const Slide = ({ channel, justInContents }) => {
+const Slide = ({ channel, headlineContents, justInContents }) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const slideRef = useRef(null);
   const [currentJustInContent, setCurrentJustInContent] = useState([]);
@@ -55,7 +55,7 @@ const Slide = ({ channel, justInContents }) => {
   // Function to fetch a single channel
   const fetchChannel = async (channelId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${channelId}`);
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${channelId}`);
       if (!response.ok) throw new Error('Failed to fetch channel');
       return await response.json();
     } catch (error) {
@@ -92,10 +92,15 @@ const Slide = ({ channel, justInContents }) => {
       title: 'Headline News',
       renderContent: () => (
         <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
-            <SubscribeFeed channel={channel} />
-            <ContentFeed content={channel} onView={() => handleJustInView(channel._id)} /> 
-            <EngagementFeed content={channel}/> 
-        
+          {headlineContents.map((content) => (
+            <div key={content._id} className='h-screen snap-start'>
+              <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
+                <SubscribeFeed channel={channel} />
+                <ContentFeed content={content} onView={() => handleJustInView(content._id)} />
+                <EngagementFeed content={content}/>
+              </div>
+            </div>
+          ))}
         </div>
       )
     },
@@ -107,12 +112,12 @@ const Slide = ({ channel, justInContents }) => {
           <div className='border-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll whitespace-nowrap snap-x snap-mandatory w-full'>
             {hasJustInContent ? (
               currentJustInContent.map((content) => (
-                <div key={channel._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
+                <div key={content._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
                   <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
-                    <SubscribeFeed channel={channel} />
+                    <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
                     <ContentFeed 
-                      content={channel} onView={() => handleJustInView(channel._id)} isViewed={viewedContent.includes(channel._id)} />
-                    <EngagementFeed content={channel} />
+                      content={content} onView={() => handleJustInView(content._id)} isViewed={viewedContent.includes(content._id)} />
+                    <EngagementFeed content={content} />
                   </div>
                 </div>
               ))
