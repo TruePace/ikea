@@ -1,12 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
 import { BiLike, BiDislike } from "react-icons/bi";
 import { setLikeDislike } from '../../../../../Redux/Slices/LikeDislikeSlice';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+import { useAuth } from '@/app/(auth)/AuthContext';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount }) => {
     const dispatch = useDispatch();
+    const router = useRouter();
+    const { user } = useAuth();
     const stateFromRedux = useSelector(state => state.likeDislike[contentId]);
 
     const [likeCount, setLikeCount] = useState(initialLikeCount || 0);
@@ -19,16 +24,26 @@ const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount })
             setDislikeCount(stateFromRedux.dislikeCount);
             setActiveButton(stateFromRedux.activeButton);
         }
-    }, [stateFromRedux,contentId]);
+    }, [stateFromRedux, contentId]);
 
     const handleLikeDislike = async (action) => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        if (activeButton === action) {
+            // User is trying to click the same button again, so ignore
+            return;
+        }
+
         try {
             const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${action}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ contentId }),
+                body: JSON.stringify({ contentId, userId: user.uid }),
             });
 
             if (!response.ok) {
@@ -38,12 +53,11 @@ const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount })
             }
 
             const data = await response.json();
-            // console.log('Response data:', data);
 
-            // Update local state immediately
+            // Update local state
             setLikeCount(data.likeCount);
             setDislikeCount(data.dislikeCount);
-            setActiveButton(action); // Set the active button
+            setActiveButton(action);
 
             // Update Redux state
             dispatch(setLikeDislike({
@@ -60,13 +74,11 @@ const LikeDislikeButton = ({ contentId, initialLikeCount, initialDislikeCount })
     const handleLike = () => handleLikeDislike('like');
     const handleDislike = () => handleLikeDislike('dislike');
 
-  
-
     return (
-        <div className="flex justify-between  border-red-500 w-1/4">{/*border-2*/}
+        <div className="flex justify-between w-1/4">
             <button onClick={handleLike} className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}>
                 <BiLike size='1.6em' className="m-auto" />
-                <p className="text-xs">{likeCount || 0 }</p>
+                <p className="text-xs">{likeCount || 0}</p>
             </button>
             <button onClick={handleDislike} className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500'}`}>
                 <BiDislike size='1.6em' className="m-auto" />

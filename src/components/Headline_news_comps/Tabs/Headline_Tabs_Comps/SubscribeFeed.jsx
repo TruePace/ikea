@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ToggleSearchBar from '../../../SearchBar/ToggleSearchBar';
+import { useAuth } from '@/app/(auth)/AuthContext';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -10,8 +12,15 @@ const SubscribeFeed = ({ channel }) => {
   const [subscriberCount, setSubscriberCount] = useState(channel.subscriberCount || 0);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const router = useRouter();
+  const { user } = useAuth();
 
   const handleSubscribe = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     if (isSubscribed) {
       setShowDropdown(!showDropdown);
       return;
@@ -23,6 +32,7 @@ const SubscribeFeed = ({ channel }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ userId: user.uid }),
       });
 
       if (response.ok) {
@@ -38,12 +48,18 @@ const SubscribeFeed = ({ channel }) => {
   };
 
   const handleUnsubscribe = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${channel._id}/unsubscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ userId: user.uid }),
       });
 
       if (response.ok) {

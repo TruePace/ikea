@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import Link from 'next/link'
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../firebase/ClientApp';
 import { FcGoogle } from 'react-icons/fc';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../AuthContext';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -15,6 +16,14 @@ const LogIn = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+          router.push('/');
+        }
+      }, [user, router]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,6 +31,7 @@ const LogIn = () => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             await saveUserToDatabase(userCredential.user);
+            router.push('/'); // Redirect to home page after successful login
         } catch (error) {
             console.error('Error signing in with password and email', error);
             setError('Invalid email or password. Please try again.');
@@ -38,6 +48,7 @@ const LogIn = () => {
             console.log('Sign in successful', userCredential);
             await saveUserToDatabase(userCredential.user);
             console.log('User saved to database');
+            router.push('/'); // Redirect to home page after successful login
         } catch (error) {
             console.error('Error signing in with Google', error);
             setError('Error signing in with Google. Please try again.');
