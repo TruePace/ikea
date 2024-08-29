@@ -3,13 +3,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBs5Cit5VhbKKLns4zrkfGm4AmFrpnXELE",
-    authDomain: "trupace-user-username-password.firebaseapp.com",
-    projectId: "trupace-user-username-password",
-    storageBucket: "trupace-user-username-password.appspot.com",
-    messagingSenderId: "157754909516",
-    appId: "1:157754909516:web:bea7e2577bbfd09cb5e5e9",
-    measurementId: "G-LWS2XY407D"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

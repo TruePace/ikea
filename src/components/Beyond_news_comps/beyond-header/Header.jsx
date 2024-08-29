@@ -12,12 +12,15 @@ const Header = () => {
     const handleLogout = async () => {
         try {
             await logout();
-            // Redirect to the home page after successful logout
             router.push('/');
         } catch (error) {
             console.error('Error during logout:', error);
-            // Optionally, you can show an error message to the user
         }
+    };
+
+    // Function to get the first letter of the user's name
+    const getInitial = (name) => {
+        return name ? name.charAt(0).toUpperCase() : 'U';
     };
 
     return (
@@ -35,11 +38,11 @@ const Header = () => {
                         <div className="dropdown dropdown-end">
                             <div tabIndex={0} role="button" className="avatar placeholder">
                                 <div className="bg-red-600 text-neutral-content rounded-full w-9">
-                                    <span className="text-sm">TP</span>
+                                    <span className="text-sm">{getInitial(user.displayName )}</span>
                                 </div>
                             </div>
                             <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                                <li><a>My Profile</a></li>
+                                <li><a>{user.displayName || 'My Profile'}</a></li>
                                 <li><a>Settings</a></li>
                                 <li><a onClick={handleLogout}>Logout</a></li>
                             </ul>

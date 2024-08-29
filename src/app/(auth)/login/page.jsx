@@ -41,20 +41,44 @@ const LogIn = () => {
     const handleGoogleSignIn = async () => {
         setError(''); // Clear any existing errors
         try {
-            console.log('Starting Google Sign In');
-            const provider = new GoogleAuthProvider();
-            console.log('Provider created');
-            const userCredential = await signInWithPopup(auth, provider);
-            console.log('Sign in successful', userCredential);
-            await saveUserToDatabase(userCredential.user);
-            console.log('User saved to database');
-            router.push('/'); // Redirect to home page after successful login
+          console.log('Starting Google Sign In');
+          const provider = new GoogleAuthProvider();
+          provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+          provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+          console.log('Provider created');
+          
+          const result = await signInWithPopup(auth, provider);
+          console.log('Sign in successful', result);
+          
+          // Get the user's ID token
+          const idToken = await result.user.getIdToken();
+          
+          // Send the ID token to your backend
+          const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              uid: result.user.uid,
+              email: result.user.email,
+              displayName: result.user.displayName,
+              photoURL: result.user.photoURL,
+            }),
+          });
+      
+          if (!response.ok) {
+            throw new Error('Failed to save user data to backend');
+          }
+      
+          console.log('User saved to database');
+          router.push('/'); // Redirect to home page after successful login
         } catch (error) {
-            console.error('Error signing in with Google', error);
-            setError('Error signing in with Google. Please try again.');
+          console.error('Error signing in with Google', error);
+          setError('Error signing in with Google. Please try again.');
         }
-    };
-
+      };
     const saveUserToDatabase = async (user) => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/users/login`, {
@@ -71,7 +95,7 @@ const LogIn = () => {
             });
 
             if (response.ok) {
-                router.push('/dashboard');
+                router.push('/');
             } else {
                 console.error('Error saving user data to backend');
                 setError('An error occurred. Please try again.');

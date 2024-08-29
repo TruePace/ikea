@@ -6,6 +6,9 @@ import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } f
 import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
 import { auth } from '../firebase/ClientApp';
+import { useRouter } from 'next/navigation';
+import StatusMessage from './StatusMessage';
+import { getIdToken } from 'firebase/auth';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 
@@ -18,6 +21,9 @@ const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState('');
+    const [registrationStatus, setRegistrationStatus] = useState(null);
+    const [error, setError] = useState('');
+    const router = useRouter()
 
     const validatePassword = (password) => {
         const minLength = 12;
@@ -53,52 +59,90 @@ const Register = () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            console.log('User registered:', user);
             await sendUserDataToBackend(user);
-        } catch (error) {
+            console.log('User registered:', user);
+        
+            
+            setRegistrationStatus('success');
+            setTimeout(() => {
+                router.push('/');
+            }, 3000); // Redirect after 3 seconds
+            
+        } 
+        catch (error) {
             console.error('Error registering user:', error);
-            alert(error.message);
+            setRegistrationStatus('error');
         }
     };
 
 
 
     const handleGoogleSignIn = async () => {
-        const provider = new GoogleAuthProvider();
+        setError(''); // Clear any existing errors
         try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-            
-            // Send user data to your backend
-            await sendUserDataToBackend(user);
+          console.log('Starting Google Sign In');
+          const provider = new GoogleAuthProvider();
+          provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+          provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+          console.log('Provider created');
+          
+          const result = await signInWithPopup(auth, provider);
+          console.log('Sign in successful', result);
+          
+          // Get the user's ID token
+          const idToken = await result.user.getIdToken();
+          
+          // Send the ID token to your backend
+          const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              uid: result.user.uid,
+              email: result.user.email,
+              displayName: result.user.displayName,
+              photoURL: result.user.photoURL,
+            }),
+          });
+      
+          if (!response.ok) {
+            throw new Error('Failed to save user data to backend');
+          }
+      
+          console.log('User saved to database');
+          router.push('/'); // Redirect to home page after successful login
         } catch (error) {
-            console.error('Error signing in with Google:', error);
-            alert(error.message);
+          console.error('Error signing in with Google', error);
+          setError('Error signing in with Google. Please try again.');
         }
-    };
-
+      };
     const sendUserDataToBackend = async (user) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/users/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL, // Add this line
-                }),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to save user data to backend');
-            }
-            console.log('User data saved to backend');
+          const idToken = await getIdToken(user);
+          const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || email.split('@')[0],
+              photoURL: user.photoURL,
+            }),
+          });
+          if (!response.ok) {
+            throw new Error('Failed to save user data to backend');
+          }
+          console.log('User data saved to backend');
         } catch (error) {
-            console.error('Error saving user data to backend:', error);
+          console.error('Error saving user data to backend:', error);
+          throw error;
         }
-    };
+      };
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -115,6 +159,7 @@ const Register = () => {
                         Create your account
                     </h2>
                 </div>
+                <StatusMessage status={registrationStatus} />
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <input type="hidden" name="remember" value="true" />
                     <div className="rounded-md shadow-sm -space-y-px">
