@@ -59,15 +59,33 @@ const Register = () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            await sendUserDataToBackend(user);
-            console.log('User registered:', user);
-        
+            const idToken = await user.getIdToken();
+            
+            const response = await fetch(`${API_BASE_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || email.split('@')[0],
+                    photoURL: user.photoURL,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to save user data to backend');
+            }
+    
+            const userData = await response.json();
+            console.log('User registered and saved:', userData);
             
             setRegistrationStatus('success');
             setTimeout(() => {
                 router.push('/');
-            }, 3000); // Redirect after 3 seconds
-            
+            }, 3000);
         } 
         catch (error) {
             console.error('Error registering user:', error);
@@ -75,74 +93,50 @@ const Register = () => {
         }
     };
 
-
-
     const handleGoogleSignIn = async () => {
-        setError(''); // Clear any existing errors
+        setError('');
         try {
-          console.log('Starting Google Sign In');
-          const provider = new GoogleAuthProvider();
-          provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-          provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-          console.log('Provider created');
-          
-          const result = await signInWithPopup(auth, provider);
-          console.log('Sign in successful', result);
-          
-          // Get the user's ID token
-          const idToken = await result.user.getIdToken();
-          
-          // Send the ID token to your backend
-          const response = await fetch(`${API_BASE_URL}/api/users/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${idToken}`
-            },
-            body: JSON.stringify({
-              uid: result.user.uid,
-              email: result.user.email,
-              displayName: result.user.displayName,
-              photoURL: result.user.photoURL,
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error('Failed to save user data to backend');
-          }
-      
-          console.log('User saved to database');
-          router.push('/'); // Redirect to home page after successful login
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            const idToken = await user.getIdToken();
+            
+            console.log('Google Sign-In successful, sending data to backend:', {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL
+            });
+    
+            const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                }),
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Backend error:', errorData);
+                throw new Error(`Failed to save user data to backend: ${errorData.message}`);
+            }
+    
+            const userData = await response.json();
+            console.log('User signed in and saved:', userData);
+            
+            router.push('/');
         } catch (error) {
-          console.error('Error signing in with Google', error);
-          setError('Error signing in with Google. Please try again.');
+            console.error('Error signing in with Google:', error);
+            setError(`Error signing in with Google: ${error.message}`);
         }
-      };
-    const sendUserDataToBackend = async (user) => {
-        try {
-          const idToken = await getIdToken(user);
-          const response = await fetch(`${API_BASE_URL}/api/users/register`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${idToken}`
-            },
-            body: JSON.stringify({
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName || email.split('@')[0],
-              photoURL: user.photoURL,
-            }),
-          });
-          if (!response.ok) {
-            throw new Error('Failed to save user data to backend');
-          }
-          console.log('User data saved to backend');
-        } catch (error) {
-          console.error('Error saving user data to backend:', error);
-          throw error;
-        }
-      };
+    };
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
