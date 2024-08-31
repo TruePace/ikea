@@ -1,17 +1,29 @@
+'use client'
 import Image from "next/image";
-
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FaRegComment } from "react-icons/fa";
 import { BiLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
-
+import { useAuth } from "@/app/(auth)/AuthContext";
 
 const BeThumbVideo = () => {
+    const { user } = useAuth();
+    const router = useRouter();
+
+    const handleClick = () => {
+        if (!user) {
+            router.push('/login');
+        } else {
+            // Navigate to the video page (replace with actual route)
+            router.push('/video-page');
+        }
+    };
+
     return (
         <>
- 
-
-        <div class="w-full    py-3">{/* bg-yellow-300 was used*/}
+        <div onClick={handleClick} className="w-full  py-3 cursor-pointer">{/* bg-yellow-300*/}
 <div class=' border-black relative h-56 '>{/* border-2 was used */}
 <Image src='/rubber.jpg'  fill alt="Picture of the author"  className="object-cover" />
 </div>
