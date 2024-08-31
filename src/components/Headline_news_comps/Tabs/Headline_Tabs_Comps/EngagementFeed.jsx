@@ -8,6 +8,7 @@ import { RiScreenshot2Line } from "react-icons/ri";
 import CommentSection from "./SubFeedComps/CommentSection";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { setCommentCount } from '../../../../Redux/Slices/CommentCountSlice';
+import { auth } from "@/app/(auth)/firebase/ClientApp";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,18 +20,24 @@ const EngagementFeed = ({ content }) => {
 
   const fetchCommentCount = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}/count`);
+      let token = null;
+      if (user) {
+        token = await auth.currentUser.getIdToken();
+      }
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}/count`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
       if (!response.ok) throw new Error('Failed to fetch comment count');
       const data = await response.json();
       dispatch(setCommentCount({ contentId: content._id, count: data.commentCount }));
     } catch (error) {
       console.error("Error fetching comment count:", error);
     }
-  }, [content._id, dispatch]);
+  }, [content._id, dispatch, user]);
 
   useEffect(() => {
     fetchCommentCount();
-  }, [fetchCommentCount]);
+  }, [fetchCommentCount, user]); // Add user to the dependency array
 
   const handleCommentClick = (e) => {
     e.preventDefault();
