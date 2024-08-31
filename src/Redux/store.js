@@ -5,16 +5,18 @@ import storage from 'redux-persist/lib/storage';
 
 import likeDislikeReducer from './Slices/LikeDislikeSlice';
 import viewedContentReducer from './Slices/ViewContentSlice';
+import commentCountReducer from './Slices/CommentCountSlice';
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['viewedContent', 'likeDislike'], // Persist only these reducers
+  whitelist: ['viewedContent', 'likeDislike', 'commentCount'],
 };
 
 const rootReducer = combineReducers({
   viewedContent: viewedContentReducer,
   likeDislike: likeDislikeReducer,
+  commentCount: commentCountReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

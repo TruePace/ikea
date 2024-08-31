@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import Link from "next/link";
 import LikeDislikeButton from "./SubFeedComps/LikeDislikeButton";
 import { FaRegComment } from "react-icons/fa";
@@ -6,30 +7,26 @@ import { IoIosShareAlt } from "react-icons/io";
 import { RiScreenshot2Line } from "react-icons/ri";
 import CommentSection from "./SubFeedComps/CommentSection";
 import { useAuth } from "@/app/(auth)/AuthContext";
+import { setCommentCount } from '../../../../Redux/Slices/CommentCountSlice';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EngagementFeed = ({ content }) => {
   const [isCommentOpen, setIsCommentOpen] = useState(false);
-  const [commentCount, setCommentCount] = useState(0);
   const { user } = useAuth();
+  const dispatch = useDispatch();
+  const commentCount = useSelector(state => state.commentCount[content._id] || 0);
 
   const fetchCommentCount = useCallback(async () => {
-    if (!user) return;
     try {
-      const token = await user.getIdToken();
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}/count`);
       if (!response.ok) throw new Error('Failed to fetch comment count');
       const data = await response.json();
-      setCommentCount(data.commentCount);
+      dispatch(setCommentCount({ contentId: content._id, count: data.commentCount }));
     } catch (error) {
       console.error("Error fetching comment count:", error);
     }
-  }, [user, content._id]);
+  }, [content._id, dispatch]);
 
   useEffect(() => {
     fetchCommentCount();
@@ -41,7 +38,7 @@ const EngagementFeed = ({ content }) => {
   };
 
   const handleCommentAdded = (newCount) => {
-    setCommentCount(newCount);
+    dispatch(setCommentCount({ contentId: content._id, count: newCount }));
   };
 
   return (
