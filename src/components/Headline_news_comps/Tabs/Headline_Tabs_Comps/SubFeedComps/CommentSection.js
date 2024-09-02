@@ -38,7 +38,8 @@ const CommentItem = ({ comment, onReply, onLike, currentUsername }) => (
     const [newComment, setNewComment] = useState('');
     const [replyTo, setReplyTo] = useState(null);
     const { user } = useAuth();
-  
+    
+  console.log('user :', user)
     useEffect(() => {
       if (isOpen) {
         fetchComments();

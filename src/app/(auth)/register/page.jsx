@@ -7,8 +7,8 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
 import { auth } from '../firebase/ClientApp';
 import { useRouter } from 'next/navigation';
-import StatusMessage from './StatusMessage';
 import { getIdToken } from 'firebase/auth';
+import StatusMessage from './StatusMessage';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 
@@ -23,6 +23,7 @@ const Register = () => {
     const [passwordStrength, setPasswordStrength] = useState('');
     const [registrationStatus, setRegistrationStatus] = useState(null);
     const [error, setError] = useState('');
+    const [username, setUsername] = useState('');
     const router = useRouter()
 
     const validatePassword = (password) => {
@@ -72,13 +73,15 @@ const Register = () => {
                     email: user.email,
                     displayName: user.displayName || email.split('@')[0],
                     photoURL: user.photoURL,
+                    username: username
                 }),
             });
-    
+
             if (!response.ok) {
-                throw new Error('Failed to save user data to backend');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to save user data to backend');
             }
-    
+
             const userData = await response.json();
             console.log('User registered and saved:', userData);
             
@@ -90,6 +93,7 @@ const Register = () => {
         catch (error) {
             console.error('Error registering user:', error);
             setRegistrationStatus('error');
+            setError(error.message);
         }
     };
 
@@ -171,6 +175,22 @@ const Register = () => {
                                 placeholder="Email address"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="username" className="sr-only">
+                                Username
+                            </label>
+                            <input
+                                id="username"
+                                name="username"
+                                type="text"
+                                autoComplete="username"
+                                required
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
                         <div className="relative">

@@ -46,14 +46,7 @@ const LogIn = () => {
             const user = result.user;
             const idToken = await user.getIdToken();
             
-            console.log('Google Sign-In successful, sending data to backend:', {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-            });
-    
-            const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,17 +62,16 @@ const LogIn = () => {
     
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Backend error:', errorData);
-                throw new Error(`Failed to save user data to backend: ${errorData.message}`);
+                throw new Error(errorData.message || 'Failed to sign in with Google');
             }
     
             const userData = await response.json();
-            console.log('User signed in and saved:', userData);
+            console.log('User signed in with Google:', userData);
             
             router.push('/');
         } catch (error) {
             console.error('Error signing in with Google:', error);
-            setError(`Error signing in with Google: ${error.message}`);
+            setError(error.message);
         }
     };
 
