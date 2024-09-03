@@ -71,7 +71,7 @@ const Register = () => {
                 body: JSON.stringify({
                     uid: user.uid,
                     email: user.email,
-                    displayName: user.displayName || email.split('@')[0],
+                    displayName: username, // Use the username as displayName
                     photoURL: user.photoURL,
                     username: username
                 }),

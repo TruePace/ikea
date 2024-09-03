@@ -39,9 +39,11 @@ export const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     });
-
+  
     return () => unsubscribe();
   }, []);
+
+  
 
   const logout = async () => {
     try {

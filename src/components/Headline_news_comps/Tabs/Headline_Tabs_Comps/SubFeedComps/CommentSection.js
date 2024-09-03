@@ -126,6 +126,7 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
           contentId,
           text: newComment,
           replyTo,
+          username: user.username // Use the username from the user object
         }),
       });
       if (!response.ok) throw new Error('Failed to post comment');
