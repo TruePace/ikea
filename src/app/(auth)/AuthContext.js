@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fetch full user details from your backend
         try {
           const response = await fetch(`${API_BASE_URL}/api/users/details`, {
             method: 'POST',
@@ -23,7 +22,10 @@ export const AuthProvider = ({ children }) => {
           });
           if (response.ok) {
             const userData = await response.json();
-            setUser(userData.user);
+            setUser({
+              ...userData.user,
+              username: userData.user.username || userData.user.displayName || userData.user.email.split('@')[0]
+            });
           } else {
             console.error('Failed to fetch user details');
             setUser(firebaseUser);
