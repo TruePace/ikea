@@ -2,17 +2,19 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { FaRegComment } from "react-icons/fa";
+import { FaRegComment, FaPlay } from "react-icons/fa";
 import { BiLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const BeThumbVideo = () => {
     const { user } = useAuth();
     const router = useRouter();
     const [videos, setVideos] = useState([]);
+    const [clickedId, setClickedId] = useState(null);
 
     useEffect(() => {
         const fetchVideos = async () => {
@@ -33,19 +35,31 @@ const BeThumbVideo = () => {
     }, []);
 
     const handleClick = (videoId) => {
-        if (!user) {
-            router.push('/login');
-        } else {
-            router.push(`/beyond_news/nestedvideo/${videoId}`);
-        }
+        setClickedId(videoId);
+        setTimeout(() => {
+            if (!user) {
+                router.push('/login');
+            } else {
+                router.push(`/beyond_news/nestedvideo/${videoId}`);
+            }
+        }, 100); // Delay navigation to show the click effect
     };
 
     return (
         <>
             {videos.map((video) => (
-                <div key={video._id} onClick={() => handleClick(video._id)} className="w-full py-3 cursor-pointer">
+                <div 
+                    key={video._id} 
+                    onClick={() => handleClick(video._id)} 
+                    className={`w-full py-3 cursor-pointer transition-all duration-150 ${
+                        clickedId === video._id ? 'scale-95 opacity-80' : ''
+                    }`}
+                >
                     <div className='relative h-56'>
                         <Image src={video.thumbnailUrl} fill alt={video.title} className="object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                            <FaPlay className="text-white text-4xl" />
+                        </div>
                     </div>
                     <div className='border border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>
                         <div className="avatar">

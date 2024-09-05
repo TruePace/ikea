@@ -1,8 +1,9 @@
 'use client';
+import Header from '@/components/Beyond_news_comps/beyond-header/Header';
 // import { store,persistor } from "@/Redux/store";
 // import { Provider } from "react-redux";
 // import { PersistGate } from 'redux-persist/integration/react';
-import Header from '@/components/TruePacerProfileComp/Header/Header/Header';
+
 import ProfileContent from '@/components/TruePacerProfileComp/Header/ProfileContent/ProfileContent';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';

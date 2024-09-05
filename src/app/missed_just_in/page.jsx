@@ -1,5 +1,6 @@
 'use client'
-import HeadlineHeader from "@/components/Headline_news_comps/header/HeadlineHeader";
+
+import Header from "@/components/Beyond_news_comps/beyond-header/Header";
 import MissedJustInContainer from "@/components/Missed_just_in_comps/MissedJustInContainer";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 // export const metadata = {
@@ -13,7 +14,7 @@ const page = () => {
         <ProtectedRoute>
 
 
-        <HeadlineHeader/>
+       <Header/>
        <MissedJustInContainer/>
         
        </ProtectedRoute>

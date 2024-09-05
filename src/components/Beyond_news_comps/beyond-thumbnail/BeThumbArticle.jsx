@@ -13,6 +13,7 @@ const BeThumbArticle = () => {
     const { user } = useAuth();
     const router = useRouter();
     const [articles, setArticles] = useState([]);
+    const [clickedId, setClickedId] = useState(null);
 
     useEffect(() => {
         const fetchArticles = async () => {
@@ -33,17 +34,26 @@ const BeThumbArticle = () => {
     }, []);
 
     const handleClick = (articleId) => {
-        if (!user) {
-            router.push('/login');
-        } else {
-            router.push(`/beyond_news/nestedarticle/${articleId}`);
-        }
+        setClickedId(articleId);
+        setTimeout(() => {
+            if (!user) {
+                router.push('/login');
+            } else {
+                router.push(`/beyond_news/nestedarticle/${articleId}`);
+            }
+        }, 100); // Delay navigation to show the click effect
     };
 
     return (
         <>
             {articles.map((article) => (
-                <div key={article._id} onClick={() => handleClick(article._id)} className="w-full px-3 mb-20 cursor-pointer">
+                <div 
+                    key={article._id} 
+                    onClick={() => handleClick(article._id)} 
+                    className={`w-full px-3 mb-20 cursor-pointer transition-all duration-150 ${
+                        clickedId === article._id ? 'scale-95 opacity-80' : ''
+                    }`}
+                >
                     <div className="border-gray-200 gap-3 flex items-center">
                         <div className="avatar">
                             <div className="w-11 rounded-full">
@@ -56,7 +66,7 @@ const BeThumbArticle = () => {
 
                     <p className="text-md text-gray-600 mt-2">{article.content.substring(0, 200)}...</p>
 
-                    <div className="relative h-64 mt-2">
+                    <div className="relative h-60 mt-2">
                         <Image src={article.imageUrl} fill alt={article.title} className="rounded-md object-cover"/>
                     </div>
 
