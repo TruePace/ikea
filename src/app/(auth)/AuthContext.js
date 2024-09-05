@@ -24,15 +24,16 @@ export const AuthProvider = ({ children }) => {
             const userData = await response.json();
             setUser({
               ...userData.user,
-              username: userData.user.username || userData.user.displayName || userData.user.email.split('@')[0]
+              username: userData.user.username || userData.user.displayName || userData.user.email.split('@')[0],
+              uid: firebaseUser.uid
             });
           } else {
             console.error('Failed to fetch user details');
-            setUser(firebaseUser);
+            setUser({ ...firebaseUser, uid: firebaseUser.uid });
           }
         } catch (error) {
           console.error('Error fetching user details:', error);
-          setUser(firebaseUser);
+          setUser({ ...firebaseUser, uid: firebaseUser.uid });
         }
       } else {
         setUser(null);
@@ -42,7 +43,6 @@ export const AuthProvider = ({ children }) => {
   
     return () => unsubscribe();
   }, []);
-
   
 
   const logout = async () => {

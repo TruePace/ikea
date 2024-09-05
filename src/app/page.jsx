@@ -1,7 +1,7 @@
 'use client'
-import { store, persistor } from "../Redux/store"
-import { Provider } from "react-redux";
-import { PersistGate } from 'redux-persist/integration/react';
+// import { store, persistor } from "../Redux/store"
+// import { Provider } from "react-redux";
+// import { PersistGate } from 'redux-persist/integration/react';
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useState, useEffect } from "react";
@@ -73,8 +73,8 @@ const Page = () => {
 
   return (
     <>
-      <Provider store={store}>
-        <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}>
+      {/* <Provider store={store}>
+        <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}> */}
           <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {channels.map((channel) => (
               <div key={channel._id} className="h-screen snap-start">
@@ -87,8 +87,8 @@ const Page = () => {
             ))}
           </div>
           <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-        </PersistGate>
-      </Provider>
+        {/* </PersistGate>
+      </Provider> */}
     </>
   );
 }

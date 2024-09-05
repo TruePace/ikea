@@ -4,25 +4,25 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ToggleSearchBar from '../../../SearchBar/ToggleSearchBar';
 import { useAuth } from '@/app/(auth)/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { setSubscription } from '@/Redux/Slices/SubscriptionSlice';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const SubscribeFeed = ({ channel }) => {
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscriberCount, setSubscriberCount] = useState(channel.subscriberCount || 0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState(channel.subscriberCount || 0);
   const dropdownRef = useRef(null);
   const router = useRouter();
   const { user } = useAuth();
+  const dispatch = useDispatch();
+  const isSubscribed = useSelector(state => 
+    state.subscriptions[user?.uid]?.[channel._id] || false
+  );
 
   const handleSubscribe = async () => {
     if (!user) {
       router.push('/login');
-      return;
-    }
-
-    if (isSubscribed) {
-      setShowDropdown(!showDropdown);
       return;
     }
 
@@ -37,7 +37,7 @@ const SubscribeFeed = ({ channel }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setIsSubscribed(true);
+        dispatch(setSubscription({ userId: user.uid, channelId: channel._id, isSubscribed: true }));
         setSubscriberCount(data.subscriberCount);
       } else {
         console.error('Failed to subscribe');
@@ -64,7 +64,7 @@ const SubscribeFeed = ({ channel }) => {
 
       if (response.ok) {
         const data = await response.json();
-        setIsSubscribed(false);
+        dispatch(setSubscription({ userId: user.uid, channelId: channel._id, isSubscribed: false }));
         setSubscriberCount(data.subscriberCount);
         setShowDropdown(false);
       } else {
@@ -100,32 +100,41 @@ const SubscribeFeed = ({ channel }) => {
           <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p>
         </Link>
         <div className="relative" ref={dropdownRef}>
-          <button
-            className={`btn btn-sm font-bold ${isSubscribed ? 'bg-gray-300' : 'bg-neutral-content'} flex items-center`}
-            onClick={handleSubscribe}
-          >
-            {isSubscribed ? 'Subscribed' : 'Subscribe'}
-            {isSubscribed && (
-              <svg
-                className="w-4 h-4 ml-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            )}
-          </button>
-          {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+          {!isSubscribed ? (
+            <button
+              className="btn btn-sm font-bold bg-neutral-content"
+              onClick={handleSubscribe}
+            >
+              Subscribe
+            </button>
+          ) : (
+            <>
               <button
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                onClick={handleUnsubscribe}
+                className="btn btn-sm font-bold bg-gray-300 flex items-center"
+                onClick={() => setShowDropdown(!showDropdown)}
               >
-                Unsubscribe
+                <span>Subscribed</span>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-            </div>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={handleUnsubscribe}
+                  >
+                    Unsubscribe
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
         <ToggleSearchBar />

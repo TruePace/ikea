@@ -1,5 +1,7 @@
 'use client';
-
+// import { store,persistor } from "@/Redux/store";
+// import { Provider } from "react-redux";
+// import { PersistGate } from 'redux-persist/integration/react';
 import Header from '@/components/TruePacerProfileComp/Header/Header/Header';
 import ProfileContent from '@/components/TruePacerProfileComp/Header/ProfileContent/ProfileContent';
 import { useParams } from 'next/navigation';
@@ -34,11 +36,14 @@ const TruepaceProfile = () => {
 
   return (
     <>
+ {/* <Provider store={store}>
+ <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}> */}
     <Header/>
     <ProfileContent profile={profile}/>
       Truepace profile for ID: {id}
       {/* Render profile data here */}
-
+      {/* </PersistGate>
+      </Provider> */}
 
     </>
   );
