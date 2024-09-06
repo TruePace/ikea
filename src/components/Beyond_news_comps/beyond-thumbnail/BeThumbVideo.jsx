@@ -22,6 +22,7 @@ const BeThumbVideo = () => {
                 const response = await fetch(`${API_BASE_URL}/api/BeyondVideo`);
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Fetched videos:', data); // Add this line
                     setVideos(data);
                 } else {
                     console.error('Failed to fetch videos');
@@ -30,7 +31,7 @@ const BeThumbVideo = () => {
                 console.error('Error fetching videos:', error);
             }
         };
-
+    
         fetchVideos();
     }, []);
 
@@ -47,10 +48,10 @@ const BeThumbVideo = () => {
 
     return (
         <>
-            {videos.map((video) => (
-                <div 
-                    key={video._id} 
-                    onClick={() => handleClick(video._id)} 
+              {videos.map((video) => (
+                <div
+                    key={video._id}
+                    onClick={() => handleClick(video._id)}
                     className={`w-full py-3 cursor-pointer transition-all duration-150 ${
                         clickedId === video._id ? 'scale-95 opacity-80' : ''
                     }`}
@@ -64,13 +65,19 @@ const BeThumbVideo = () => {
                     <div className='border border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>
                         <div className="avatar">
                             <div className="w-full h-10 rounded-full">
-                                <Image src={video.truepacerUrl} alt="Avatar" width={40} height={40} className="rounded-full" />
+                            <Image 
+  src={video.channelId?.picture || '/NopicAvatar.png'} 
+  alt={video.channelId?.name || 'Channel'} 
+  width={40} 
+  height={40} 
+  className="rounded-full" 
+/>
                             </div>
                         </div>
                         <div className='w-4/5 font-sans'>
                             <p className='font-semibold text-lg'>{video.title}</p>
                             <div className="flex justify-between text-sm mt-2 text-gray-400">
-                                <p className='flex'><LuDot size='1.2em'/>{video.author}</p>
+                                <p className='flex'><LuDot size='1.2em'/>{video.channelId?.name|| 'not show'}</p>
                                 <p className='flex'><LuDot size='1.2em'/>{new Date(video.createdAt).toLocaleString()}</p>
                             </div>
                             <div className="flex justify-between text-sm mt-2 text-gray-400">
