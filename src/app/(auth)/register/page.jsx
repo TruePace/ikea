@@ -9,6 +9,7 @@ import { auth } from '../firebase/ClientApp';
 import { useRouter } from 'next/navigation';
 import { getIdToken } from 'firebase/auth';
 import StatusMessage from './StatusMessage';
+import { useAuth } from '../AuthContext';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 
@@ -24,7 +25,9 @@ const Register = () => {
     const [registrationStatus, setRegistrationStatus] = useState(null);
     const [error, setError] = useState('');
     const [username, setUsername] = useState('');
-    const router = useRouter()
+    const router = useRouter();
+    const { fetchUserDetails } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
 
     const validatePassword = (password) => {
         const minLength = 12;
@@ -49,6 +52,8 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+  setIsLoading(true);
         if (passwordStrength !== 'Strong password') {
             alert('Please ensure your password meets the strength requirements.');
             return;
@@ -63,42 +68,39 @@ const Register = () => {
             const idToken = await user.getIdToken();
             
             const response = await fetch(`${API_BASE_URL}/api/users/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}`
-                },
-                body: JSON.stringify({
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: username, // Use the username as displayName
-                    photoURL: user.photoURL,
-                    username: username
-                }),
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+              },
+              body: JSON.stringify({
+                uid: user.uid,
+                email: user.email,
+                displayName: username,
+                photoURL: user.photoURL,
+                username: username
+              }),
             });
-
+      
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to save user data to backend');
+              throw new Error('Failed to save user data to backend');
             }
-
-            const userData = await response.json();
-            console.log('User registered and saved:', userData);
+      
+            await fetchUserDetails(user);
             
-            setRegistrationStatus('success');
-            setTimeout(() => {
-                router.push('/');
-            }, 3000);
-        } 
-        catch (error) {
+            router.push('/');
+          } catch (error) {
             console.error('Error registering user:', error);
-            setRegistrationStatus('error');
             setError(error.message);
+          }
+          finally {
+            setIsLoading(false);
         }
     };
 
     const handleGoogleSignIn = async () => {
         setError('');
+        setIsLoading(true);
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
@@ -140,7 +142,11 @@ const Register = () => {
             console.error('Error signing in with Google:', error);
             setError(`Error signing in with Google: ${error.message}`);
         }
+        finally {
+            setIsLoading(false);
+        }
     };
+
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
@@ -256,8 +262,19 @@ const Register = () => {
                         <button
                             type="submit"
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            disabled={isLoading}
                         >
-                            Register
+                            {isLoading ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </>
+                            ) : (
+                                'Register'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -273,12 +290,13 @@ const Register = () => {
                     </div>
 
                     <div className="mt-6">
-                        <button
-                          onClick={handleGoogleSignIn}
+                    <button
+                            onClick={handleGoogleSignIn}
                             className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            disabled={isLoading}
                         >
                             <FcGoogle className="h-5 w-5 mr-2" />
-                            Continue with Google
+                            {isLoading ? 'Processing...' : 'Continue with Google'}
                         </button>
                     </div>
                 </div>

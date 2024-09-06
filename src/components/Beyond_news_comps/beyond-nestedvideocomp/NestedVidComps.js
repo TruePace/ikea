@@ -29,14 +29,34 @@ const NestedVidComps = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setVideo(data);
+                    // Fetch channel data
+                    const channelResponse = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${data.channelId._id}`);
+                    if (channelResponse.ok) {
+                        const channelData = await channelResponse.json();
+                        setVideo(prevVideo => ({
+                            ...prevVideo,
+                            channelId: {
+                                ...prevVideo.channelId,
+                                ...channelData
+                            }
+                        }));
+                    }
                 } else {
                     console.error('Failed to fetch video');
                 }
+                if (user) {
+                    dispatch(setSubscription({ 
+                        userId: user.uid, 
+                        channelId: channelData._id, 
+                        isSubscribed: user.subscriptions.includes(channelData._id)
+                    }));
+                }
+
             } catch (error) {
                 console.error('Error fetching video:', error);
             }
         };
-
+    
         if (id) {
             fetchVideo();
         }
@@ -119,7 +139,7 @@ const NestedVidComps = () => {
                     Your browser does not support the video tag.
                 </video>
             </div >
-            <div className='  py-4 px-4'>{/*bg-green-300 */}
+            <div className='  py-4 pl-4 pr-6'>{/*bg-green-300 */}
             <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
             <div className="flex items-center mb-4">
     <div className="avatar mr-4">
