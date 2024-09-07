@@ -9,6 +9,9 @@ import { useAuth } from '@/app/(auth)/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
+import CommentSection from '../CommentSection';
+import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -18,11 +21,14 @@ const NestedVidComps = () => {
     const [video, setVideo] = useState(null);
     const dispatch = useDispatch();
     const { user } = useAuth();
+    const [isCommentOpen, setIsCommentOpen] = useState(false);
     const isSubscribed = useSelector(state => 
         state.subscriptions[user?.uid]?.[video?.channelId._id] || false
     );
+    const commentCount = useSelector(state => state.commentCount[id] || 0);
 
-    useEffect(() => {
+
+     useEffect(() => {
         const fetchVideo = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}`);
@@ -41,6 +47,13 @@ const NestedVidComps = () => {
                             }
                         }));
                     }
+                    
+                    // Fetch the current comment count
+                    const commentCountResponse = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${id}/count`);
+                    if (commentCountResponse.ok) {
+                        const { commentCount: currentCommentCount } = await commentCountResponse.json();
+                        dispatch(setCommentCount({ contentId: id, count: currentCommentCount }));
+                    }
                 } else {
                     console.error('Failed to fetch video');
                 }
@@ -51,7 +64,6 @@ const NestedVidComps = () => {
                         isSubscribed: user.subscriptions.includes(channelData._id)
                     }));
                 }
-
             } catch (error) {
                 console.error('Error fetching video:', error);
             }
@@ -60,7 +72,7 @@ const NestedVidComps = () => {
         if (id) {
             fetchVideo();
         }
-    }, [id]);
+    }, [id, dispatch, user]);
 
     const handleSubscribe = async () => {
         if (!user) {
@@ -124,8 +136,36 @@ const NestedVidComps = () => {
         }
     };
 
+    const handleCommentClick = () => {
+        setIsCommentOpen(true);
+    };
 
+    const handleCommentClose = () => {
+        setIsCommentOpen(false);
+    };
 
+    const handleCommentAdded = async (newCommentCount) => {
+        setVideo(prevVideo => ({
+          ...prevVideo,
+          commentsCount: newCommentCount
+        }));
+    
+        dispatch(setCommentCount({ contentId: video._id, count: newCommentCount }));
+    
+        try {
+          const token = await getIdToken();
+          await fetch(`${API_BASE_URL}/api/BeyondVideo/${video._id}/commentCount`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ commentCount: newCommentCount })
+          });
+        } catch (error) {
+          console.error('Error updating comment count:', error);
+        }
+      };
 
     if (!video) {
         return <div>Loading...</div>;
@@ -172,12 +212,20 @@ const NestedVidComps = () => {
             <div className="flex justify-between text-sm text-gray-500 mb-4">
                 <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                 <div className="flex space-x-4">
-                    <span className="flex items-center"><FaRegComment className="mr-1" /> {video.commentsCount}</span>
+                <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
+                <FaRegComment className="mr-1" /> {commentCount}
+                        </span>
                     <span className="flex items-center"><BiLike className="mr-1" /> {video.likesCount}</span>
                     <span className="flex items-center"><IoEyeOutline className="mr-1" /> {video.viewsCount}</span>
                 </div>
             </div>
             </div>
+            <CommentSection 
+                isOpen={isCommentOpen} 
+                onClose={handleCommentClose} 
+                contentId={video._id}
+                onCommentAdded={handleCommentAdded}
+            />
         </div>
         //   {/* Add more components here for comments, related videos, etc. */}
     );
