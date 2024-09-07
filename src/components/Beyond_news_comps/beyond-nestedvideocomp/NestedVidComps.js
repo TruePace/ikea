@@ -48,31 +48,32 @@ const NestedVidComps = () => {
                         }));
                     }
                     
-                    // Fetch the current comment count
-                    const commentCountResponse = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${id}/count`);
-                    if (commentCountResponse.ok) {
-                        const { commentCount: currentCommentCount } = await commentCountResponse.json();
-                        dispatch(setCommentCount({ contentId: id, count: currentCommentCount }));
-                    }
-                } else {
-                    console.error('Failed to fetch video');
-                }
-                if (user) {
-                    dispatch(setSubscription({ 
-                        userId: user.uid, 
-                        channelId: channelData._id, 
-                        isSubscribed: user.subscriptions.includes(channelData._id)
-                    }));
-                }
-            } catch (error) {
-                console.error('Error fetching video:', error);
-            }
-        };
-    
-        if (id) {
-            fetchVideo();
-        }
-    }, [id, dispatch, user]);
+                      // Fetch the current comment count
+                      const commentCountResponse = await fetch(`${API_BASE_URL}/api/BeyondVideo/Comment/${id}/count`);
+                      if (commentCountResponse.ok) {
+                          const { commentCount: currentCommentCount } = await commentCountResponse.json();
+                          dispatch(setCommentCount({ contentId: id, count: currentCommentCount }));
+                      }
+                  } else {
+                      console.error('Failed to fetch video');
+                  }
+                  if (user) {
+                      dispatch(setSubscription({ 
+                          userId: user.uid, 
+                          channelId: data.channelId._id, 
+                          isSubscribed: user.subscriptions.includes(data.channelId._id)
+                      }));
+                  }
+              } catch (error) {
+                  console.error('Error fetching video:', error);
+              }
+          };
+      
+          if (id) {
+              fetchVideo();
+          }
+      }, [id, dispatch, user]);
+  
 
     const handleSubscribe = async () => {
         if (!user) {
@@ -153,7 +154,7 @@ const NestedVidComps = () => {
         dispatch(setCommentCount({ contentId: video._id, count: newCommentCount }));
     
         try {
-          const token = await getIdToken();
+          const token = await user.getIdToken();
           await fetch(`${API_BASE_URL}/api/BeyondVideo/${video._id}/commentCount`, {
             method: 'PATCH',
             headers: {
@@ -165,7 +166,8 @@ const NestedVidComps = () => {
         } catch (error) {
           console.error('Error updating comment count:', error);
         }
-      };
+    };
+
 
     if (!video) {
         return <div>Loading...</div>;
@@ -223,7 +225,7 @@ const NestedVidComps = () => {
             <CommentSection 
                 isOpen={isCommentOpen} 
                 onClose={handleCommentClose} 
-                contentId={video._id}
+                videoId={video._id}
                 onCommentAdded={handleCommentAdded}
             />
         </div>

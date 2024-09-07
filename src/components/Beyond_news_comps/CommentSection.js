@@ -15,16 +15,16 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
     <div className="mb-4">
       <div className="flex items-center mb-2">
         <Image src={comment.picture || '/NopicAvatar.png'} alt="User" width={32} height={32} className="rounded-full mr-2" />
-        <p className="font-bold">{comment.username || comment.displayName || 'Anonymous'}</p>
+        <p className="font-bold">{comment.username || 'Anonymous'}</p>
       </div>
       <p>{comment.text}</p>
       <div className="flex items-center mt-1">
-        {comment.userId !== currentUser.uid && (
+        {comment.userId !== currentUser?.uid && (
           <button onClick={() => onReply(comment._id)} className="text-blue-500 text-sm mr-4">Reply</button>
         )}
         <button 
           onClick={() => onLike(comment._id)} 
-          className={`text-sm flex items-center ${comment.likes.includes(currentUser.uid) ? 'text-blue-500' : 'text-gray-500'}`}
+          className={`text-sm flex items-center ${comment.likes.includes(currentUser?.uid) ? 'text-blue-500' : 'text-gray-500'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
@@ -59,18 +59,20 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   );
 };
 
-const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
+const CommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const { user } = useAuth();
   
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && videoId) {
       fetchComments();
     }
-  }, [isOpen, contentId]);
+  }, [isOpen,  videoId]);
 
   const getIdToken = async () => {
     if (!user) return null;
@@ -84,13 +86,14 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
   };
 
   const fetchComments = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const token = await getIdToken();
       if (!token) {
-        console.error('No authentication token available');
-        return;
+        throw new Error('No authentication token available');
       }
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${contentId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/comments`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -102,47 +105,58 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
       onCommentAdded(data.commentCount);
     } catch (error) {
       console.error('Error fetching comments:', error);
+      setError('Failed to load comments. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!user) {
-      alert('You must be logged in to comment.');
+      setError('You must be logged in to comment.');
       return;
     }
+    setIsLoading(true);
+    setError(null);
     try {
       const token = await getIdToken();
       if (!token) {
-        alert('Unable to authenticate. Please try logging in again.');
-        return;
+        throw new Error('Unable to authenticate. Please try logging in again.');
       }
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment`, {
+      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/comment`,  {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          contentId,
+          videoId: videoId, // Change videoId to videoId
           text: newComment,
           replyTo,
-          username: user.username
+          username: user.username,
+          uid: user.uid // Add the user ID
         }),
       });
-      if (!response.ok) throw new Error('Failed to post comment');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to post comment');
+      }
+      const data = await response.json();
       setNewComment('');
       setReplyTo(null);
       await fetchComments();
     } catch (error) {
       console.error('Error posting comment:', error);
-      alert('Failed to post comment. Please try again.');
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
   
   const handleReply = (commentId) => {
     if (!user) {
-      alert('You must be logged in to reply.');
+      setError('You must be logged in to reply.');
       return;
     }
     const findComment = (comments, id) => {
@@ -157,7 +171,7 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
     };
     const parentComment = findComment(comments, commentId);
     if (parentComment && parentComment.userId === user.uid) {
-      alert('You cannot reply to your own comment.');
+      setError('You cannot reply to your own comment.');
       return;
     }
     setReplyTo(commentId);
@@ -165,16 +179,17 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
 
   const handleLike = async (commentId) => {
     if (!user) {
-      alert('You must be logged in to like a comment.');
+      setError('You must be logged in to like a comment.');
       return;
     }
+    setIsLoading(true);
+    setError(null);
     try {
       const token = await getIdToken();
       if (!token) {
-        alert('Unable to authenticate. Please try logging in again.');
-        return;
+        throw new Error('Unable to authenticate. Please try logging in again.');
       }
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${commentId}/like`, {
+      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +200,9 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
       await fetchComments();
     } catch (error) {
       console.error('Error liking comment:', error);
-      alert('Failed to like comment. Please try again.');
+      setError('Failed to like comment. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -205,17 +222,21 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
         </div>
 
         <div className="flex-grow overflow-y-auto p-4">
-          <div className="mb-4">
-            {comments.map(comment => (
-              <CommentItem 
-                key={comment._id} 
-                comment={comment} 
-                onReply={handleReply} 
-                onLike={handleLike} 
-                currentUser={user} 
-              />
-            ))}
-          </div>
+          {isLoading && <p className="text-center">Loading comments...</p>}
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {!isLoading && !error && (
+            <div className="mb-4">
+              {comments.map(comment => (
+                <CommentItem 
+                  key={comment._id} 
+                  comment={comment} 
+                  onReply={handleReply} 
+                  onLike={handleLike} 
+                  currentUser={user} 
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {user ? (
@@ -226,14 +247,16 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={replyTo ? "Write a reply..." : "Write a comment..."}
               className="w-full p-2 border rounded"
+              disabled={isLoading}
             />
-            <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded">
+            <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded" disabled={isLoading}>
               {replyTo ? "Reply" : "Comment"}
             </button>
             {replyTo && (
               <button 
                 onClick={() => setReplyTo(null)} 
                 className="mt-2 ml-2 bg-gray-300 text-gray-700 p-2 rounded"
+                disabled={isLoading}
               >
                 Cancel Reply
               </button>

@@ -89,9 +89,9 @@ const BeThumbVideo = () => {
                             </div>
                             <div className="flex justify-between text-sm mt-2 text-gray-400">
                             <p className='flex gap-0.5'>
-            <FaRegComment size="1.2em"/>
-            {commentCounts[video._id] || video.commentsCount}
-          </p>
+  <FaRegComment size="1.2em"/>
+  {commentCounts[video._id] || video.commentsCount}
+</p>
                                 <p className='flex gap-0.5'><BiLike size="1.2em"/>{video.likesCount}</p>
                                 <p className='flex gap-0.5'><IoEyeOutline size='1.4em'/>{video.viewsCount}</p>
                             </div>
