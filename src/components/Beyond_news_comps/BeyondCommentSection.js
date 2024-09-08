@@ -59,7 +59,7 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   );
 };
 
-const CommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
+const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
   const [comments, setComments] = useState([]);
   const [commentCount, setCommentCount] = useState(0);
   const [newComment, setNewComment] = useState('');
@@ -272,4 +272,4 @@ const CommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
   );
 };
 
-export default CommentSection;
+export default BeyondCommentSection;

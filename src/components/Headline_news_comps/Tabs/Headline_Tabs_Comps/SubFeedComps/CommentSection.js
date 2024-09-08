@@ -116,18 +116,17 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
         alert('Unable to authenticate. Please try logging in again.');
         return;
       }
-      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/comment`, {
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          videoId: contentId, // Change contentId to videoId
+          contentId,
           text: newComment,
           replyTo,
-          username: user.username,
-          uid: user.uid // Add the user ID
+          username: user.username // Use the username from the user object
         }),
       });
       if (!response.ok) throw new Error('Failed to post comment');

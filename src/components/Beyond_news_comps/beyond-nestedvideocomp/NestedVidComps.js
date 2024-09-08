@@ -9,8 +9,8 @@ import { useAuth } from '@/app/(auth)/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
-import CommentSection from '../CommentSection';
 import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
+import BeyondCommentSection from '../BeyondCommentSection';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -222,7 +222,7 @@ const NestedVidComps = () => {
                 </div>
             </div>
             </div>
-            <CommentSection 
+            <BeyondCommentSection
                 isOpen={isCommentOpen} 
                 onClose={handleCommentClose} 
                 videoId={video._id}
