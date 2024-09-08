@@ -130,13 +130,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          videoId: videoId, // Change videoId to videoId
-          text: newComment,
-          replyTo,
-          username: user.username,
-          uid: user.uid // Add the user ID
-        }),
+        
       });
       if (!response.ok) {
         const errorData = await response.json();
