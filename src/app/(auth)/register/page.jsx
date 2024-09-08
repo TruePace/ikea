@@ -164,6 +164,11 @@ const Register = () => {
                     </h2>
                 </div>
                 <StatusMessage status={registrationStatus} />
+                {error && (
+                        <div className="text-red-500 text-sm mt-2">
+                            {error}
+                        </div>
+                    )}
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <input type="hidden" name="remember" value="true" />
                     <div className="rounded-md shadow-sm -space-y-px">
@@ -257,7 +262,7 @@ const Register = () => {
                             </button>
                         </div>
                     </div>
-
+                  
                     <div>
                         <button
                             type="submit"

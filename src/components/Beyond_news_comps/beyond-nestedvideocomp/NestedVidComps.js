@@ -215,7 +215,7 @@ const NestedVidComps = () => {
                 <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                 <div className="flex space-x-4">
                 <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
-                <FaRegComment className="mr-1" /> {commentCount}
+                <FaRegComment className="mr-1" /> {  video.commentsCount}
                         </span>
                     <span className="flex items-center"><BiLike className="mr-1" /> {video.likesCount}</span>
                     <span className="flex items-center"><IoEyeOutline className="mr-1" /> {video.viewsCount}</span>
