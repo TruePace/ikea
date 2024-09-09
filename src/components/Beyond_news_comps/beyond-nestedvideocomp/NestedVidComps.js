@@ -29,7 +29,7 @@ const NestedVidComps = () => {
     const isSubscribed = useSelector(state => 
         state.subscriptions[user?.uid]?.[video?.channelId?._id] || false
     );
-    const commentCount = useSelector(state => state.commentCount[id] || 0);
+    // const commentCount = useSelector(state => state.commentCount[id] || 0);
     const likes = useSelector(state => state.likes[id] || 0);
     const views = useSelector(state => state.views[id] || 0);
 
@@ -91,8 +91,10 @@ const NestedVidComps = () => {
             const token = await firebaseUser.getIdToken();
             console.log("Token fetched:", token.substring(0, 10) + "...");
             
-            console.log("Sending like request...");
-            const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/like`, {
+            const url = `${API_BASE_URL}/api/BeyondVideo/${id}/likevideo`;
+            console.log("Sending like request to:", url);
+            
+            const response = await fetch(url, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -121,11 +123,10 @@ const NestedVidComps = () => {
             console.error('Error updating like count:', error);
           }
         } else {
-        //   console.log("User not authenticated, redirecting to login");
-        //   router.push('/login');
+          console.log("User not authenticated");
         }
+        
       };
-
 
 
    useEffect(() => {
@@ -334,7 +335,7 @@ const NestedVidComps = () => {
                         className={`flex items-center cursor-pointer ${video.likes?.includes(user?.uid) ? 'text-blue-500' : ''}`} 
                         onClick={handleLike}
                     >
-                        <BiLike className="mr-1" /> {likes}
+                        <BiLike className="mr-1" /> {likes[video._id] || video.likesCount}
                     </span>
                     <span className="flex items-center">
                         <IoEyeOutline className="mr-1" /> {views}

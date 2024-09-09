@@ -187,7 +187,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       if (!token) {
         throw new Error('Unable to authenticate. Please try logging in again.');
       }
-      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/like`, {
+      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/likecomment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
