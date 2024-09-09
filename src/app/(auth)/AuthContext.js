@@ -9,6 +9,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [firebaseUser, setFirebaseUser] = useState(null);
+
+
+  
 
   const fetchUserDetails = async (firebaseUser) => {
     try {
@@ -26,7 +30,7 @@ export const AuthProvider = ({ children }) => {
         setUser({
           ...userData.user,
           username: userData.user.username || userData.user.displayName || userData.user.email.split('@')[0],
-          uid: firebaseUser.uid
+          uid: firebaseUser.uid,
         });
       } else {
         console.error('Failed to fetch user details');
@@ -39,11 +43,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        await fetchUserDetails(firebaseUser);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed. User:", user ? user.uid : "null");
+      if (user) {
+        setFirebaseUser(user);
+        await fetchUserDetails(user);
       } else {
         setUser(null);
+        setFirebaseUser(null);
       }
       setLoading(false);
     });
@@ -60,8 +67,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+
+  // In the onAuthStateChanged callback:
+
+
   return (
-    <AuthContext.Provider value={{ user, loading, logout, fetchUserDetails }}>
+    <AuthContext.Provider value={{ user,firebaseUser, loading, logout, fetchUserDetails }}>
       {children}
     </AuthContext.Provider>
   );

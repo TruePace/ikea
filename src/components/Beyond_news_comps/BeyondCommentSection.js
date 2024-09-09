@@ -124,17 +124,21 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       if (!token) {
         throw new Error('Unable to authenticate. Please try logging in again.');
       }
-      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/comment`,  {
+      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        
+        body: JSON.stringify({
+          text: newComment,
+          replyTo: replyTo
+        })
       });
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to post comment');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(errorText || 'Failed to post comment');
       }
       const data = await response.json();
       setNewComment('');
@@ -148,7 +152,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
     }
   };
   
-  const handleReply = (commentId) => {
+  const handleReply = (videoId) => {
     if (!user) {
       setError('You must be logged in to reply.');
       return;
@@ -163,15 +167,15 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       }
       return null;
     };
-    const parentComment = findComment(comments, commentId);
+    const parentComment = findComment(comments, videoId);
     if (parentComment && parentComment.userId === user.uid) {
       setError('You cannot reply to your own comment.');
       return;
     }
-    setReplyTo(commentId);
+    setReplyTo(videoId);
   };
 
-  const handleLike = async (commentId) => {
+  const handleLike = async (videoId) => {
     if (!user) {
       setError('You must be logged in to like a comment.');
       return;

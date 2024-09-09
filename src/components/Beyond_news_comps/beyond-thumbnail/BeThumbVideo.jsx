@@ -17,7 +17,8 @@ const BeThumbVideo = () => {
     const [videos, setVideos] = useState([]);
     const [clickedId, setClickedId] = useState(null);
     const commentCounts = useSelector(state => state.commentCount);
-
+    const likes = useSelector(state => state.likes);
+    const views = useSelector(state => state.views);
 
    
 
@@ -92,8 +93,12 @@ const BeThumbVideo = () => {
   <FaRegComment size="1.2em"/>
   {commentCounts[video._id] || video.commentsCount}
 </p>
-                                <p className='flex gap-0.5'><BiLike size="1.2em"/>{video.likesCount}</p>
-                                <p className='flex gap-0.5'><IoEyeOutline size='1.4em'/>{video.viewsCount}</p>
+<p className='flex gap-0.5'>
+          <BiLike size="1.2em"/>{likes[video._id] || video.likesCount}
+        </p>
+        <p className='flex gap-0.5'>
+          <IoEyeOutline size='1.4em'/>{views[video._id] || video.viewsCount}
+        </p>
                             </div>
                         </div>
                     </div>
