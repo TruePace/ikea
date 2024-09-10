@@ -47,11 +47,11 @@ const Header = () => {
                         <div className="dropdown dropdown-end">
                             <div tabIndex={0} role="button" className="avatar placeholder">
                                 <div className="bg-red-600 text-neutral-content rounded-full w-9">
-                                    <span className="text-sm">{getInitial(user.displayName )}</span>
+                                    <span className="text-sm">{getInitial(user.username )}</span>{/**i can also use 'users.displayName' too */}
                                 </div>
                             </div>
                             <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                                <li><a>{user.displayName || 'My Profile'}</a></li>
+                                <li><a>{user.username || 'My Profile'}</a></li>
                                 <li><a>Settings</a></li>
                                 <li><a onClick={handleLogout}>Logout</a></li>
                             </ul>

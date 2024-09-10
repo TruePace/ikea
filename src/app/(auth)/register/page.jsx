@@ -25,6 +25,7 @@ const Register = () => {
     const [registrationStatus, setRegistrationStatus] = useState(null);
     const [error, setError] = useState('');
     const [username, setUsername] = useState('');
+    const [finalUsername, setFinalUsername] = useState('');
     const router = useRouter();
     const { fetchUserDetails } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
@@ -53,20 +54,26 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-  setIsLoading(true);
+        setIsLoading(true);
         if (passwordStrength !== 'Strong password') {
             alert('Please ensure your password meets the strength requirements.');
+            setIsLoading(false);
             return;
         }
         if (password !== confirmPassword) {
             alert('Passwords do not match.');
+            setIsLoading(false);
             return;
         }
         try {
+            console.log('Attempting to create user with Firebase...');
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            console.log('User created with Firebase:', userCredential.user.uid);
+            
             const user = userCredential.user;
             const idToken = await user.getIdToken();
             
+            console.log('Sending user data to backend...');
             const response = await fetch(`${API_BASE_URL}/api/users/register`, {
               method: 'POST',
               headers: {
@@ -83,17 +90,30 @@ const Register = () => {
             });
       
             if (!response.ok) {
-              throw new Error('Failed to save user data to backend');
+              const errorData = await response.json();
+              throw new Error(`Failed to save user data to backend: ${errorData.message}`);
             }
       
+            const userData = await response.json();
+            console.log('User data saved to backend:', userData);
+            
             await fetchUserDetails(user);
             
-            router.push('/');
-          } catch (error) {
+            if (userData.user.username !== username) {
+                setFinalUsername(userData.user.username);
+                setRegistrationStatus('success-with-username-change');
+            } else {
+                setRegistrationStatus('success');
+                router.push('/');
+            }
+        } catch (error) {
             console.error('Error registering user:', error);
-            setError(error.message);
-          }
-          finally {
+            if (error.code === 'auth/network-request-failed') {
+                setError('Network error. Please check your internet connection and try again.');
+            } else {
+                setError(error.message || 'An error occurred during registration. Please try again.');
+            }
+        } finally {
             setIsLoading(false);
         }
     };
@@ -163,7 +183,18 @@ const Register = () => {
                         Create your account
                     </h2>
                 </div>
-                <StatusMessage status={registrationStatus} />
+                {registrationStatus === 'success-with-username-change' && (
+                    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+                        <p className="font-bold">Username Changed</p>
+                        <p>The username "{username}" was already taken. Your account has been created with the username "{finalUsername}".</p>
+                        <button 
+                            onClick={() => router.push('/')} 
+                            className="mt-2 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+                        >
+                            Continue to Homepage
+                        </button>
+                    </div>
+                )}
                 {error && (
                         <div className="text-red-500 text-sm mt-2">
                             {error}
@@ -189,21 +220,21 @@ const Register = () => {
                             />
                         </div>
                         <div>
-                            <label htmlFor="username" className="sr-only">
-                                Username
-                            </label>
-                            <input
-                                id="username"
-                                name="username"
-                                type="text"
-                                autoComplete="username"
-                                required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
+                        <label htmlFor="username" className="sr-only">
+                            Username
+                        </label>
+                        <input
+                            id="username"
+                            name="username"
+                            type="text"
+                            autoComplete="username"
+                            required
+                            className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                    </div>
                         <div className="relative">
                             <label htmlFor="password" className="sr-only">
                                 Password
