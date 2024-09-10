@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
 import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
-import BeyondCommentSection from '../BeyondCommentSection';
+import BeyondCommentSection from './BeyondNestedCommentSection';
 import { setLikes } from '@/Redux/Slices/LikesSlice';
 import { setViews } from '@/Redux/Slices/ViewsSlice';
 

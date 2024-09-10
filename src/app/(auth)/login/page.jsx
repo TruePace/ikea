@@ -16,56 +16,60 @@ const LogIn = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const router = useRouter();
-    const { user } = useAuth();
+    const { user , fetchUserDetails} = useAuth();
 
     useEffect(() => {
-        if (user) {
-          router.push('/');
+        if (user || isAuthenticated) {
+            router.push('/');
         }
-      }, [user, router]);
+    }, [user, isAuthenticated, router]);
 
-
-      const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
         try {
-          // 1. Sign in with Firebase
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
-      
-          // 2. Get ID token
-          const idToken = await user.getIdToken();
-      
-          // 3. Verify with your backend
-          const response = await fetch(`${API_BASE_URL}/api/users/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${idToken}`
-            },
-            body: JSON.stringify({
-              uid: user.uid,
-              email: user.email
-            }),
-          });
-      
-          if (!response.ok) {
-            throw new Error('Failed to verify user with backend');
-          }
-      
-          // 4. Update local auth context
-          await fetchUserDetails(user);
-      
-          router.push('/');
+            // 1. Sign in with Firebase
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+        
+            // 2. Get ID token
+            const idToken = await user.getIdToken();
+        
+            // 3. Verify with your backend
+            const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email
+                }),
+            });
+        
+            if (!response.ok) {
+                throw new Error('Failed to verify user with backend');
+            }
+        
+            // 4. Update local auth context
+            await fetchUserDetails(user);
+        
+            // 5. Set authentication state
+            setIsAuthenticated(true);
         } catch (error) {
-          console.error('Error during sign-in process:', error);
-          setError('Authentication failed. Please check your email and password.');
+            console.error('Error during sign-in process:', error);
+            setError('Authentication failed. Please check your email and password.');
         } finally {
-          setIsLoading(false);
+            setIsLoading(false);
         }
-      };
+    };
+
+
+
     const handleGoogleSignIn = async () => {
         setError('');
         try {
@@ -163,7 +167,7 @@ const LogIn = () => {
                         </div>
                     </div>
 
-                    {error && (
+                    {error && !isAuthenticated && (
                         <div className="text-red-500 text-sm mt-2">
                             {error}
                         </div>

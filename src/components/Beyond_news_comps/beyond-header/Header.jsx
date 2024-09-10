@@ -9,6 +9,13 @@ const Header = () => {
     const { user, logout } = useAuth();
     const router = useRouter();
 
+    const handleSearch = async () => {
+        if (!user) {
+          router.push('/login');
+          return;
+        }
+      } 
+
     const handleLogout = async () => {
         try {
             await logout();
@@ -33,7 +40,9 @@ const Header = () => {
                     </Link>
                 </div>
                 <div className="flex-none gap-7 w-2/6">
+                    <span  onClick={handleSearch}>
                     <ToggleSearchBar />
+                    </span>
                     {user ? (
                         <div className="dropdown dropdown-end">
                             <div tabIndex={0} role="button" className="avatar placeholder">

@@ -20,11 +20,27 @@ const SubscribeFeed = ({ channel }) => {
     state.subscriptions[user?.uid]?.[channel._id] || false
   );
 
+
+  const handleChannel = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+  }
+  
+  const handleSearch = async () => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+  }
+
   const handleSubscribe = async () => {
     if (!user) {
       router.push('/login');
       return;
     }
+    
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${channel._id}/subscribe`, {
@@ -90,15 +106,18 @@ const SubscribeFeed = ({ channel }) => {
 
   return (
     <>
+    
       <div className="border-gray-200 w-full flex items-center justify-between">
         <div className="avatar">
           <div className="w-11 h-11 relative rounded-full overflow-hidden">
             <Image src={channel.picture} alt={channel.name} fill className="object-cover" />
           </div>
         </div>
-        <Link href={`/truepacer_profile/${channel._id}`}>
+        <div onClick={handleChannel}> 
+        <Link href={`/truepacer_profile/${channel._id}`} >
           <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p>
         </Link>
+        </div>
         <div className="relative" ref={dropdownRef}>
           {!isSubscribed ? (
             <button
@@ -137,7 +156,9 @@ const SubscribeFeed = ({ channel }) => {
             </>
           )}
         </div>
+        <span onClick={handleSearch}>
         <ToggleSearchBar />
+        </span>
       </div>
     </>
   );
