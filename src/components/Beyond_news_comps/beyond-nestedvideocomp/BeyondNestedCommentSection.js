@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { IoMdClose } from 'react-icons/io';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { useAuth } from '@/app/(auth)/AuthContext';
 import { auth } from '@/app/(auth)/firebase/ClientApp';
+import { useAuth } from '@/app/(auth)/AuthContext';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 

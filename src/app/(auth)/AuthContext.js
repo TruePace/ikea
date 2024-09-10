@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }) => {
         const userData = await response.json();
         setUser({
           ...userData.user,
-          username: userData.user.username || userData.user.displayName || userData.user.email.split('@')[0],
           uid: firebaseUser.uid,
         });
       } else {
@@ -41,7 +40,7 @@ export const AuthProvider = ({ children }) => {
       setUser({ ...firebaseUser, uid: firebaseUser.uid });
     }
   };
-
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       console.log("Auth state changed. User:", user ? user.uid : "null");

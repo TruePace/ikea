@@ -114,7 +114,7 @@ const Register = () => {
                 photoURL: user.photoURL
             });
     
-            const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+            const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
