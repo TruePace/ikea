@@ -14,7 +14,6 @@ const page = () => {
     return (
         <>
 <ProtectedRoute>
-
         <HistoryHeader/>
             <HistoryContent/>
             <HistoryContent/>

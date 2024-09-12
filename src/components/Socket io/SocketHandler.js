@@ -21,6 +21,7 @@ export default function SocketHandler() {
       }
       if (data.likesCount !== undefined) {
         dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
+        console.log('Dispatched setLikes action');
       }
     });
 

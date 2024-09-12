@@ -8,6 +8,7 @@ const likesSlice = createSlice({
     setLikes: (state, action) => {
       const { videoId, likes } = action.payload;
       state[videoId] = likes;
+      console.log('Likes state updated:', state);
     },
   },
 });

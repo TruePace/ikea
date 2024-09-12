@@ -14,9 +14,7 @@ import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
 import BeyondCommentSection from './BeyondNestedCommentSection';
 import { setLikes } from '@/Redux/Slices/LikesSlice';
 import { setViews } from '@/Redux/Slices/ViewsSlice';
-import { initializeCommentCountListener } from '@/Redux/Slices/CommentCountSlice';
-import { initializeLikesListener } from '@/Redux/Slices/LikesSlice';
-import { initializeViewsListener } from '@/Redux/Slices/ViewsSlice';
+
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -34,17 +32,14 @@ const NestedVidComps = () => {
         state.subscriptions[user?.uid]?.[video?.channelId?._id] || false
     );
    
-    const likes = useSelector(state => state.likes[id] || 0);
-    const views = useSelector(state => state.views[id] || 0);
-    const commentCount = useSelector(state => state.commentCount[id] || 0);
+    
+    const commentCounts = useSelector(state => state.commentCount);
+    const likes = useSelector(state => state.likes);
+    const views = useSelector(state => state.views);
 
 
 
-useEffect(() => {
-    dispatch(initializeLikesListener());
-    dispatch(initializeViewsListener());
-    dispatch(initializeCommentCountListener());
-  }, [dispatch]);
+
 
 
   useEffect(() => {
@@ -352,17 +347,22 @@ useEffect(() => {
                 <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                 <div className="flex space-x-4">
                     <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
-                        <FaRegComment className="mr-1" /> {video.commentsCount}
-                        
+                        <FaRegComment className="mr-1" />
+                        {/* {video.commentsCount} */}
+                        {commentCounts[video._id] || video.commentsCount}
                     </span>
+                    <div key={likes}>
                     <span 
                         className={`flex items-center cursor-pointer ${video.likes?.includes(user?.uid) ? 'text-blue-500' : ''}`} 
                         onClick={handleLike}
                     >
                         <BiLike className="mr-1" /> {likes[video._id] || video.likesCount}
                     </span>
+                    </div>
                     <span className="flex items-center">
-                        <IoEyeOutline className="mr-1" /> {views}
+                        <IoEyeOutline className="mr-1" /> 
+                        {/* {views} */}
+                        {views[video._id] || video.viewsCount}
                     </span>
                 </div>
             </div>

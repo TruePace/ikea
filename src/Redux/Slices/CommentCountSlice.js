@@ -8,6 +8,7 @@ const commentCountSlice = createSlice({
     setCommentCount: (state, action) => {
       const { contentId, count } = action.payload;
       state[contentId] = count;
+      console.log('Comment state updated:', state);
     },
   },
 });
