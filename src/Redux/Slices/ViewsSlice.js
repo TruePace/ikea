@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import socket from '@/components/Socket io/SocketClient';
 
 const viewsSlice = createSlice({
   name: 'views',
@@ -12,4 +13,12 @@ const viewsSlice = createSlice({
 });
 
 export const { setViews } = viewsSlice.actions;
+
+// Thunk to handle real-time updates
+export const initializeViewsListener = () => (dispatch) => {
+  socket.on('videoUpdated', (data) => {
+    dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
+  });
+};
+
 export default viewsSlice.reducer;

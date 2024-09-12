@@ -9,10 +9,14 @@ import { useAuth } from '@/app/(auth)/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
+import socket from '@/components/Socket io/SocketClient';
 import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
 import BeyondCommentSection from './BeyondNestedCommentSection';
 import { setLikes } from '@/Redux/Slices/LikesSlice';
 import { setViews } from '@/Redux/Slices/ViewsSlice';
+import { initializeCommentCountListener } from '@/Redux/Slices/CommentCountSlice';
+import { initializeLikesListener } from '@/Redux/Slices/LikesSlice';
+import { initializeViewsListener } from '@/Redux/Slices/ViewsSlice';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -29,12 +33,31 @@ const NestedVidComps = () => {
     const isSubscribed = useSelector(state => 
         state.subscriptions[user?.uid]?.[video?.channelId?._id] || false
     );
-    // const commentCount = useSelector(state => state.commentCount[id] || 0);
+   
     const likes = useSelector(state => state.likes[id] || 0);
     const views = useSelector(state => state.views[id] || 0);
+    const commentCount = useSelector(state => state.commentCount[id] || 0);
 
 
 
+useEffect(() => {
+    dispatch(initializeLikesListener());
+    dispatch(initializeViewsListener());
+    dispatch(initializeCommentCountListener());
+  }, [dispatch]);
+
+
+  useEffect(() => {
+    socket.on('videoUpdated', (data) => {
+      if (data.commentCount) dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
+      if (data.likesCount) dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
+      if (data.viewsCount) dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
+    });
+  
+    return () => {
+      socket.off('videoUpdated');
+    };
+  }, [dispatch]);
 
     useEffect(() => {
         const handleView = async () => {
@@ -330,6 +353,7 @@ const NestedVidComps = () => {
                 <div className="flex space-x-4">
                     <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
                         <FaRegComment className="mr-1" /> {video.commentsCount}
+                        
                     </span>
                     <span 
                         className={`flex items-center cursor-pointer ${video.likes?.includes(user?.uid) ? 'text-blue-500' : ''}`} 

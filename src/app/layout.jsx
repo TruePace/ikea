@@ -7,6 +7,7 @@ import { AuthProvider } from "./(auth)/AuthContext";
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import { store,persistor } from "@/Redux/store";
+import SocketHandler from "@/components/Socket io/SocketHandler";
 
 
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
       <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}>
 
       <AuthProvider>
+      <SocketHandler />
           {children}
           <NavBar />
           </AuthProvider>

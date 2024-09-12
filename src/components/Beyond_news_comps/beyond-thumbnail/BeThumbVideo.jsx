@@ -7,7 +7,11 @@ import { BiLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
-import { useSelector } from 'react-redux';
+import { useSelector ,useDispatch} from 'react-redux';
+import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
+import { setLikes } from '@/Redux/Slices/LikesSlice';
+import { setViews } from '@/Redux/Slices/ViewsSlice';
+import socket from '@/components/Socket io/SocketClient';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -16,9 +20,22 @@ const BeThumbVideo = () => {
     const router = useRouter();
     const [videos, setVideos] = useState([]);
     const [clickedId, setClickedId] = useState(null);
+    const dispatch = useDispatch();
     const commentCounts = useSelector(state => state.commentCount);
     const likes = useSelector(state => state.likes);
     const views = useSelector(state => state.views);
+
+    useEffect(() => {
+        socket.on('videoUpdated', (data) => {
+          if (data.commentCount) dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
+          if (data.likesCount) dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
+          if (data.viewsCount) dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
+        });
+      
+        return () => {
+          socket.off('videoUpdated');
+        };
+      }, [dispatch]);
 
    
 

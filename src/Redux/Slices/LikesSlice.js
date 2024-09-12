@@ -1,3 +1,4 @@
+import socket from '@/components/Socket io/SocketClient';
 import { createSlice } from '@reduxjs/toolkit';
 
 const likesSlice = createSlice({
@@ -12,4 +13,13 @@ const likesSlice = createSlice({
 });
 
 export const { setLikes } = likesSlice.actions;
+
+
+// Thunk to handle real-time updates
+export const initializeLikesListener = () => (dispatch) => {
+  socket.on('videoUpdated', (data) => {
+    dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
+  });
+};
+
 export default likesSlice.reducer;
