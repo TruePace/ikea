@@ -7,6 +7,7 @@ import { BiLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
+import { formatDate } from '@/components/Utils/DateFormat';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const BeThumbArticle = () => {
@@ -41,7 +42,7 @@ const BeThumbArticle = () => {
             } else {
                 router.push(`/beyond_news/nestedarticle/${articleId}`);
             }
-        }, 100); // Delay navigation to show the click effect
+        }, 100);
     };
 
     return (
@@ -57,23 +58,23 @@ const BeThumbArticle = () => {
                     <div className="border-gray-200 gap-3 flex items-center">
                         <div className="avatar">
                             <div className="w-11 rounded-full">
-                                <Image src={article.truepacerUrl} alt="Avatar" width={40} height={40} className="rounded-full" />
+                                <Image src={article.channelId?.picture || '/NopicAvatar.png'} alt={article.channelId?.name || 'Channel'} width={40} height={40} className="rounded-full" />
                             </div>
                         </div>
-                        <p className="font-semibold text-sm">@{article.author}</p>
-                        <p className="text-sm text-gray-400 flex"><LuDot size='1.2em'/>{new Date(article.createdAt).toLocaleString()}</p>
+                        <p className="font-semibold text-sm">@{article.channelId?.name || 'Unknown Channel'}</p>
+                        <p className="text-sm text-gray-400 flex"><LuDot size='1.2em'/>{formatDate(article.createdAt)}</p>
                     </div>
-
-                    <p className="text-md text-gray-600 mt-2">{article.content.substring(0, 200)}...</p>
-
+                    <p className='font-semibold text-lg mt-2'>{article.title}</p>
+                    <p className="text-md text-gray-600 mt-2">{article.previewContent}</p>
                     <div className="relative h-60 mt-2">
-                        <Image src={article.imageUrl} fill alt={article.title} className="rounded-md object-cover"/>
+                        <Image src={article.previewImage} fill alt={article.title} className="rounded-md object-cover"/>
                     </div>
 
                     <div className="flex justify-between text-sm mt-2 text-gray-400">
                         <p className='flex gap-0.5'><FaRegComment size="1.2em"/>{article.commentsCount}</p>
                         <p className='flex gap-0.5'><BiLike size="1.2em"/>{article.likesCount}</p>
                         <p className='flex gap-0.5'><IoEyeOutline size='1.4em'/>{article.viewsCount}</p>
+                        <p className='flex gap-0.5'>Read time: {article.readTime} min</p>
                     </div>
                 </div>
             ))}

@@ -12,6 +12,7 @@ import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
 import { setLikes } from '@/Redux/Slices/LikesSlice';
 import { setViews } from '@/Redux/Slices/ViewsSlice';
 import socket from '@/components/Socket io/SocketClient';
+import { formatDate } from '@/components/Utils/DateFormat';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -103,7 +104,7 @@ const BeThumbVideo = () => {
                             <p className='font-semibold text-lg'>{video.title}</p>
                             <div className="flex justify-between text-sm mt-2 text-gray-400">
                                 <p className='flex'><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
-                                <p className='flex'><LuDot size='1.2em'/>{new Date(video.createdAt).toLocaleString()}</p>
+                                <p className='flex'><LuDot size='1.2em'/>{formatDate(video.createdAt)}</p>
                             </div>
                             <div className="flex justify-between text-sm mt-2 text-gray-400">
                             <p className='flex gap-0.5'>
