@@ -37,7 +37,7 @@ const ContentFeed = ({ content, onView, isViewed }) => {
           </div>
         </div>
       ) : (
-        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-lg sm:py-16 sm:text-lg sm:leading-8 text-md text-gray-700 mt-2 w-full flex items-center capitalize justify-center">
+        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-lg sm:py-16 sm:text-lg sm:leading-8 text-md  h-96 font-bold text-gray-700 mt-2 w-full flex items-center capitalize justify-center">{/*bg-yellow-300*/}
           {content.message}
         </div>
       )}
