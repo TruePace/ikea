@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socket from './SocketClient';
 import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
-import { setViews } from '@/Redux/Slices/ViewsSlice';
-import { setLikes } from '@/Redux/Slices/LikesSlice';
+import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
+import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 
 export default function SocketHandler() {
   const dispatch = useDispatch();

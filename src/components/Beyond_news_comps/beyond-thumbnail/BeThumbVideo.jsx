@@ -9,8 +9,8 @@ import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { useSelector ,useDispatch} from 'react-redux';
 import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
-import { setLikes } from '@/Redux/Slices/LikesSlice';
-import { setViews } from '@/Redux/Slices/ViewsSlice';
+import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
+import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import socket from '@/components/Socket io/SocketClient';
 import { formatDate } from '@/components/Utils/DateFormat';
 

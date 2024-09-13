@@ -7,12 +7,18 @@ import likeDislikeReducer from './Slices/LikeDislikeSlice';
 import viewedContentReducer from './Slices/ViewContentSlice';
 import commentCountReducer from './Slices/CommentCountSlice';
 import subscriptionReducer from './Slices/SubscriptionSlice';
-import likesReducer from './Slices/LikesSlice'
-import viewsReducer from './Slices/ViewsSlice'
+import likesReducer from './Slices/VideoSlice/LikesSlice';
+import viewsReducer from './Slices/VideoSlice/ViewsSlice';
+// below are the import for the ArticleSlice
+import likesReducerArticle from './Slices/ArticleSlice/LikesSlice';
+import viewsReducerArticle from './Slices/ArticleSlice/ViewsSlice';
+import commentCountReducerArticle from './Slices/ArticleSlice/CommentCountSlice';
+import channelReducer from './Slices/ArticleSlice/ChannelSlice'
+
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['viewedContent', 'likeDislike', 'commentCount', 'subscriptions', 'likes', 'views'],
+  whitelist: ['viewedContent', 'likeDislike', 'commentCount', 'subscriptions', 'likes', 'views', 'likesArticle', 'viewsArticle', 'commentCountArticle','channels'],
 };
 
 const rootReducer = combineReducers({
@@ -22,6 +28,10 @@ const rootReducer = combineReducers({
   subscriptions: subscriptionReducer,
   likes: likesReducer,
   views: viewsReducer,
+  likesArticle: likesReducerArticle,
+  viewsArticle: viewsReducerArticle,
+  commentCountArticle: commentCountReducerArticle,
+  channels: channelReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

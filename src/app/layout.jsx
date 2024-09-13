@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import { store,persistor } from "@/Redux/store";
 import SocketHandler from "@/components/Socket io/SocketHandler";
+import SecondSocketHandler from "@/components/Socket io/SecondSocketHandler";
 
 
 
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
 
       <AuthProvider>
       <SocketHandler />
+    <SecondSocketHandler/>
           {children}
           <NavBar />
           </AuthProvider>

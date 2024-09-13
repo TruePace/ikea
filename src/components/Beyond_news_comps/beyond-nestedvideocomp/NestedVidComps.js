@@ -12,8 +12,8 @@ import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
 import socket from '@/components/Socket io/SocketClient';
 import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
 import BeyondCommentSection from './BeyondNestedCommentSection';
-import { setLikes } from '@/Redux/Slices/LikesSlice';
-import { setViews } from '@/Redux/Slices/ViewsSlice';
+import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
+import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 
 
 
