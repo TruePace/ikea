@@ -6,19 +6,14 @@ const viewsSlice = createSlice({
   initialState: {},
   reducers: {
     setViews: (state, action) => {
-      const { videoId, views } = action.payload;
-      state[videoId] = views;
+      const { videoId, viewCount, avgWatchTime, engagementScore, viralScore } = action.payload;
+      state[videoId] = { viewCount, avgWatchTime, engagementScore, viralScore };
+      console.log('View state updated:', state);
     },
   },
 });
 
 export const { setViews } = viewsSlice.actions;
 
-// Thunk to handle real-time updates
-export const initializeViewsListener = () => (dispatch) => {
-  socket.on('videoUpdated', (data) => {
-    dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
-  });
-};
 
 export default viewsSlice.reducer;

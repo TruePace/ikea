@@ -3,7 +3,7 @@ import { combineReducers } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
-import likeDislikeReducer from './Slices/LikeDislikeSlice';
+import contentInteractionsReducer from './Slices/ContentInteractions';
 import viewedContentReducer from './Slices/ViewContentSlice';
 import commentCountReducer from './Slices/CommentCountSlice';
 import subscriptionReducer from './Slices/SubscriptionSlice';
@@ -18,12 +18,12 @@ import channelReducer from './Slices/ArticleSlice/ChannelSlice'
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['viewedContent', 'likeDislike', 'commentCount', 'subscriptions', 'likes', 'views', 'likesArticle', 'viewsArticle', 'commentCountArticle','channels'],
+  whitelist: ['viewedContent', 'contentInteractions', 'commentCount', 'subscriptions', 'likes', 'views', 'likesArticle', 'viewsArticle', 'commentCountArticle','channels'],
 };
 
 const rootReducer = combineReducers({
   viewedContent: viewedContentReducer,
-  likeDislike: likeDislikeReducer,
+  contentInteractions: contentInteractionsReducer,
   commentCount: commentCountReducer,
   subscriptions: subscriptionReducer,
   likes: likesReducer,

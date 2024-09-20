@@ -19,9 +19,9 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const viewedContent = useSelector(state => state.viewedContent);
   const unviewedCount = useSelector(state => selectUnviewedCount(state, currentJustInContent));
 
-  console.log("Current Just In Content:", currentJustInContent);
-  console.log("Viewed Content:", viewedContent);
-  console.log("Unviewed Count:", unviewedCount);
+  // console.log("Current Just In Content:", currentJustInContent);
+  // console.log("Viewed Content:", viewedContent);
+  // console.log("Unviewed Count:", unviewedCount);
 
   const handleJustInView = (contentId) => {
     dispatch(markAsViewed(contentId));

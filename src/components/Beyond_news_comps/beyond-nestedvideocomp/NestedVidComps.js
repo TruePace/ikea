@@ -1,9 +1,9 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { FaRegComment } from "react-icons/fa";
-import { BiLike } from "react-icons/bi";
+import { BiLike,BiSolidLike } from "react-icons/bi";
 import { IoEyeOutline } from "react-icons/io5";
 import { useAuth } from '@/app/(auth)/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -36,6 +36,9 @@ const NestedVidComps = () => {
     const commentCounts = useSelector(state => state.commentCount);
     const likes = useSelector(state => state.likes);
     const views = useSelector(state => state.views);
+    const [watchStartTime, setWatchStartTime] = useState(null);
+    const [location, setLocation] = useState(null);
+     const viewCountedRef = useRef(false);
 
 
 
@@ -54,97 +57,127 @@ const NestedVidComps = () => {
     };
   }, [dispatch]);
 
-    useEffect(() => {
-        const handleView = async () => {
-          console.log("Handling view for video:", id);
-          if (firebaseUser) {
-            try {
-              console.log("Fetching token for view count update...");
-              const token = await firebaseUser.getIdToken();
-              console.log("Token fetched for view:", token.substring(0, 10) + "...");
-      
-              console.log("Sending view request...");
-              const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/view`, {
+
+  useEffect(() => {
+    const fetchInitialCommentCount = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/count`);
+        if (response.ok) {
+          const data = await response.json();
+          dispatch(setCommentCount({ contentId: id, count: data.commentCount }));
+        }
+      } catch (error) {
+        console.error('Error fetching initial comment count:', error);
+      }
+    };
+  
+    fetchInitialCommentCount();
+  }, [id, dispatch]);
+  
+
+  
+
+  useEffect(() => {
+    // Get approximate location when component mounts
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setLocation(`${position.coords.latitude},${position.coords.longitude}`);
+            },
+            (error) => {
+                console.error("Error getting location:", error);
+                setLocation("Unknown");
+            }
+        );
+    } else {
+        setLocation("Geolocation not supported");
+    }
+}, []);
+
+const handleVideoPlay = () => {
+    setWatchStartTime(Date.now());
+    if (!viewCountedRef.current) {
+        handleView(0);
+        viewCountedRef.current = true;
+    }
+};
+
+const handleVideoPause = () => {
+    if (watchStartTime) {
+        const watchDuration = (Date.now() - watchStartTime) / 1000; // Convert to seconds
+        handleView(watchDuration);
+        setWatchStartTime(null);
+    }
+};
+
+const handleView = async (watchDuration) => {
+    if (firebaseUser && !viewCountedRef.current) {
+        try {
+            const token = await firebaseUser.getIdToken();
+            const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/view`, {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-              });
-      
-              console.log("View request response status:", response.status);
-      
-              if (response.ok) {
-                const data = await response.json();
-                console.log("View response data:", data);
-      
-                dispatch(setViews({ videoId: id, views: data.viewsCount }));
-                // Update local state
-                setVideo(prevVideo => ({
-                  ...prevVideo,
-                  views: data.views,
-                  viewsCount: data.viewsCount
-                }));
-                console.log("View state updated");
-              } else {
-                const errorData = await response.json();
-                console.error("Error response for view:", errorData);
-              }
-            } catch (error) {
-              console.error('Error updating view count:', error);
-            }
-          } else {
-            console.log("User not authenticated, view not recorded");
-          }
-        };
-      
-        handleView();
-      }, [id, firebaseUser, dispatch]);
-    
-      const handleLike = async () => {
-        console.log("Like button clicked");
-        if (firebaseUser) {
-          try {
-            console.log("Fetching token...");
-            const token = await firebaseUser.getIdToken();
-            console.log("Token fetched:", token.substring(0, 10) + "...");
-            
-            const url = `${API_BASE_URL}/api/BeyondVideo/${id}/likevideo`;
-            console.log("Sending like request to:", url);
-            
-            const response = await fetch(url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
+                body: JSON.stringify({
+                    watchDuration,
+                    deviceInfo: navigator.userAgent,
+                    location
+                })
             });
-            
-            console.log("Response status:", response.status);
-            
+    
             if (response.ok) {
-              const data = await response.json();
-              console.log("Like response data:", data);
-              
-              dispatch(setLikes({ videoId: id, likes: data.likesCount }));
-              setVideo(prevVideo => ({
-                ...prevVideo,
-                likes: data.likes,
-                likesCount: data.likesCount
-              }));
-              console.log("State updated");
-            } else {
-              const errorData = await response.json();
-              console.error("Error response:", errorData);
+                const data = await response.json();
+                dispatch(setViews({ 
+                    videoId: id, 
+                    viewCount: data.viewCount, 
+                    avgWatchTime: data.avgWatchTime,
+                    engagementScore: data.engagementScore,
+                    viralScore: data.viralScore
+                }));
+                viewCountedRef.current = true;
             }
-          } catch (error) {
-            console.error('Error updating like count:', error);
-          }
-        } else {
-          console.log("User not authenticated");
+        } catch (error) {
+            console.error('Error updating view count:', error);
         }
-        
-      };
+    }
+};
+
+    
+const handleLike = async () => {
+    if (firebaseUser) {
+        try {
+            const token = await firebaseUser.getIdToken();
+            const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/likevideo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    deviceInfo: navigator.userAgent,
+                    location: location
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                dispatch(setLikes({ 
+                    videoId: id, 
+                    likeCount: data.likeCount,
+                    engagementScore: data.engagementScore,
+                    viralScore: data.viralScore,
+                    isLiked: data.isLiked
+                }));
+            }
+        } catch (error) {
+            console.error('Error updating like count:', error);
+        }
+    } else {
+        router.push('/login');
+    }
+};
 
 
    useEffect(() => {
@@ -308,10 +341,17 @@ const NestedVidComps = () => {
     return (
         <div className="w-full">
         <div className="">
-            <video className="w-full" controls>
-                <source src={video.videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
+        <video 
+                    className="w-full" 
+                    controls
+                    autoPlay
+                    onPlay={handleVideoPlay}
+                    onPause={handleVideoPause}
+                    onEnded={handleVideoPause}
+                >
+                    <source src={video.videoUrl} type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
         </div>
         <div className='py-4 pl-4 pr-6'>
             <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
@@ -353,17 +393,17 @@ const NestedVidComps = () => {
                     </span>
                     <div key={likes}>
                     <span 
-                        className={`flex items-center cursor-pointer ${video.likes?.includes(user?.uid) ? 'text-blue-500' : ''}`} 
-                        onClick={handleLike}
-                    >
-                        <BiLike className="mr-1" /> {likes[video._id] || video.likesCount}
-                    </span>
+    className={`flex items-center cursor-pointer ${likes[video._id]?.isLiked ? 'text-blue-500' : ''}`} 
+    onClick={handleLike}
+>
+    {likes[video._id]?.isLiked ? <BiSolidLike className="mr-1" /> : <BiLike className="mr-1" />}
+    {likes[video._id]?.likeCount || video.likeCount}
+</span>
                     </div>
                     <span className="flex items-center">
-                        <IoEyeOutline className="mr-1" /> 
-                        {/* {views} */}
-                        {views[video._id] || video.viewsCount}
-                    </span>
+    <IoEyeOutline className="mr-1" /> 
+    {views[video._id]?.viewCount || video.viewsCount}
+</span>
                 </div>
             </div>
         </div>

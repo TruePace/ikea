@@ -13,12 +13,7 @@ const commentCountSlice = createSlice({
   },
 });
 
-// Thunk to handle real-time updates
-export const initializeCommentCountListener = () => (dispatch) => {
-  socket.on('videoUpdated', (data) => {
-    dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
-  });
-};
+
 
 export const { setCommentCount } = commentCountSlice.actions;
 export default commentCountSlice.reducer;

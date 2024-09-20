@@ -1,26 +1,18 @@
-import socket from '@/components/Socket io/SocketClient';
 import { createSlice } from '@reduxjs/toolkit';
+import socket from '@/components/Socket io/SocketClient';
 
 const likesSlice = createSlice({
   name: 'likes',
   initialState: {},
   reducers: {
     setLikes: (state, action) => {
-      const { videoId, likes } = action.payload;
-      state[videoId] = likes;
-      console.log('Likes state updated:', state);
+      const { videoId, likeCount, engagementScore, viralScore, isLiked } = action.payload;
+      state[videoId] = { likeCount, engagementScore, viralScore, isLiked };
+      console.log('Like state updated:', state);
     },
   },
 });
 
 export const { setLikes } = likesSlice.actions;
-
-
-// Thunk to handle real-time updates
-export const initializeLikesListener = () => (dispatch) => {
-  socket.on('videoUpdated', (data) => {
-    dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
-  });
-};
 
 export default likesSlice.reducer;

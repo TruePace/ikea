@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { BiLike, BiDislike } from "react-icons/bi";
-import { setLikeDislike } from '../../../../../Redux/Slices/LikeDislikeSlice';
+import { setLikeDislike } from '../../../../../Redux/Slices/ContentInteractions';
 import { useAuth } from '@/app/(auth)/AuthContext';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;

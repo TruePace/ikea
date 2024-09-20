@@ -11,25 +11,41 @@ export default function SocketHandler() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    socket.on('videoUpdated', (data) => {
-        console.log('Received videoUpdated event:', data);
+    const handleVideoUpdate = (data) => {
+      console.log('Received videoUpdated event:', data);
       if (data.commentCount !== undefined) {
         dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
       }
-      if (data.viewsCount !== undefined) {
-        dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
+      if (data.viewCount !== undefined) {
+        dispatch(setViews({
+          videoId: data.videoId,
+          viewCount: data.viewCount,
+          avgWatchTime: data.avgWatchTime,
+          engagementScore: data.engagementScore,
+          viralScore: data.viralScore
+        }));
       }
-      if (data.likesCount !== undefined) {
-        dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
-        console.log('Dispatched setLikes action');
+      if (data.likeCount !== undefined) {
+        dispatch(setLikes({
+          videoId: data.videoId,
+          likeCount: data.likeCount,
+          engagementScore: data.engagementScore,
+          viralScore: data.viralScore
+        }));
       }
+    };
+
+    socket.on('videoUpdated', handleVideoUpdate);
+      
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
     });
 
-    // Cleanup function
     return () => {
-      socket.off('videoUpdated');
+      socket.off('videoUpdated', handleVideoUpdate);
+      socket.off('connect_error');
     };
   }, [dispatch]);
 
-  return null; // This component doesn't render anything
+  return null;
 }

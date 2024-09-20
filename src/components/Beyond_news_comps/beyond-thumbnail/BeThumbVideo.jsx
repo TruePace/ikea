@@ -26,28 +26,28 @@ const BeThumbVideo = () => {
     const likes = useSelector(state => state.likes);
     const views = useSelector(state => state.views);
 
-    useEffect(() => {
+     useEffect(() => {
         socket.on('videoUpdated', (data) => {
-          if (data.commentCount) dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
-          if (data.likesCount) dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
-          if (data.viewsCount) dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
+            if (data.commentCount) dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
+            if (data.likeCount) dispatch(setLikes({ videoId: data.videoId, likeCount: data.likeCount, engagementScore: data.engagementScore, viralScore: data.viralScore }));
+            if (data.viewCount) dispatch(setViews({ videoId: data.videoId, viewCount: data.viewCount, avgWatchTime: data.avgWatchTime, engagementScore: data.engagementScore, viralScore: data.viralScore }));
         });
-      
+
         return () => {
-          socket.off('videoUpdated');
+            socket.off('videoUpdated');
         };
-      }, [dispatch]);
+    }, [dispatch]);
 
-   
-
+    
     useEffect(() => {
         const fetchVideos = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/BeyondVideo`);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Fetched videos:', data); // Add this line
                     setVideos(data);
+                    // Fetch initial comment count for each video
+                    data.forEach(video => fetchInitialCommentCount(video._id));
                 } else {
                     console.error('Failed to fetch videos');
                 }
@@ -55,9 +55,23 @@ const BeThumbVideo = () => {
                 console.error('Error fetching videos:', error);
             }
         };
-    
+
+        const fetchInitialCommentCount = async (videoId) => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/count`);
+                if (response.ok) {
+                    const data = await response.json();
+                    dispatch(setCommentCount({ contentId: videoId, count: data.commentCount }));
+                }
+            } catch (error) {
+                console.error('Error fetching initial comment count:', error);
+            }
+        };
+
+
+
         fetchVideos();
-    }, []);
+    }, [dispatch]);
 
     const handleClick = (videoId) => {
         setClickedId(videoId);
@@ -67,9 +81,8 @@ const BeThumbVideo = () => {
             } else {
                 router.push(`/beyond_news/nestedvideo/${videoId}`);
             }
-        }, 100); // Delay navigation to show the click effect
+        }, 100);
     };
-
 
 
     return (
@@ -106,18 +119,20 @@ const BeThumbVideo = () => {
                                 <p className='flex'><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
                                 <p className='flex'><LuDot size='1.2em'/>{formatDate(video.createdAt)}</p>
                             </div>
-                            <div className="flex justify-between text-sm mt-2 text-gray-400">
-                            <p className='flex gap-0.5'>
-  <FaRegComment size="1.2em"/>
-  {commentCounts[video._id] || video.commentsCount}
-</p>
-<p className='flex gap-0.5'>
-          <BiLike size="1.2em"/>{likes[video._id] || video.likesCount}
-        </p>
-        <p className='flex gap-0.5'>
-          <IoEyeOutline size='1.4em'/>{views[video._id] || video.viewsCount}
-        </p>
-                            </div>
+                         <div className="flex justify-between text-sm mt-2 text-gray-400">
+                        <p className='flex gap-0.5'>
+                            <FaRegComment size="1.2em"/>
+                            {commentCounts[video._id] || video.commentCount}
+                        </p>
+                        <p className='flex gap-0.5'>
+                            <BiLike size="1.2em"/>
+                            {likes[video._id]?.likeCount || video.likeCount}
+                        </p>
+                        <p className='flex gap-0.5'>
+                            <IoEyeOutline size='1.4em'/>
+                            {views[video._id]?.viewCount || video.viewCount}
+                        </p>
+                    </div>
                         </div>
                     </div>
                 </div>
