@@ -74,7 +74,7 @@ const BeThumbArticle = () => {
                         <p className='flex gap-0.5'><FaRegComment size="1.2em"/>{article.commentsCount}</p>
                         <p className='flex gap-0.5'><BiLike size="1.2em"/>{article.likesCount}</p>
                         <p className='flex gap-0.5'><IoEyeOutline size='1.4em'/>{article.viewsCount}</p>
-                        <p className='flex gap-0.5'>Read time: {article.readTime} min</p>
+                        {/* <p className='flex gap-0.5'>Read time: {article.avgReadTime} min</p> */}
                     </div>
                 </div>
             ))}

@@ -39,6 +39,7 @@ const NestedVidComps = () => {
     const [watchStartTime, setWatchStartTime] = useState(null);
     const [location, setLocation] = useState(null);
      const viewCountedRef = useRef(false);
+     const [totalWatchDuration, setTotalWatchDuration] = useState(0);
 
 
 
@@ -95,6 +96,7 @@ const NestedVidComps = () => {
 }, []);
 
 const handleVideoPlay = () => {
+    console.log('Video started playing');
     setWatchStartTime(Date.now());
     if (!viewCountedRef.current) {
         handleView(0);
@@ -103,16 +105,29 @@ const handleVideoPlay = () => {
 };
 
 const handleVideoPause = () => {
+    console.log('Video paused');
     if (watchStartTime) {
-        const watchDuration = (Date.now() - watchStartTime) / 1000; // Convert to seconds
-        handleView(watchDuration);
+        const currentWatchDuration = (Date.now() - watchStartTime) / 1000; // Convert to seconds
+        setTotalWatchDuration(prevDuration => prevDuration + currentWatchDuration);
         setWatchStartTime(null);
+        handleView(currentWatchDuration);
     }
 };
 
+const handleVideoEnded = () => {
+    console.log('Video ended');
+    handleVideoPause(); // This will calculate and send the final watch duration
+};
+
 const handleView = async (watchDuration) => {
-    if (firebaseUser && !viewCountedRef.current) {
+    if (firebaseUser) {
         try {
+            console.log('Sending view data:', { 
+                watchDuration, 
+                totalWatchDuration: totalWatchDuration + watchDuration,
+                deviceInfo: navigator.userAgent, 
+                location 
+            });
             const token = await firebaseUser.getIdToken();
             const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/view`, {
                 method: 'POST',
@@ -121,14 +136,15 @@ const handleView = async (watchDuration) => {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    watchDuration,
+                    watchDuration: totalWatchDuration + watchDuration,
                     deviceInfo: navigator.userAgent,
                     location
                 })
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
+                console.log('Received response:', data);
                 dispatch(setViews({ 
                     videoId: id, 
                     viewCount: data.viewCount, 
@@ -136,14 +152,16 @@ const handleView = async (watchDuration) => {
                     engagementScore: data.engagementScore,
                     viralScore: data.viralScore
                 }));
-                viewCountedRef.current = true;
+            } else {
+                console.error('Server responded with an error:', await response.text());
             }
         } catch (error) {
             console.error('Error updating view count:', error);
         }
+    } else {
+        console.log('View not counted: User not authenticated');
     }
 };
-
     
 const handleLike = async () => {
     if (firebaseUser) {
@@ -341,17 +359,17 @@ const handleLike = async () => {
     return (
         <div className="w-full">
         <div className="">
-        <video 
-                    className="w-full" 
-                    controls
-                    autoPlay
-                    onPlay={handleVideoPlay}
-                    onPause={handleVideoPause}
-                    onEnded={handleVideoPause}
-                >
-                    <source src={video.videoUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
+       <video 
+    className="w-full" 
+    controls
+    autoPlay
+    onPlay={handleVideoPlay}
+    onPause={handleVideoPause}
+    onEnded={handleVideoEnded}
+>
+    <source src={video.videoUrl} type="video/mp4" />
+    Your browser does not support the video tag.
+</video>
         </div>
         <div className='py-4 pl-4 pr-6'>
             <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
