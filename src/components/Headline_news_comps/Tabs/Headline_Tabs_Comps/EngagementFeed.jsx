@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback ,useRef} from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { BiLike, BiDislike } from "react-icons/bi";
 import { FaRegComment } from "react-icons/fa";
@@ -28,6 +28,8 @@ const EngagementFeed = ({ content }) => {
   const commentCount = useSelector(state => state.commentCount[content._id] || 0);
   const [userLocation, setUserLocation] = useState(null);
   const [error, setError] = useState(null);
+  const viewTimerRef = useRef(null);
+  const [isViewing, setIsViewing] = useState(false);
 
 
   useEffect(() => {
@@ -56,12 +58,30 @@ const EngagementFeed = ({ content }) => {
     };
   }, [dispatch, content._id]);
 
+
+
+
   useEffect(() => {
-    // Record view when component mounts (content is loaded)
-    if (user) {
-      recordAction('view');
+    // Start the view timer when the component mounts
+    if (user && !isViewing) {
+      viewTimerRef.current = setTimeout(() => {
+        recordAction('view');
+        setIsViewing(true);
+      }, 10000); // 10 seconds
     }
-  }, [user, content._id]);
+
+    // Clear the timer when the component unmounts or user changes
+    return () => {
+      if (viewTimerRef.current) {
+        clearTimeout(viewTimerRef.current);
+      }
+    };
+  }, [user, content._id, isViewing]);
+
+  // Reset isViewing when content changes
+  useEffect(() => {
+    setIsViewing(false);
+  }, [content._id]);
 
   const recordAction = async (action) => {
     if (!user) {
@@ -101,6 +121,9 @@ const EngagementFeed = ({ content }) => {
       setError(`Failed to record ${action}. Please try again later.`);
     }
   };
+
+
+
 
   const handleLike = () => recordAction('like');
   const handleDislike = () => recordAction('dislike');

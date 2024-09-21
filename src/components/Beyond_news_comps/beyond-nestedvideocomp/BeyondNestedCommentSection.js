@@ -132,7 +132,9 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
         },
         body: JSON.stringify({
           text: newComment,
-          replyTo: replyTo
+          replyTo: replyTo,
+          deviceInfo: navigator.userAgent,
+          location: await getCurrentLocation() // Implement this function to get user's location
         })
       });
       if (!response.ok) {
@@ -150,6 +152,25 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  // Function to get user's location
+  const getCurrentLocation = () => {
+    return new Promise((resolve, reject) => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            resolve(`${position.coords.latitude},${position.coords.longitude}`);
+          },
+          error => {
+            console.error("Error getting location:", error);
+            resolve("Unknown");
+          }
+        );
+      } else {
+        resolve("Geolocation not supported");
+      }
+    });
   };
   
   const handleReply = (videoId) => {

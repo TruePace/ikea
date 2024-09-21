@@ -38,8 +38,10 @@ const NestedVidComps = () => {
     const views = useSelector(state => state.views);
     const [watchStartTime, setWatchStartTime] = useState(null);
     const [location, setLocation] = useState(null);
-     const viewCountedRef = useRef(false);
+    const [viewCounted, setViewCounted] = useState(false);
      const [totalWatchDuration, setTotalWatchDuration] = useState(0);
+     const [viewTimer, setViewTimer] = useState(null);
+
 
 
 
@@ -98,25 +100,35 @@ const NestedVidComps = () => {
 const handleVideoPlay = () => {
     console.log('Video started playing');
     setWatchStartTime(Date.now());
-    if (!viewCountedRef.current) {
-        handleView(0);
-        viewCountedRef.current = true;
+    if (!viewCounted) {
+        const timer = setTimeout(() => {
+            const currentWatchDuration = (Date.now() - watchStartTime) / 1000;
+            handleView(currentWatchDuration);
+            setViewCounted(true);
+        }, 10000); // 10 seconds
+        setViewTimer(timer);
     }
 };
 
 const handleVideoPause = () => {
     console.log('Video paused');
+    if (viewTimer) {
+        clearTimeout(viewTimer);
+        setViewTimer(null);
+    }
     if (watchStartTime) {
-        const currentWatchDuration = (Date.now() - watchStartTime) / 1000; // Convert to seconds
+        const currentWatchDuration = (Date.now() - watchStartTime) / 1000;
         setTotalWatchDuration(prevDuration => prevDuration + currentWatchDuration);
         setWatchStartTime(null);
-        handleView(currentWatchDuration);
+        if (viewCounted) {
+            handleView(currentWatchDuration);
+        }
     }
 };
 
 const handleVideoEnded = () => {
     console.log('Video ended');
-    handleVideoPause(); // This will calculate and send the final watch duration
+    handleVideoPause();
 };
 
 const handleView = async (watchDuration) => {
