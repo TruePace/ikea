@@ -28,8 +28,10 @@ const EngagementFeed = ({ content }) => {
   const commentCount = useSelector(state => state.commentCount[content._id] || 0);
   const [userLocation, setUserLocation] = useState(null);
   const [error, setError] = useState(null);
-  const viewTimerRef = useRef(null);
-  const [isViewing, setIsViewing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const timerRef = useRef(null);
+  const observerRef = useRef(null);
+  const viewedRef = useRef(false);
 
 
   useEffect(() => {
@@ -61,27 +63,51 @@ const EngagementFeed = ({ content }) => {
 
 
 
+  const handleView = useCallback(() => {
+    if (user && !viewedRef.current) {
+      recordAction('view');
+      viewedRef.current = true;
+    }
+  }, [user]);
+
   useEffect(() => {
-    // Start the view timer when the component mounts
-    if (user && !isViewing) {
-      viewTimerRef.current = setTimeout(() => {
-        recordAction('view');
-        setIsViewing(true);
-      }, 10000); // 10 seconds
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.5 } // At least 50% of the component is visible
+    );
+
+    const currentElement = observerRef.current;
+
+    if (currentElement) {
+      currentElement.observe(document.getElementById(`engagement-feed-${content._id}`));
     }
 
-    // Clear the timer when the component unmounts or user changes
     return () => {
-      if (viewTimerRef.current) {
-        clearTimeout(viewTimerRef.current);
+      if (currentElement) {
+        currentElement.disconnect();
       }
     };
-  }, [user, content._id, isViewing]);
-
-  // Reset isViewing when content changes
-  useEffect(() => {
-    setIsViewing(false);
   }, [content._id]);
+
+  useEffect(() => {
+    if (isVisible && !viewedRef.current) {
+      timerRef.current = setTimeout(() => {
+        handleView();
+      }, 10000); // 10 seconds
+    } else {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isVisible, handleView]);
 
   const recordAction = async (action) => {
     if (!user) {
@@ -162,6 +188,7 @@ const EngagementFeed = ({ content }) => {
 
   return (
     <>
+    <div id={`engagement-feed-${content._id}`}>
       <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center">
         <div className="flex justify-between w-1/4">
           <button onClick={handleLike} className={`h-12 ${interactions.activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}>
@@ -194,6 +221,8 @@ const EngagementFeed = ({ content }) => {
       />
       <div>
         <p>Views: {interactions.viewCount}</p>
+      </div>
+
       </div>
     </>
   );
