@@ -8,6 +8,7 @@ import ContentFeed from './Headline_Tabs_Comps/ContentFeed';
 import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
 import CountdownTimer from '@/components/Utils/CountdownTimer';
+import JustInTimer from '@/components/Utils/JustInTimer';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const Slide = ({ channel, headlineContents, justInContents }) => {
@@ -17,8 +18,6 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const [channelsMap, setChannelsMap] = useState({});
   const hasJustInContent = currentJustInContent.length > 0;
   const dispatch = useDispatch();
-  // const viewedIds = useSelector(state => Array.isArray(state.viewedContent?.viewedIds) ? state.viewedContent.viewedIds : []);
-  // const unviewedCount = useSelector(state => state.viewedContent?.unviewedCount || 0);
   const viewedIds = useSelector(state => state.viewedContent.viewedIds);
   const unviewedCount = useSelector(state => state.viewedContent.unviewedCount);
 
@@ -96,15 +95,29 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   }, []);
 
 
-  const renderContent = (content) => (
+  const renderHeadlineContent = (content) => (
     <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
       <SubscribeFeed channel={channel} />
-      <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)}  />
-      <EngagementFeed content={content}/>  
-       
-       
-      <div className="absolute top-50 right-3 flex items-center space-x-2">
+      <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)} />
+      <EngagementFeed content={content} />
+      
+      <div className="absolute bottom-80 left-0 flex items-center space-x-2">
         <CountdownTimer expirationTime={content.headlineExpiresAt} />
+        <span className="text-xs text-red-800">
+          Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+        </span>
+      </div>
+    </div>
+  );
+
+  const renderJustInContent = (content) => (
+    <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
+      <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
+      <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)} />
+      <EngagementFeed content={content} />
+      
+      <div className="absolute top-2 right-3 flex items-center space-x-2">
+        <JustInTimer expirationTime={content.justInExpiresAt} />
         <span className="text-xs text-gray-500">
           Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
         </span>
@@ -117,11 +130,11 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     {
       title: 'Headline News',
       renderContent: () => (
-        <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
+        <div className='h-screen overflow-y-scroll snap-y snap-mandatory'>
           {headlineContents.length > 0 ? (
             headlineContents.map((content) => (
               <div key={content._id} className='h-screen snap-start'>
-                {renderContent(content)}
+                {renderHeadlineContent(content)}
               </div>
             ))
           ) : (
@@ -141,28 +154,23 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
             {hasJustInContent ? (
               currentJustInContent.map((content) => (
                 <div key={content._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
-                  <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
-                    <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
-                    <ContentFeed 
-                      content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)}  />
-                    <EngagementFeed content={content} />
-                  </div>
+                  {renderJustInContent(content)}
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center h-screen  font-sans ">
-               <div className="text-4xl mb-4 flex items-center">
-    <FaNewspaper className="mr-2" />
-    <FaArrowLeft className="mx-2" />
-    <FaCalendarAlt className="ml-2" />
-  </div>
-                <p className="text-center text-md mb-4  capitalize ">
+              <div className="flex flex-col items-center justify-center h-screen font-sans">
+                <div className="text-4xl mb-4 flex items-center">
+                  <FaNewspaper className="mr-2" />
+                  <FaArrowLeft className="mx-2" />
+                  <FaCalendarAlt className="ml-2" />
+                </div>
+                <p className="text-center text-md mb-4 capitalize">
                   No breaking news right now. 
                   <br/>
-                  Recent updates moved to  Headline News 
+                  Recent updates moved to Headline News 
                 </p>
                 <p className="text-center text-md capitalize">
-                 Visit <b> Missed Just In</b> to catch up
+                  Visit <b>Missed Just In</b> to catch up
                 </p>
               </div>
             )}
