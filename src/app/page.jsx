@@ -1,12 +1,11 @@
-'use client'
-// import { store, persistor } from "../Redux/store"
-// import { Provider } from "react-redux";
-// import { PersistGate } from 'redux-persist/integration/react';
+"use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useState, useEffect } from "react";
 import { useAuth } from "./(auth)/AuthContext";
 import AuthModal from "@/components/Headline_news_comps/AuthModal";  
+import { useDispatch } from "react-redux";
+import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -16,6 +15,7 @@ const Page = () => {
   const [error, setError] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     async function fetchData() {
@@ -28,6 +28,7 @@ const Page = () => {
         setChannels(channelsData);
         setHeadlineContents(headlineContentsData);
         setJustInContents(justInContentsData);
+        dispatch(setJustInContent(justInContentsData));
       } catch (error) {
         setError(error.message);
       } finally {
@@ -40,7 +41,7 @@ const Page = () => {
     const dataInterval = setInterval(fetchData, 30000);
 
     return () => clearInterval(dataInterval);
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     const moveExpiredContent = () => {
@@ -71,27 +72,28 @@ const Page = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  // Filter channels that have content
+  const channelsWithContent = channels.filter(channel => 
+    headlineContents.some(content => content.channelId === channel._id) || 
+    justInContents.some(content => content.channelId === channel._id)
+  );
+
   return (
     <>
-      {/* <Provider store={store}>
-        <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}> */}
-          <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {channels.map((channel) => (
-              <div key={channel._id} className="h-screen snap-start">
-                <Slide
-                  channel={channel}
-                  headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
-                  justInContents={justInContents}
-                />
-              </div>
-            ))}
+      <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {channelsWithContent.map((channel) => (
+          <div key={channel._id} className="h-screen snap-start">
+            <Slide
+              channel={channel}
+              headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
+              justInContents={justInContents}
+            />
           </div>
-          <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-        {/* </PersistGate>
-      </Provider> */}
+        ))}
+      </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );
 }
 
 export default Page;
-

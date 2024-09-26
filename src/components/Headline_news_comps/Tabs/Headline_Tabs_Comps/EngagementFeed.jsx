@@ -10,6 +10,7 @@ import { setCommentCount } from '../../../../Redux/Slices/CommentCountSlice';
 import { auth } from "@/app/(auth)/firebase/ClientApp";
 import socket from "@/components/Socket io/SocketClient";
 import { setContentInteractions } from "@/Redux/Slices/ContentInteractions";
+import { IoEyeOutline } from "react-icons/io5";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -189,8 +190,8 @@ const EngagementFeed = ({ content }) => {
   return (
     <>
     <div id={`engagement-feed-${content._id}`}>
-      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center">
-        <div className="flex justify-between w-1/4">
+      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center ">
+        <div className="flex justify-between w-1/4 ">
           <button onClick={handleLike} className={`h-12 ${interactions.activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}>
             <BiLike size='1.6em' className="m-auto" />
             <p className="text-xs">({interactions.likeCount})</p>
@@ -201,17 +202,21 @@ const EngagementFeed = ({ content }) => {
           </button>
         </div>
         <a href='' onClick={handleCommentClick} className="h-12">
-          <FaRegComment size='1.6em' className="m-auto" />
-          <p className="text-xs">{commentCount} Comments</p>
+          <FaRegComment size='1.8em' className="m-auto" />
+          <p className="text-xs">{commentCount} </p>
         </a>
         <a href='' onClick={handleShare} className="">
           <IoIosShareAlt size='1.9em' className="m-auto"/>
-          <p className="text-xs">Share ({interactions.shareCount})<br/> Link </p>
+          <p className="text-xs">({interactions.shareCount}) </p>
         </a>
         <a href='' onClick={handleScreenshot} className="">
           <RiScreenshot2Line size='1.9em' className="m-auto" />
-          <p className="text-xs">Share <br/>ScreenShot ({interactions.screenshotCount})</p>
+          <p className="text-xs">({interactions.screenshotCount})</p>
         </a>
+        <span>
+          <IoEyeOutline size='1.7em' className="m-auto" />
+          {interactions.viewCount}
+          </span>
       </div>
       <CommentSection
         isOpen={isCommentOpen}
@@ -220,7 +225,7 @@ const EngagementFeed = ({ content }) => {
         onCommentAdded={handleCommentAdded}
       />
       <div>
-        <p>Views: {interactions.viewCount}</p>
+        {/* <p>Views: {interactions.viewCount}</p> */}
       </div>
 
       </div>

@@ -1,12 +1,13 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { markAsViewed, resetViewedForNewContent, selectUnviewedCount } from '../../../Redux/Slices/ViewContentSlice';
+import { markAsViewed, updateUnviewedCount,setJustInContent } from '../../../Redux/Slices/ViewContentSlice';
 import { FaBell } from 'react-icons/fa';
 import SubscribeFeed from './Headline_Tabs_Comps/SubscribeFeed';
 import ContentFeed from './Headline_Tabs_Comps/ContentFeed';
 import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
+import CountdownTimer from '@/components/Utils/CountdownTimer';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const Slide = ({ channel, headlineContents, justInContents }) => {
@@ -16,30 +17,27 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const [channelsMap, setChannelsMap] = useState({});
   const hasJustInContent = currentJustInContent.length > 0;
   const dispatch = useDispatch();
-  const viewedContent = useSelector(state => state.viewedContent);
-  const unviewedCount = useSelector(state => selectUnviewedCount(state, currentJustInContent));
+  // const viewedIds = useSelector(state => Array.isArray(state.viewedContent?.viewedIds) ? state.viewedContent.viewedIds : []);
+  // const unviewedCount = useSelector(state => state.viewedContent?.unviewedCount || 0);
+  const viewedIds = useSelector(state => state.viewedContent.viewedIds);
+  const unviewedCount = useSelector(state => state.viewedContent.unviewedCount);
 
-  // console.log("Current Just In Content:", currentJustInContent);
-  // console.log("Viewed Content:", viewedContent);
-  // console.log("Unviewed Count:", unviewedCount);
+  console.log("Current Just In Content:", currentJustInContent);
+  console.log("Viewed Content:", viewedIds);
+  console.log("Unviewed Count:", unviewedCount);
 
-  const handleJustInView = (contentId) => {
-    dispatch(markAsViewed(contentId));
-  };
-
+  
   useEffect(() => {
-    const sortedContent = justInContents.sort((a, b) => {
+    console.log("Just In Contents:", justInContents);
+    const sortedContent = [...justInContents].sort((a, b) => {
       if (a.channelId === channel._id && b.channelId !== channel._id) return -1;
       if (b.channelId === channel._id && a.channelId !== channel._id) return 1;
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
   
     setCurrentJustInContent(sortedContent);
-  
-    // Only reset viewed content if there is genuinely new content.
-    if (sortedContent.length > 0) {
-      dispatch(resetViewedForNewContent(sortedContent.map(c => c._id)));
-    }
+    dispatch(setJustInContent(sortedContent));
+    dispatch(updateUnviewedCount());
   
     const uniqueChannelIds = [...new Set(sortedContent.map(content => content.channelId))];
     Promise.all(uniqueChannelIds.map(fetchChannel))
@@ -51,6 +49,16 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
         setChannelsMap(newChannelsMap);
       });
   }, [justInContents, channel._id, dispatch]);
+
+  useEffect(() => {
+    console.log("Unviewed Count:", unviewedCount);
+  }, [unviewedCount]);
+
+  const handleJustInView = (contentId) => {
+    dispatch(markAsViewed(contentId));
+    dispatch(updateUnviewedCount());
+  };
+
 
   // Function to fetch a single channel
   const fetchChannel = async (channelId) => {
@@ -87,20 +95,40 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     };
   }, []);
 
+
+  const renderContent = (content) => (
+    <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
+      <SubscribeFeed channel={channel} />
+      <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)}  />
+      <EngagementFeed content={content}/>  
+       
+       
+      <div className="absolute top-50 right-3 flex items-center space-x-2">
+        <CountdownTimer expirationTime={content.headlineExpiresAt} />
+        <span className="text-xs text-gray-500">
+          Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+        </span>
+      </div>
+    </div>
+  );
+
+
   const items = [
     {
       title: 'Headline News',
       renderContent: () => (
         <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
-          {headlineContents.map((content) => (
-            <div key={content._id} className='h-screen snap-start'>
-              <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
-                <SubscribeFeed channel={channel} />
-                <ContentFeed content={content} onView={() => handleJustInView(content._id)} />
-                <EngagementFeed content={content}/>
+          {headlineContents.length > 0 ? (
+            headlineContents.map((content) => (
+              <div key={content._id} className='h-screen snap-start'>
+                {renderContent(content)}
               </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-xl text-gray-500">No content available at the moment. Check back later!</p>
             </div>
-          ))}
+          )}
         </div>
       )
     },
@@ -116,7 +144,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
                   <div className='border-blue-400 rounded-lg px-4 py-2 break-words'>
                     <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
                     <ContentFeed 
-                      content={content} onView={() => handleJustInView(content._id)} isViewed={viewedContent.includes(content._id)} />
+                      content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)}  />
                     <EngagementFeed content={content} />
                   </div>
                 </div>

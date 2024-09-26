@@ -14,11 +14,12 @@ import likesReducerArticle from './Slices/ArticleSlice/LikesSlice';
 import viewsReducerArticle from './Slices/ArticleSlice/ViewsSlice';
 import commentCountReducerArticle from './Slices/ArticleSlice/CommentCountSlice';
 import channelReducer from './Slices/ArticleSlice/ChannelSlice'
+import notificationReducer from './Slices/NotificationSlice'
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['viewedContent', 'contentInteractions', 'commentCount', 'subscriptions', 'likes', 'views', 'likesArticle', 'viewsArticle', 'commentCountArticle','channels'],
+  whitelist: ['viewedContent', 'contentInteractions', 'commentCount', 'subscriptions', 'likes', 'views', 'likesArticle', 'viewsArticle', 'commentCountArticle','channels','notification'],
 };
 
 const rootReducer = combineReducers({
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   viewsArticle: viewsReducerArticle,
   commentCountArticle: commentCountReducerArticle,
   channels: channelReducer,
+  notification: notificationReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
