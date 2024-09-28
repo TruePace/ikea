@@ -32,7 +32,9 @@ const NestedVidComps = () => {
         state.subscriptions[user?.uid]?.[video?.channelId?._id] || false
     );
    
-    
+//     const commentCount = useSelector(state => state.commentCount[video._id] || video.commentCount);
+// const { likeCount } = useSelector(state => state.likes[video._id] || { likeCount: video.likeCount });
+// const { viewCount } = useSelector(state => state.views[video._id] || { viewCount: video.viewCount });
     const commentCounts = useSelector(state => state.commentCount);
     const likes = useSelector(state => state.likes);
     const views = useSelector(state => state.views);
@@ -45,11 +47,43 @@ const NestedVidComps = () => {
 
 
 
+     useEffect(() => {
+        const fetchInitialData = async () => {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}`);
+            if (response.ok) {
+              const data = await response.json();
+              dispatch(setCommentCount({ contentId: id, count: data.commentCount }));
+              dispatch(setViews({ 
+                videoId: id, 
+                viewCount: data.viewCount, 
+                avgWatchTime: data.avgWatchTime,
+                engagementScore: data.engagementScore,
+                viralScore: data.viralScore
+              }));
+              dispatch(setLikes({ 
+                videoId: id, 
+                likeCount: data.likeCount,
+                engagementScore: data.engagementScore,
+                viralScore: data.viralScore,
+                isLiked: data.likes.includes(user?.uid)
+              }));
+            }
+          } catch (error) {
+            console.error('Error fetching initial data:', error);
+          }
+        };
+      
+        if (id) {
+          fetchInitialData();
+        }
+      }, [id, dispatch, user]);
 
 
 
   useEffect(() => {
     socket.on('videoUpdated', (data) => {
+        console.log(data)
       if (data.commentCount) dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
       if (data.likesCount) dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
       if (data.viewsCount) dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
@@ -59,6 +93,7 @@ const NestedVidComps = () => {
       socket.off('videoUpdated');
     };
   }, [dispatch]);
+  
 
 
   useEffect(() => {
@@ -134,12 +169,6 @@ const handleVideoEnded = () => {
 const handleView = async (watchDuration) => {
     if (firebaseUser) {
         try {
-            console.log('Sending view data:', { 
-                watchDuration, 
-                totalWatchDuration: totalWatchDuration + watchDuration,
-                deviceInfo: navigator.userAgent, 
-                location 
-            });
             const token = await firebaseUser.getIdToken();
             const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/view`, {
                 method: 'POST',
@@ -148,7 +177,7 @@ const handleView = async (watchDuration) => {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    watchDuration: totalWatchDuration + watchDuration,
+                    watchDuration,
                     deviceInfo: navigator.userAgent,
                     location
                 })
@@ -156,7 +185,6 @@ const handleView = async (watchDuration) => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Received response:', data);
                 dispatch(setViews({ 
                     videoId: id, 
                     viewCount: data.viewCount, 
@@ -170,11 +198,10 @@ const handleView = async (watchDuration) => {
         } catch (error) {
             console.error('Error updating view count:', error);
         }
-    } else {
-        console.log('View not counted: User not authenticated');
     }
 };
-    
+
+
 const handleLike = async () => {
     if (firebaseUser) {
         try {
@@ -347,20 +374,6 @@ const handleLike = async () => {
         }));
     
         dispatch(setCommentCount({ contentId: video._id, count: newCommentCount }));
-    
-        try {
-          const token = await firebaseUser.getIdToken();
-          await fetch(`${API_BASE_URL}/api/BeyondVideo/${video._id}/commentCount`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ commentCount: newCommentCount })
-          });
-        } catch (error) {
-          console.error('Error updating comment count:', error);
-        }
     };
 
 

@@ -39,7 +39,7 @@ const JustInTimer = ({ expirationTime }) => {
           fill="transparent"
         />
         <circle
-          className="text-blue-600 progress-ring__circle stroke-current"
+          className="text-red-800 progress-ring__circle stroke-current"
           strokeWidth="8"
           strokeLinecap="round"
           cx="50"

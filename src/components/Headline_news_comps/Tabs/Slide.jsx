@@ -116,9 +116,9 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
       <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)} />
       <EngagementFeed content={content} />
       
-      <div className="absolute top-2 right-3 flex items-center space-x-2">
+      <div className="absolute bottom-80 left-0  flex items-center space-x-2">
         <JustInTimer expirationTime={content.justInExpiresAt} />
-        <span className="text-xs text-gray-500">
+        <span className="text-xs  text-red-800">
           Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
         </span>
       </div>
