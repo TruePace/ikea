@@ -349,7 +349,7 @@ const handleLike = async () => {
         dispatch(setCommentCount({ contentId: video._id, count: newCommentCount }));
     
         try {
-          const token = await user.getIdToken();
+          const token = await firebaseUser.getIdToken();
           await fetch(`${API_BASE_URL}/api/BeyondVideo/${video._id}/commentCount`, {
             method: 'PATCH',
             headers: {

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { LuDot } from "react-icons/lu";
 import { IoEyeOutline } from "react-icons/io5";
-const HistoryContent = () => {
+const HistoryArticleContent = () => {
     return (
         <>
              <div className="w-11/12  border-gray-200 py-2 m-auto  flex  gap-2">
@@ -26,4 +26,4 @@ const HistoryContent = () => {
     );
 }
 
-export default HistoryContent;
+export default HistoryArticleContent;

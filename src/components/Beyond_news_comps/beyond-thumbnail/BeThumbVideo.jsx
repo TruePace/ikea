@@ -17,7 +17,7 @@ import { formatDate } from '@/components/Utils/DateFormat';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const BeThumbVideo = () => {
-    const { user } = useAuth();
+    const { user ,firebaseUser} = useAuth();
     const router = useRouter();
     const [videos, setVideos] = useState([]);
     const [clickedId, setClickedId] = useState(null);
@@ -73,17 +73,35 @@ const BeThumbVideo = () => {
         fetchVideos();
     }, [dispatch]);
 
-    const handleClick = (videoId) => {
+    const handleClick = async (videoId) => {
         setClickedId(videoId);
+        if (firebaseUser) {
+          try {
+            const token = await firebaseUser.getIdToken();
+            await fetch(`${API_BASE_URL}/api/history/add`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                contentType: 'video',
+                contentId: videoId,
+                duration: 0 // This will be updated later when the user actually watches the video
+              })
+            });
+          } catch (error) {
+            console.error('Error adding video to history:', error);
+          }
+        }
         setTimeout(() => {
-            if (!user) {
-                router.push('/login');
-            } else {
-                router.push(`/beyond_news/nestedvideo/${videoId}`);
-            }
+          if (!user) {
+            router.push('/login');
+          } else {
+            router.push(`/beyond_news/nestedvideo/${videoId}`);
+          }
         }, 100);
-    };
-
+      };
 
     return (
         <>

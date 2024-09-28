@@ -11,7 +11,7 @@ import { formatDate } from '@/components/Utils/DateFormat';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const BeThumbArticle = () => {
-    const { user } = useAuth();
+    const { user,firebaseUser } = useAuth();
     const router = useRouter();
     const [articles, setArticles] = useState([]);
     const [clickedId, setClickedId] = useState(null);
@@ -34,16 +34,35 @@ const BeThumbArticle = () => {
         fetchArticles();
     }, []);
 
-    const handleClick = (articleId) => {
+    const handleClick = async (articleId) => {
         setClickedId(articleId);
+        if (firebaseUser) {
+          try {
+            const token = await firebaseUser.getIdToken();
+            await fetch(`${API_BASE_URL}/api/history/add`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                contentType: 'article',
+                contentId: articleId,
+                duration: 0 // You can update this later if you track reading time
+              })
+            });
+          } catch (error) {
+            console.error('Error adding article to history:', error);
+          }
+        }
         setTimeout(() => {
-            if (!user) {
-                router.push('/login');
-            } else {
-                router.push(`/beyond_news/nestedarticle/${articleId}`);
-            }
+          if (!user) {
+            router.push('/login');
+          } else {
+            router.push(`/beyond_news/nestedarticle/${articleId}`);
+          }
         }, 100);
-    };
+      };
 
     return (
         <>
