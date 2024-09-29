@@ -14,7 +14,8 @@ import likesReducerArticle from './Slices/ArticleSlice/LikesSlice';
 import viewsReducerArticle from './Slices/ArticleSlice/ViewsSlice';
 import commentCountReducerArticle from './Slices/ArticleSlice/CommentCountSlice';
 import channelReducer from './Slices/ArticleSlice/ChannelSlice'
-import notificationReducer from './Slices/NotificationSlice'
+import notificationReducer from './Slices/MissedNotificationSlice'
+
 
 const persistConfig = {
   key: 'root',

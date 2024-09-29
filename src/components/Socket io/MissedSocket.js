@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { incrementMissedContentCount } from '@/Redux/Slices/NotificationSlice';
+import { incrementMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
 import socket from './SocketClient';
 
 const MissedSocket = () => {

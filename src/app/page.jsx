@@ -78,6 +78,22 @@ const Page = () => {
     justInContents.some(content => content.channelId === channel._id)
   );
 
+
+  if (channelsWithContent.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-red-50 ">
+      <div className="text-center p-8 bg-white rounded-lg shadow-md border border-red-300">
+        <h2 className="text-2xl font-bold mb-4">No Content Available</h2>
+        <p className="text-gray-600">
+          Headline News content is not available at the moment. Please check back later.
+        </p>
+      </div>
+    </div>
+    
+    );
+  }
+
+
   return (
     <>
       <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
