@@ -139,7 +139,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
             ))
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-xl text-gray-500">No content available at the moment. Check back later!</p>
+              <p className="text-xl text-gray-500 capitalize">News Only available on the Just in tab. Check back later!</p>
             </div>
           )}
         </div>
