@@ -7,7 +7,7 @@ const ContentFeed = ({ content, onView, isViewed }) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isViewed) {
+        if (entry.isIntersecting && !isViewed && typeof onView === 'function') {
           onView();
         }
       },
@@ -37,7 +37,7 @@ const ContentFeed = ({ content, onView, isViewed }) => {
           </div>
         </div>
       ) : (
-        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-md sm:py-16 sm:text-lg sm:leading-8   h-96 font-semibold text-gray-700 mt-2 w-full flex items-center capitalize justify-center">{/*bg-yellow-300*/}
+        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-md sm:py-16 sm:text-lg sm:leading-8 h-96 font-semibold text-gray-700 mt-2 w-full flex items-center capitalize justify-center">
           {content.message}
         </div>
       )}

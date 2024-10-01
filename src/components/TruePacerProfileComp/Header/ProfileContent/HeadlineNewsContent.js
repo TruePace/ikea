@@ -1,17 +1,30 @@
-const HeadlineNewsContent = () => {
-    return (
-        <>
-            <div className="p-4">
-        <h3 className="text-lg font-bold mb-2">Headline News</h3>
-        <p>Stay up to date with the latest breaking news and top stories.</p>
-        <ul className="list-disc list-inside mt-2">
-            <li>Breaking news</li>
-            <li>Daily updates</li>
-            <li>Top stories of the hour</li>
-        </ul>
+import Link from "next/link";
+import React from "react";
+import ContentFeed from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/ContentFeed";
+import EngagementFeed from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/EngagementFeed";
+
+const HeadlineNewsContent = ({ contents }) => {
+  const handleView = (contentId) => {
+    // Implement your view logic here
+    console.log(`Content ${contentId} viewed`);
+  };
+
+  return (
+    <div className="space-y-4">
+      {contents.map((content) => (
+        <div key={content._id} className="bg-white p-4 rounded-lg shadow">
+          {/* <Link href={`/headline_news/${content._id}`}> */}
+            <ContentFeed 
+              content={content} 
+              onView={() => handleView(content._id)}
+              isViewed={false} // You might want to implement a way to track viewed content
+            />
+            <EngagementFeed content={content} />
+          {/* </Link> */}
+        </div>
+      ))}
     </div>
-        </>
-    );
-}
+  );
+};
 
 export default HeadlineNewsContent;

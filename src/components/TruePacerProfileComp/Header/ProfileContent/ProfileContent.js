@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
 import BeyondHeadlineContent from "./BeyondHeadlineContent";
 import HeadlineNewsContent from "./HeadlineNewsContent";
+import { fetchContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useAuth } from "@/app/(auth)/AuthContext";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -17,6 +18,18 @@ const ProfileContent = ({profile}) => {
     const isSubscribed = useSelector(state => 
       state.subscriptions[user?.uid]?.[profile._id] || false
     );
+    const [headlineContents, setHeadlineContents] = useState([]);
+
+
+    useEffect(() => {
+        const fetchCreatorContent = async () => {
+          const contents = await fetchContents(profile._id);
+          setHeadlineContents(contents);
+        };
+        fetchCreatorContent();
+      }, [profile._id]);
+    
+
 
     useEffect(() => {
         setSubscriberCount(profile.subscriberCount);
@@ -122,7 +135,11 @@ const handleUnsubscribe = async () => {
                 </a>
             </div>
             <div className="mt-4 bg-base-200 rounded-lg mb-16">
-                {activeTab === "Beyond Headline" ? <BeyondHeadlineContent channelId={profile._id}/> : <HeadlineNewsContent/>}
+                {activeTab === "Beyond Headline" ? <BeyondHeadlineContent channelId={profile._id}/> : 
+                    
+                <HeadlineNewsContent contents={headlineContents}/>
+              
+                }
             </div>
         </>
     );

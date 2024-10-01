@@ -226,6 +226,7 @@ const Register = () => {
                         <input
                             id="username"
                             name="username"
+                            maxLength={50}
                             type="text"
                             autoComplete="username"
                             required
