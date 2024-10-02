@@ -8,6 +8,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { formatDate } from '@/components/Utils/DateFormat';
+import TruncateText from './TruncateText';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const BeThumbArticle = () => {
@@ -83,8 +84,12 @@ const BeThumbArticle = () => {
                         <p className="font-semibold text-sm">@{article.channelId?.name || 'Unknown Channel'}</p>
                         <p className="text-sm text-gray-400 flex"><LuDot size='1.2em'/>{formatDate(article.createdAt)}</p>
                     </div>
-                    <p className='font-semibold text-lg mt-2'>{article.title}</p>
-                    <p className="text-md text-gray-600 mt-2">{article.previewContent}</p>
+                    <p className='font-semibold text-lg mt-2'>
+     <TruncateText text={article.title} maxLength={40} />
+</p>
+<p className="text-md text-gray-600 mt-2">
+  <TruncateText text={article.previewContent} maxLength={100} />
+</p>
                     <div className="relative h-60 mt-2">
                         <Image src={article.previewImage} fill alt={article.title} className="rounded-md object-cover"/>
                     </div>

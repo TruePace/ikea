@@ -6,6 +6,9 @@ import { useAuth } from "./(auth)/AuthContext";
 import AuthModal from "@/components/Headline_news_comps/AuthModal";  
 import { useDispatch } from "react-redux";
 import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
+import { PersistGate } from 'redux-persist/integration/react';
+import persistor from '@/Redux/store'
+import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -96,6 +99,7 @@ const Page = () => {
 
   return (
     <>
+<HeadlineSocket/>
       <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {channelsWithContent.map((channel) => (
           <div key={channel._id} className="h-screen snap-start">
@@ -104,10 +108,12 @@ const Page = () => {
               headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
               justInContents={justInContents}
             />
+          
           </div>
         ))}
       </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+     
     </>
   );
 }

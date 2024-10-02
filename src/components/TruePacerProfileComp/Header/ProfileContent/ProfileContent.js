@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 import { LuDot, LuChevronDown } from "react-icons/lu";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from "@/Redux/Slices/SubscriptionSlice";
 import BeyondHeadlineContent from "./BeyondHeadlineContent";
@@ -19,6 +19,7 @@ const ProfileContent = ({profile}) => {
       state.subscriptions[user?.uid]?.[profile._id] || false
     );
     const [headlineContents, setHeadlineContents] = useState([]);
+    const tabsRef = useRef(null);
 
 
     useEffect(() => {
@@ -34,6 +35,22 @@ const ProfileContent = ({profile}) => {
     useEffect(() => {
         setSubscriberCount(profile.subscriberCount);
     }, [profile.subscriberCount]);
+
+    useEffect(() => {
+      const handleScroll = () => {
+          if (tabsRef.current) {
+              const tabsTop = tabsRef.current.getBoundingClientRect().top;
+              if (tabsTop <= 0) {
+                  tabsRef.current.classList.add('sticky', 'top-0', 'z-10');
+              } else {
+                  tabsRef.current.classList.remove('sticky', 'top-0', 'z-10');
+              }
+          }
+      };
+  
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
     // ProfileContent.js
 const handleSubscribe = async () => {
@@ -120,15 +137,15 @@ const handleUnsubscribe = async () => {
             </div>
 
             {/* tabs jsx */}
-            <div className="flex mt-4 bg-red-600 p-1 rounded-lg">
+            <div  ref={tabsRef} className="flex mt-4 bg-red-600 p-1 rounded-lg">
                 <a 
-                    className={`flex-1 text-center py-2 px-4 rounded-md transition-colors duration-300 ${activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"}`}
+                    className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-colors duration-300 ${activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"}`}
                     onClick={() => setActiveTab("Beyond Headline")}
                 >
                     Beyond Headline
                 </a>
                 <a 
-                    className={`flex-1 text-center py-2 px-4 rounded-md transition-colors duration-300 ${activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"}`}
+                    className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-colors duration-300 ${activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"}`}
                     onClick={() => setActiveTab("Headline News")}
                 >
                     Headline News

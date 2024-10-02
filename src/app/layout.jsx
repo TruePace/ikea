@@ -5,7 +5,7 @@ import "./globals.css";
 import NavBar from "@/components/navForAll/NavBar";
 import { AuthProvider } from "./(auth)/AuthContext";
 import { Provider } from "react-redux";
-import { PersistGate } from 'redux-persist/integration/react';
+// import { PersistGate } from 'redux-persist/integration/react';
 import { store,persistor } from "@/Redux/store";
 import SocketHandler from "@/components/Socket io/SocketHandler";
 import SecondSocketHandler from "@/components/Socket io/SecondSocketHandler";
@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
     
       <body className={inter.className}>
       <Provider store={store}>
-      <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}>
+      {/* <PersistGate loading={<div>Loading persisted state...</div>} persistor={persistor}> */}
 
       <AuthProvider>
       <SocketHandler />
@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
           </AuthProvider>
 
           
-          </PersistGate>
+          {/* </PersistGate> */}
           </Provider>
         </body>
        

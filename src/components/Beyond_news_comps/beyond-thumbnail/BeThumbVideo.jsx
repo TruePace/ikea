@@ -13,6 +13,7 @@ import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import socket from '@/components/Socket io/SocketClient';
 import { formatDate } from '@/components/Utils/DateFormat';
+import TruncateText from './TruncateText';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -132,7 +133,10 @@ const BeThumbVideo = () => {
                             </div>
                         </div>
                         <div className='w-4/5 font-sans'>
-                            <p className='font-semibold text-lg'>{video.title}</p>
+
+                            <p className='font-semibold text-lg'>
+                            <TruncateText text={video.title} maxLength={25} /></p>
+
                             <div className="flex justify-between text-sm mt-2 text-gray-400">
                                 <p className='flex'><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
                                 <p className='flex'><LuDot size='1.2em'/>{formatDate(video.createdAt)}</p>
