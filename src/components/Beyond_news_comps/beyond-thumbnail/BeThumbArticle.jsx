@@ -9,16 +9,19 @@ import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { formatDate } from '@/components/Utils/DateFormat';
 import TruncateText from './TruncateText';
+import ThumbnailSkeletonLoader from '../beyond-header/ThumbnailSkeletonLoader';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const BeThumbArticle = () => {
     const { user,firebaseUser } = useAuth();
     const router = useRouter();
     const [articles, setArticles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [clickedId, setClickedId] = useState(null);
 
     useEffect(() => {
         const fetchArticles = async () => {
+          setIsLoading(true);
             try {
                 const response = await fetch(`${API_BASE_URL}/api/BeyondArticle`);
                 if (response.ok) {
@@ -30,6 +33,9 @@ const BeThumbArticle = () => {
             } catch (error) {
                 console.error('Error fetching articles:', error);
             }
+            finally {
+              setIsLoading(false);
+          }
         };
 
         fetchArticles();
@@ -64,6 +70,18 @@ const BeThumbArticle = () => {
           }
         }, 100);
       };
+
+    //   
+
+    if (isLoading) {
+        return (
+            <>
+                {[...Array(2)].map((_, index) => (
+                    <ThumbnailSkeletonLoader key={index} type="article" />
+                ))}
+            </>
+        );
+    }
 
     return (
         <>

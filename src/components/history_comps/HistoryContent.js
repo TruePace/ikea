@@ -6,6 +6,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import OverlayVideoThumbnail from './OverlayVideoThumbnail';
+import HistorySkeleton from './HistorySkeleton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -100,7 +101,7 @@ const HistoryContent = () => {
           <button onClick={clearHistory} className="bg-red-500 text-white px-4 py-2 rounded">Clear History</button>
         </div>
         {loading ? (
-          <p>Loading...</p>
+          <HistorySkeleton/>
         ) : error ? (
           <div>
             <p>Error: {error}</p>

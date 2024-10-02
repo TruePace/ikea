@@ -1,5 +1,5 @@
 'use client'
-import HistoryArticleContent from "@/components/history_comps/HistoryArticleContent";
+
 import HistoryHeader from "@/components/history_comps/HistoryHeader";
 import HistoryContent from "@/components/history_comps/HistoryContent";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";

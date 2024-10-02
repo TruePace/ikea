@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuth } from "../(auth)/AuthContext";
 import { useDispatch } from 'react-redux';
 import { setHasMissedContent, setMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
+import MissedJustInSkeleton from '@/components/Missed_just_in_comps/MissedJustInSkeleton';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -40,7 +41,7 @@ const Page = () => {
       <Header/>
       <div className="py-8 w-full">
         {isLoading ? (
-          <p>Loading...</p>
+        <MissedJustInSkeleton/>
         ) : missedContent.length > 0 ? (
           missedContent.map(content => (
             <MissedJustInContainer

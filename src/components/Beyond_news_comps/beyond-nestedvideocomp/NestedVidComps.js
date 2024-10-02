@@ -14,6 +14,7 @@ import { setCommentCount } from '@/Redux/Slices/CommentCountSlice';
 import BeyondCommentSection from './BeyondNestedCommentSection';
 import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
+import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 
 
 
@@ -283,7 +284,7 @@ const handleLike = async () => {
         }
     }, [id, dispatch, user]);
     if (isLoading) {
-        return <div>Loading...</div>;
+        return <NestedSkeletonLoader  type="video"/>
     }
 
     if (error) {

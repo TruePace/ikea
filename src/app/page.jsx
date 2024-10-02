@@ -9,6 +9,7 @@ import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 import { PersistGate } from 'redux-persist/integration/react';
 import persistor from '@/Redux/store'
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
+import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/ContentFeedSkeleton";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -72,7 +73,19 @@ const Page = () => {
     }
   }, [user]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory">
+        {[...Array(3)].map((_, index) => (
+          <div key={index} className="h-screen snap-start">
+            <div className="max-w-md mx-auto pt-4">
+              <ContentFeedSkeleton />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
   if (error) return <div>Error: {error}</div>;
 
   // Filter channels that have content

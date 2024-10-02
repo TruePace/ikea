@@ -1,3 +1,4 @@
+'use client'
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import socket from './SocketClient';
@@ -5,7 +6,7 @@ import { setCommentCount } from '@/Redux/Slices/ArticleSlice/CommentCountSlice';
 import { setViews } from '@/Redux/Slices/ArticleSlice/ViewsSlice';
 import { setLikes } from '@/Redux/Slices/ArticleSlice/LikesSlice';
 
-export default function SocketHandler() {
+export default function SecondSocketHandler() {
   const dispatch = useDispatch();
 
   useEffect(() => {

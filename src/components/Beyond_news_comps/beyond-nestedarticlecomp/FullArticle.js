@@ -5,6 +5,7 @@ import Image from "next/image";
 import { formatDate } from '@/components/Utils/DateFormat';
 import ArticleInteractions from './ArticleInteractions';
 import { useAuth } from '@/app/(auth)/AuthContext';
+import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -105,7 +106,7 @@ const FullArticle = () => {
     };
 
     if (!article) {
-        return <div>Loading...</div>;
+        return <NestedSkeletonLoader/>
     }
 
     return (

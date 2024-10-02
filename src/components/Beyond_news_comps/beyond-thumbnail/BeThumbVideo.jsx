@@ -14,6 +14,7 @@ import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import socket from '@/components/Socket io/SocketClient';
 import { formatDate } from '@/components/Utils/DateFormat';
 import TruncateText from './TruncateText';
+import ThumbnailSkeletonLoader from '../beyond-header/ThumbnailSkeletonLoader';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -21,6 +22,7 @@ const BeThumbVideo = () => {
     const { user ,firebaseUser} = useAuth();
     const router = useRouter();
     const [videos, setVideos] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [clickedId, setClickedId] = useState(null);
     const dispatch = useDispatch();
     const commentCounts = useSelector(state => state.commentCount);
@@ -42,6 +44,7 @@ const BeThumbVideo = () => {
     
     useEffect(() => {
         const fetchVideos = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch(`${API_BASE_URL}/api/BeyondVideo`);
                 if (response.ok) {
@@ -54,6 +57,9 @@ const BeThumbVideo = () => {
                 }
             } catch (error) {
                 console.error('Error fetching videos:', error);
+            }
+            finally {
+                setIsLoading(false);
             }
         };
 
@@ -103,6 +109,17 @@ const BeThumbVideo = () => {
           }
         }, 100);
       };
+
+
+    if (isLoading) {
+        return (
+            <>
+                {[...Array(2)].map((_, index) => (
+                    <ThumbnailSkeletonLoader key={index} type="video" />
+                ))}
+            </>
+        );
+    }
 
     return (
         <>

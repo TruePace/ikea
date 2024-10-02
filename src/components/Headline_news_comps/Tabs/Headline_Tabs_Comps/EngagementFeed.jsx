@@ -102,7 +102,7 @@ const EngagementFeed = ({ content }) => {
     if (isVisible && !viewedRef.current) {
       timerRef.current = setTimeout(() => {
         handleView();
-      }, 10000); // 10 seconds
+      }, 20000); // 20 seconds
     } else {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
