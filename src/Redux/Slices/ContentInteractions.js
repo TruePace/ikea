@@ -5,8 +5,32 @@ const contentInteractionsSlice = createSlice({
   initialState: {},
   reducers: {
     setContentInteractions: (state, action) => {
-      const { contentId, likeCount, dislikeCount, shareCount, screenshotCount, viewCount, activeButton } = action.payload;
-      state[contentId] = { likeCount, dislikeCount, shareCount, screenshotCount, viewCount, activeButton };
+      const { contentId, userId, likeCount, dislikeCount, shareCount, screenshotCount, viewCount, userInteractions } = action.payload;
+      if (!state[contentId]) {
+        state[contentId] = { 
+          likeCount, 
+          dislikeCount, 
+          shareCount, 
+          screenshotCount, 
+          viewCount, 
+          userInteractions: {} 
+        };
+      } else {
+        state[contentId] = { 
+          ...state[contentId], 
+          likeCount, 
+          dislikeCount, 
+          shareCount, 
+          screenshotCount, 
+          viewCount 
+        };
+      }
+      if (userInteractions) {
+        state[contentId].userInteractions = {
+          ...state[contentId].userInteractions,
+          ...userInteractions
+        };
+      }
     },
   },
 });

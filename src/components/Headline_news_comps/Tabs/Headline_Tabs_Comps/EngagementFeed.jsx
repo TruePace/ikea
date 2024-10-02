@@ -23,7 +23,7 @@ const EngagementFeed = ({ content }) => {
     shareCount: content.shareCount,
     screenshotCount: content.screenshotCount,
     viewCount: content.viewCount,
-    activeButton: null
+    userInteractions: {}
   });
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const commentCount = useSelector(state => state.commentCount[content._id] || 0);
@@ -33,6 +33,9 @@ const EngagementFeed = ({ content }) => {
   const timerRef = useRef(null);
   const observerRef = useRef(null);
   const viewedRef = useRef(false);
+  // Use optional chaining to avoid the TypeError
+  const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
+  const activeButton = userInteraction.activeButton;
 
 
   useEffect(() => {
@@ -51,15 +54,18 @@ const EngagementFeed = ({ content }) => {
 
   useEffect(() => {
     socket.on('updateContentInteractions', (data) => {
-      if (data.contentId === content._id) {
-        dispatch(setContentInteractions(data));
+      if (user) {
+        dispatch(setContentInteractions({
+          ...data,
+          userId: user.uid
+        }));
       }
     });
-
+  
     return () => {
       socket.off('updateContentInteractions');
     };
-  }, [dispatch, content._id]);
+  }, [dispatch, user]);
 
 
 
@@ -110,12 +116,48 @@ const EngagementFeed = ({ content }) => {
     };
   }, [isVisible, handleView]);
 
+
+
+  useEffect(() => {
+    if (user && content._id) {
+      fetchUserInteraction();
+    }
+  }, [user, content._id]);
+
+  const fetchUserInteraction = async () => {
+    if (!user) return;
+
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${content._id}/userInteraction`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user interaction');
+      }
+
+      const data = await response.json();
+      dispatch(setContentInteractions({
+        contentId: content._id,
+        userId: user.uid,
+        userInteractions: { [user.uid]: data }
+      }));
+    } catch (error) {
+      console.error('Error fetching user interaction:', error);
+    }
+  };
+
+
+
   const recordAction = async (action) => {
     if (!user) {
       setError("You must be logged in to perform this action.");
       return;
     }
-
+  
     try {
       const token = await auth.currentUser.getIdToken();
       const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/action`, {
@@ -131,24 +173,23 @@ const EngagementFeed = ({ content }) => {
           location: userLocation
         })
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to record action');
       }
-
+  
       const data = await response.json();
       dispatch(setContentInteractions({
         contentId: content._id,
+        userId: user.uid,
         ...data
       }));
-      setError(null);
     } catch (error) {
       console.error('Error recording action:', error);
       setError(`Failed to record ${action}. Please try again later.`);
     }
   };
-
 
 
 
@@ -192,11 +233,17 @@ const EngagementFeed = ({ content }) => {
     <div id={`engagement-feed-${content._id}`}>
       <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center ">
         <div className="flex justify-between w-1/4 ">
-          <button onClick={handleLike} className={`h-12 ${interactions.activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}>
+        <button 
+            onClick={handleLike} 
+            className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
             <BiLike size='1.6em' className="m-auto" />
             <p className="text-xs">({interactions.likeCount})</p>
           </button>
-          <button onClick={handleDislike} className={`h-12 ${interactions.activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500'}`}>
+          <button 
+            onClick={handleDislike} 
+            className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500'}`}
+          >
             <BiDislike size='1.6em' className="m-auto" />
             <p className="text-xs">({interactions.dislikeCount})</p>
           </button>
