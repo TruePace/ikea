@@ -11,6 +11,7 @@ import { auth } from "@/app/(auth)/firebase/ClientApp";
 import socket from "@/components/Socket io/SocketClient";
 import { setContentInteractions } from "@/Redux/Slices/ContentInteractions";
 import { IoEyeOutline } from "react-icons/io5";
+import ShareComponent from "@/components/ShareComponent";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -195,7 +196,17 @@ const EngagementFeed = ({ content }) => {
 
   const handleLike = () => recordAction('like');
   const handleDislike = () => recordAction('dislike');
-  const handleShare = () => recordAction('share');
+
+  
+  const handleShare = async (platform) => {
+    if (user) {
+      try {
+        await recordAction('share', { platform });
+      } catch (error) {
+        console.error('Error recording share action:', error);
+      }
+    }
+  };
   const handleScreenshot = () => recordAction('screenshot');
 
   const fetchCommentCount = useCallback(async () => {
@@ -252,10 +263,13 @@ const EngagementFeed = ({ content }) => {
           <FaRegComment size='1.8em' className="m-auto" />
           <p className="text-xs">{commentCount} </p>
         </a>
-        <a href='' onClick={handleShare} className="">
-          <IoIosShareAlt size='1.9em' className="m-auto"/>
-          <p className="text-xs">({interactions.shareCount}) </p>
-        </a>
+        <ShareComponent 
+            contentId={content._id} 
+            onShare={handleShare} 
+            shareCount={interactions.shareCount}
+          />
+
+
         <a href='' onClick={handleScreenshot} className="">
           <RiScreenshot2Line size='1.9em' className="m-auto" />
           <p className="text-xs">({interactions.screenshotCount})</p>
@@ -272,7 +286,7 @@ const EngagementFeed = ({ content }) => {
         onCommentAdded={handleCommentAdded}
       />
       <div>
-        {/* <p>Views: {interactions.viewCount}</p> */}
+       
       </div>
 
       </div>

@@ -15,6 +15,7 @@ import BeyondCommentSection from './BeyondNestedCommentSection';
 import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
+import ShareVideoComp from './ShareVideoComp';
 
 
 
@@ -360,6 +361,38 @@ const handleLike = async () => {
         }
     };
 
+    const handleShare = async (platform) => {
+        if (firebaseUser) {
+            try {
+                const token = await firebaseUser.getIdToken();
+                const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/share`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        platform,
+                        deviceInfo: navigator.userAgent,
+                        location: location
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setVideo(prevVideo => ({
+                        ...prevVideo,
+                        shareCount: data.shareCount
+                    }));
+                }
+            } catch (error) {
+                console.error('Error updating share count:', error);
+            }
+        } else {
+            router.push('/login');
+        }
+    };
+
     const handleCommentClick = () => {
         setIsCommentOpen(true);
     };
@@ -448,6 +481,7 @@ const handleLike = async () => {
     <IoEyeOutline className="mr-1" /> 
     {views[video._id]?.viewCount || video.viewsCount}
 </span>
+<ShareVideoComp video={video} onShare={handleShare}/>
                 </div>
             </div>
         </div>

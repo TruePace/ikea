@@ -6,6 +6,7 @@ import { formatDate } from '@/components/Utils/DateFormat';
 import ArticleInteractions from './ArticleInteractions';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
+import ShareArticleComp from './ShareArticleComp';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -116,6 +117,7 @@ const FullArticle = () => {
                 <Image src={article.previewImage} alt={article.title} width={800} height={400} className="rounded-lg" />
             </div>
             <ArticleInteractions article={article} />
+            <ShareArticleComp article={article}/>
             <div className="flex justify-between text-sm mb-4 text-gray-600">
                 <p>{formatDate(article.createdAt)}</p>
             </div>
