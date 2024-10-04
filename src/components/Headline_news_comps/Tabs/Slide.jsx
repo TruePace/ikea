@@ -21,13 +21,13 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const viewedIds = useSelector(state => state.viewedContent.viewedIds);
   const unviewedCount = useSelector(state => state.viewedContent.unviewedCount);
 
-  console.log("Current Just In Content:", currentJustInContent);
-  console.log("Viewed Content:", viewedIds);
-  console.log("Unviewed Count:", unviewedCount);
+  // console.log("Current Just In Content:", currentJustInContent);
+  // console.log("Viewed Content:", viewedIds);
+  // console.log("Unviewed Count:", unviewedCount);
 
   
   useEffect(() => {
-    console.log("Just In Contents:", justInContents);
+    // console.log("Just In Contents:", justInContents);
     const sortedContent = [...justInContents].sort((a, b) => {
       if (a.channelId === channel._id && b.channelId !== channel._id) return -1;
       if (b.channelId === channel._id && a.channelId !== channel._id) return 1;
@@ -50,7 +50,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   }, [justInContents, channel._id, dispatch]);
 
   useEffect(() => {
-    console.log("Unviewed Count:", unviewedCount);
+    // console.log("Unviewed Count:", unviewedCount);
   }, [unviewedCount]);
 
   const handleJustInView = (contentId) => {

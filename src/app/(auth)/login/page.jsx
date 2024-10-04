@@ -37,6 +37,7 @@ const LogIn = () => {
         
             // 2. Get ID token
             const idToken = await user.getIdToken();
+            // console.log('Firebase ID Token:', idToken);
         
             // 3. Verify with your backend
             const response = await fetch(`${API_BASE_URL}/api/users/login`, {
@@ -44,6 +45,7 @@ const LogIn = () => {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${idToken}`
+                    
                 },
                 body: JSON.stringify({
                     uid: user.uid,
@@ -77,6 +79,8 @@ const LogIn = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const idToken = await user.getIdToken();
+
+            console.log('Google Sign In Firebase ID Token:', idToken);
             
             const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
