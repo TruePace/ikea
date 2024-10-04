@@ -11,7 +11,7 @@ import { auth } from "@/app/(auth)/firebase/ClientApp";
 import socket from "@/components/Socket io/SocketClient";
 import { setContentInteractions } from "@/Redux/Slices/ContentInteractions";
 import { IoEyeOutline } from "react-icons/io5";
-import ShareComponent from "@/components/ShareComponent";
+import ShareComponent from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/ShareComponent";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
