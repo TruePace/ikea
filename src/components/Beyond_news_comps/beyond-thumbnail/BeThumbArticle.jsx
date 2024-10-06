@@ -12,34 +12,34 @@ import TruncateText from './TruncateText';
 import ThumbnailSkeletonLoader from '../beyond-header/ThumbnailSkeletonLoader';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
-const BeThumbArticle = () => {
+const BeThumbArticle = ({article}) => {
     const { user,firebaseUser } = useAuth();
     const router = useRouter();
-    const [articles, setArticles] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    // const [articles, setArticles] = useState([]);
+    // const [isLoading, setIsLoading] = useState(true);
     const [clickedId, setClickedId] = useState(null);
 
-    useEffect(() => {
-        const fetchArticles = async () => {
-          setIsLoading(true);
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/BeyondArticle`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setArticles(data);
-                } else {
-                    console.error('Failed to fetch articles');
-                }
-            } catch (error) {
-                console.error('Error fetching articles:', error);
-            }
-            finally {
-              setIsLoading(false);
-          }
-        };
+    // useEffect(() => {
+    //     const fetchArticles = async () => {
+    //       setIsLoading(true);
+    //         try {
+    //             const response = await fetch(`${API_BASE_URL}/api/BeyondArticle`);
+    //             if (response.ok) {
+    //                 const data = await response.json();
+    //                 setArticles(data);
+    //             } else {
+    //                 console.error('Failed to fetch articles');
+    //             }
+    //         } catch (error) {
+    //             console.error('Error fetching articles:', error);
+    //         }
+    //         finally {
+    //           setIsLoading(false);
+    //       }
+    //     };
 
-        fetchArticles();
-    }, []);
+    //     fetchArticles();
+    // }, []);
 
     const handleClick = async (articleId) => {
         setClickedId(articleId);
@@ -73,19 +73,19 @@ const BeThumbArticle = () => {
 
     //   
 
-    if (isLoading) {
-        return (
-            <>
-                {[...Array(2)].map((_, index) => (
-                    <ThumbnailSkeletonLoader key={index} type="article" />
-                ))}
-            </>
-        );
-    }
+    // if (isLoading) {
+    //     return (
+    //         <>
+    //             {[...Array(2)].map((_, index) => (
+    //                 <ThumbnailSkeletonLoader key={index} type="article" />
+    //             ))}
+    //         </>
+    //     );
+    // }
 
     return (
-        <>
-            {articles.map((article) => (
+       <>
+           
                 <div 
                     key={article._id} 
                     onClick={() => handleClick(article._id)} 
@@ -103,23 +103,23 @@ const BeThumbArticle = () => {
                         <p className="text-sm text-gray-400 flex"><LuDot size='1.2em'/>{formatDate(article.createdAt)}</p>
                     </div>
                     <p className='font-semibold text-lg mt-2'>
-     <TruncateText text={article.title} maxLength={40} />
-</p>
-<p className="text-md text-gray-600 mt-2">
-  <TruncateText text={article.previewContent} maxLength={100} />
-</p>
-                    <div className="relative h-60 mt-2">
-                        <Image src={article.previewImage} fill alt={article.title} className="rounded-md object-cover"/>
-                    </div>
-
+                        <TruncateText text={article.title} maxLength={40} />
+                    </p>
+                    <p className="text-md text-gray-600 mt-2">
+                        <TruncateText text={article.previewContent} maxLength={100} />
+                    </p>
+                    {article.previewImage && (
+                        <div className="relative h-60 mt-2">
+                            <Image src={article.previewImage} fill alt={article.title} className="rounded-md object-cover"/>
+                        </div>
+                    )}
                     <div className="flex justify-between text-sm mt-2 text-gray-400">
                         <p className='flex gap-0.5'><FaRegComment size="1.2em"/>{article.commentsCount}</p>
                         <p className='flex gap-0.5'><BiLike size="1.2em"/>{article.likesCount}</p>
                         <p className='flex gap-0.5'><IoEyeOutline size='1.4em'/>{article.viewsCount}</p>
-                        {/* <p className='flex gap-0.5'>Read time: {article.avgReadTime} min</p> */}
                     </div>
                 </div>
-            ))}
+           
         </>
     );
 }

@@ -412,7 +412,7 @@ const handleLike = async () => {
 
 
     if (!video) {
-        return <div>Loading...</div>;
+        return <NestedSkeletonLoader  type="video"/>
     }
 
     return (
