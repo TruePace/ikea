@@ -17,8 +17,7 @@ const FullArticle = () => {
     const [hasViewed, setHasViewed] = useState(false);
     const articleRef = useRef(null);
     const viewTimerRef = useRef(null);
-    const [userLocation, setUserLocation] = useState(null);
-    
+   
     
 
 
@@ -39,21 +38,7 @@ const FullArticle = () => {
 
         fetchArticle();
 
-        // Get user's location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setUserLocation({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    });
-                },
-                (error) => {
-                    console.error("Error getting location:", error);
-                }
-            );
-        }
-
+       
         // Set up scroll and mouse movement listeners
         let lastActivityTime = Date.now();
         const activityThreshold = 5000; // 5 seconds
@@ -89,7 +74,7 @@ const FullArticle = () => {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ location: userLocation })
+                  
                 });
 
                 if (response.ok) {

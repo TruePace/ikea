@@ -30,7 +30,26 @@ const ArticleInteractions = ({ article }) => {
     const likes = useSelector(state => state.likesArticle[article._id] ?? article.likesCount);
   const views = useSelector(state => state.viewsArticle[article._id] ?? article.viewsCount);
   const commentCount = useSelector(state => state.commentCountArticle[article._id] ?? article.commentsCount);
+  const [userLocation, setUserLocation] = useState(null);
 
+
+
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setUserLocation({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            },
+            (error) => {
+                console.error("Error getting location:", error);
+            }
+        );
+    }
+}, []);
 
   useEffect(() => {
     const fetchSubscriberCount = async () => {
@@ -49,27 +68,29 @@ const ArticleInteractions = ({ article }) => {
 }, [article.channelId._id, dispatch]);
 
 
-  const handleView = useCallback(async () => {
-    if (firebaseUser) {
-      try {
-        const token = await firebaseUser.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-        });
+const handleView = useCallback(async () => {
+    if (firebaseUser && userLocation) {
+        try {
+            const token = await firebaseUser.getIdToken();
+            const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ location: userLocation })
+            });
 
-        if (response.ok) {
-          const data = await response.json();
-          dispatch(setViews({ contentId: article._id, views: data.viewsCount }));
+            if (response.ok) {
+                const data = await response.json();
+                dispatch(setViews({ contentId: article._id, views: data.viewsCount }));
+            }
+        } catch (error) {
+            console.error('Error updating view count:', error);
         }
-      } catch (error) {
-        console.error('Error updating view count:', error);
-      }
     }
-  }, [firebaseUser, article._id, dispatch]);
+}, [firebaseUser, article._id, dispatch, userLocation]);
+
 
   useEffect(() => {
     handleView();
@@ -77,27 +98,28 @@ const ArticleInteractions = ({ article }) => {
 
   const handleLike = async () => {
     if (firebaseUser) {
-      try {
-        const token = await firebaseUser.getIdToken();
-        const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/like`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-        });
+        try {
+            const token = await firebaseUser.getIdToken();
+            const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/like`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ location: userLocation })
+            });
 
-        if (response.ok) {
-          const data = await response.json();
-          dispatch(setLikes({ contentId: article._id, likes: data.likesCount }));
+            if (response.ok) {
+                const data = await response.json();
+                dispatch(setLikes({ contentId: article._id, likes: data.likesCount }));
+            }
+        } catch (error) {
+            console.error('Error updating like count:', error);
         }
-      } catch (error) {
-        console.error('Error updating like count:', error);
-      }
     } else {
-      router.push('/login');
+        router.push('/login');
     }
-  };
+};
 
 
   const handleSubscribe = async () => {

@@ -70,7 +70,26 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
   const { user, firebaseUser } = useAuth();
   const dispatch = useDispatch();
   const commentCount = useSelector(state => state.commentCountArticle[articleId] || 0);
+  const [userLocation, setUserLocation] = useState(null);
+
   
+  useEffect(() => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setUserLocation({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            },
+            (error) => {
+                console.error("Error getting location:", error);
+            }
+        );
+    }
+}, []);
+
+
   useEffect(() => {
     if (isOpen && articleId && firebaseUser) {
       fetchComments();
@@ -101,7 +120,7 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    if (!firebaseUser) {
+    if (!firebaseUser && userLocation) {
       setError('You must be logged in to comment.');
       return;
     }
@@ -117,7 +136,8 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
         },
         body: JSON.stringify({ 
           text: newComment,
-          replyTo: replyTo  // Include the replyTo parameter
+          replyTo: replyTo , // Include the replyTo parameter
+          location: userLocation
         })
       });
       if (!response.ok) throw new Error('Failed to post comment');
