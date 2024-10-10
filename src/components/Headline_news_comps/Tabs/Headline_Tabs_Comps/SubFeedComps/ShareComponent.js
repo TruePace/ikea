@@ -79,12 +79,13 @@ const ShareComponent = ({ contentId, onShare, shareCount }) => {
         </div>
       )}
       <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="flex items-center space-x-1 text-gray-500 hover:text-gray-700 "
-      >
-        <FaShareAlt />
-      </button>
-        <p>({shareCount})</p>
+  onClick={() => setIsOpen(!isOpen)} 
+  className="flex flex-col items-center text-gray-500 hover:text-gray-700"
+>
+  <FaShareAlt />
+  <p>({shareCount})</p>
+</button>
+      
       {copied && <span className="absolute top-full left-0 mt-2 text-green-500">Copied!</span>}
     </div>
   );

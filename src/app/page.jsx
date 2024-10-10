@@ -9,7 +9,7 @@ import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 import { PersistGate } from 'redux-persist/integration/react';
 import persistor from '@/Redux/store'
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
-import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/ContentFeedSkeleton";
+import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);

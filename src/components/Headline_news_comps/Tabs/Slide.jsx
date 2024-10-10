@@ -9,10 +9,13 @@ import EngagementFeed from './Headline_Tabs_Comps/EngagementFeed';
 import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
 import CountdownTimer from '@/components/Utils/CountdownTimer';
 import JustInTimer from '@/components/Utils/JustInTimer';
+import JustInPagination from './Headline_Tabs_Comps/SubFeedComps/JustInPagination';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const Slide = ({ channel, headlineContents, justInContents }) => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const [currentJustInIndex, setCurrentJustInIndex] = useState(0);
+  const justInContainerRef = useRef(null);
   const slideRef = useRef(null);
   const [currentJustInContent, setCurrentJustInContent] = useState([]);
   const [channelsMap, setChannelsMap] = useState({});
@@ -95,6 +98,20 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   }, []);
 
 
+  const handleJustInScroll = () => {
+    if (justInContainerRef.current) {
+      const scrollLeft = justInContainerRef.current.scrollLeft;
+      const slideWidth = justInContainerRef.current.offsetWidth;
+      const newIndex = Math.round(scrollLeft / slideWidth);
+      setCurrentJustInIndex(newIndex);
+    }
+  };
+
+  const handlePageChange = (newIndex) => {
+    setCurrentJustInIndex(newIndex);
+  };
+
+
   const renderHeadlineContent = (content) => (
     <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
       <SubscribeFeed channel={channel} />
@@ -110,20 +127,70 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     </div>
   );
 
-  const renderJustInContent = (content) => (
-    <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
-      <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
-      <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)} />
-      <EngagementFeed content={content} />
-      
-      <div className="absolute bottom-80 left-0  flex items-center space-x-2">
-        <JustInTimer expirationTime={content.justInExpiresAt} />
-        <span className="text-xs  text-red-800">
-          Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-        </span>
+  const renderJustInContent = () => {
+    if (currentJustInContent.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen font-sans">
+          <div className="text-4xl mb-4 flex items-center">
+            <FaNewspaper className="mr-2" />
+            <FaArrowLeft className="mx-2" />
+            <FaCalendarAlt className="ml-2" />
+          </div>
+          <p className="text-center text-md mb-4 capitalize">
+            No breaking news right now.
+            <br/>
+            Recent updates moved to Headline News
+          </p>
+          <p className="text-center text-md capitalize">
+            Visit <b>Missed Just In</b> to catch up
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative">
+        <div 
+          ref={justInContainerRef}
+          className="flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          onScroll={handleJustInScroll}
+        >
+          {currentJustInContent.map((content, index) => (
+            <div 
+              key={content._id} 
+              className="w-full flex-shrink-0 snap-start"
+            >
+              <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
+                <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
+                <ContentFeed 
+                  content={content} 
+                  onView={() => handleJustInView(content._id)} 
+                  isViewed={viewedIds.includes(content._id)} 
+                />
+                <EngagementFeed content={content} />
+                
+                <div className="absolute bottom-80 left-0 flex items-center space-x-2">
+                  <JustInTimer expirationTime={content.justInExpiresAt} />
+                  <span className="text-xs text-red-800">
+                    Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {currentJustInContent.length > 1 && (
+          <JustInPagination 
+            currentIndex={currentJustInIndex}
+            totalPages={currentJustInContent.length}
+            onPageChange={handlePageChange}
+            containerRef={justInContainerRef}
+          />
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
 
   const items = [
@@ -147,36 +214,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     },
     {
       title: 'Just In',
-      renderContent: () => {
-        const hasJustInContent = currentJustInContent.length > 0;
-        return (
-          <div className='border-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-scroll whitespace-nowrap snap-x snap-mandatory w-full'>
-            {hasJustInContent ? (
-              currentJustInContent.map((content) => (
-                <div key={content._id} className='w-full inline-block align-top snap-start h-screen whitespace-normal'>
-                  {renderJustInContent(content)}
-                </div>
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center h-screen font-sans">
-                <div className="text-4xl mb-4 flex items-center">
-                  <FaNewspaper className="mr-2" />
-                  <FaArrowLeft className="mx-2" />
-                  <FaCalendarAlt className="ml-2" />
-                </div>
-                <p className="text-center text-md mb-4 capitalize">
-                  No breaking news right now. 
-                  <br/>
-                  Recent updates moved to Headline News 
-                </p>
-                <p className="text-center text-md capitalize">
-                  Visit <b>Missed Just In</b> to catch up
-                </p>
-              </div>
-            )}
-          </div>
-        );
-      }
+      renderContent: renderJustInContent
     }
   ];
 
@@ -204,11 +242,16 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
       </div>
         
         <div className=''>
+        {selectedTab === 0 && (
+            <>
           {items.map((item, index) => (
             <div  className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
               {item.renderContent()}
             </div>
           ))}
+ </>
+        )}
+          {selectedTab === 1 && renderJustInContent()}
         </div>
       </div>
     </div>

@@ -20,7 +20,8 @@ const CountdownTimer = ({ expirationTime }) => {
   const minutes = Math.floor((timeLeft % 3600) / 60);
   const seconds = timeLeft % 60;
 
-  const percentage = (timeLeft / (24 * 60 * 60)) * 100;
+  const totalDuration = 24 * 60 * 60; // 24 hours in seconds
+  const percentage = (timeLeft / totalDuration) * 100;
 
   return (
     <div className="relative w-11 h-11">
@@ -30,7 +31,7 @@ const CountdownTimer = ({ expirationTime }) => {
           strokeWidth="2"
           cx="20"
           cy="20"
-          r="16"
+          r="18"
           fill="transparent"
         ></circle>
         <circle
@@ -39,10 +40,11 @@ const CountdownTimer = ({ expirationTime }) => {
           strokeLinecap="round"
           cx="20"
           cy="20"
-          r="16"
+          r="18"
           fill="transparent"
           strokeDasharray={`${2 * Math.PI * 18}`}
           strokeDashoffset={`${((100 - percentage) / 100) * (2 * Math.PI * 18)}`}
+          transform="rotate(-90 20 20)"
         ></circle>
       </svg>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[8px] text-center">

@@ -17,11 +17,7 @@ export async function fetchChannels() {
     }
   };
 
-  // export async function fetchContents() {
-  //   const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content`);
-  //   if (!response.ok) throw new Error('Failed to fetch content');
-  //   return response.json();
-  // }
+  
 
   export async function fetchContents(channelId) {
     const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/channel/${channelId}`);
