@@ -6,8 +6,7 @@ import Image from "next/image";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const BeyondHeadlineContent = ({ channelId }) => {
-  const [videos, setVideos] = useState([]);
-  const [articles, setArticles] = useState([]);
+  const [combinedContent, setCombinedContent] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,8 +18,14 @@ const BeyondHeadlineContent = ({ channelId }) => {
         if (videosResponse.ok && articlesResponse.ok) {
           const videosData = await videosResponse.json();
           const articlesData = await articlesResponse.json();
-          setVideos(videosData);
-          setArticles(articlesData);
+
+          // Combine and sort content
+          const combined = [
+            ...videosData.map(v => ({ ...v, type: 'video' })),
+            ...articlesData.map(a => ({ ...a, type: 'article' }))
+          ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+          setCombinedContent(combined);
         } else {
           console.error('Failed to fetch content');
         }
@@ -34,48 +39,48 @@ const BeyondHeadlineContent = ({ channelId }) => {
     }
   }, [channelId]);
 
-  const handleVideoClick = (videoId) => {
-    router.push(`/beyond_news/nestedvideo/${videoId}`);
-  };
-
-  const handleArticleClick = (articleId) => {
-    router.push(`/beyond_news/nestedarticle/${articleId}`);
+  const handleContentClick = (item) => {
+    if (item.type === 'video') {
+      router.push(`/beyond_news/nestedvideo/${item._id}`);
+    } else {
+      router.push(`/beyond_news/nestedarticle/${item._id}`);
+    }
   };
 
   const truncateTitle = (title, maxLength = 50) => {
     return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
   };
 
-  const renderContent = (items, type) => {
-    if (items.length === 0) {
-      return <p className="py-3">No {type} available for this channel.</p>;
+  const renderContent = () => {
+    if (combinedContent.length === 0) {
+      return <p className="py-3">No content available for this channel.</p>;
     }
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((item) => (
-          <div 
-            key={item._id} 
-            className="cursor-pointer relative group mb-3 py-3 border-b-4 border-b-gray-200" 
-            onClick={() => type === 'videos' ? handleVideoClick(item._id) : handleArticleClick(item._id)}
+        {combinedContent.map((item) => (
+          <div
+            key={item._id}
+            className="cursor-pointer relative group mb-3 py-3 border-b-4 border-b-gray-200"
+            onClick={() => handleContentClick(item)}
           >
-            <p className="  mb-2 font-semibold">{truncateTitle(item.title)}</p>
-            <div className="relative w-80  h-36">
-              <Image 
-                src={type === 'videos' ? item.thumbnailUrl : item.previewImage} 
-                alt={item.title} 
+            <p className="mb-2 font-semibold">{truncateTitle(item.title)}</p>
+            <div className="relative w-80 h-36">
+              <Image
+                src={item.type === 'video' ? item.thumbnailUrl : item.previewImage}
+                alt={item.title}
                 layout="fill"
                 objectFit="cover"
                 className="rounded-md"
               />
-              {type === 'videos' && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-100 ">
+              {item.type === 'video' && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-100">
                   <div className="bg-black bg-opacity-50 rounded-full p-3">
                     <FaPlay className="text-white text-2xl" />
                   </div>
                 </div>
               )}
-              {type === 'articles' && (
+              {item.type === 'article' && (
                 <div className="absolute top-2 right-2 bg-white rounded-full p-1">
                   <FaNewspaper className="text-gray-600 text-lg" />
                 </div>
@@ -90,12 +95,7 @@ const BeyondHeadlineContent = ({ channelId }) => {
   return (
     <div className="p-4">
       <h3 className="text-lg font-bold mb-2">Beyond Headline</h3>
-
-      <span className="text-md font-semibold   px-3 py-2 bg-red-800 text-white rounded-md ">Videos</span>
-      {renderContent(videos, 'videos')}
-
-      <span className="text-md font-semibold  px-3 py-2 bg-red-800 text-white rounded-md ">Articles</span>
-      {renderContent(articles, 'articles')}
+      {renderContent()}
     </div>
   );
 };

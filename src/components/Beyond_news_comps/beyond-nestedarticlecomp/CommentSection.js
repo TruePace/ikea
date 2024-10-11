@@ -205,8 +205,6 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
       setError('You must be logged in to like a comment.');
       return;
     }
-    setIsLoading(true);
-    setError(null);
     try {
       const token = await firebaseUser.getIdToken();
       if (!token) {
@@ -245,9 +243,7 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
         </div>
 
         <div className="flex-grow overflow-y-auto p-4">
-          {isLoading && <p className="text-center">Loading comments...</p>}
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          {!isLoading && !error && (
+      
             <div className="mb-4">
               {comments.map(comment => (
                 <CommentItem 
@@ -259,7 +255,7 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
                 />
               ))}
             </div>
-          )}
+        
         </div>
 
         {user ? (

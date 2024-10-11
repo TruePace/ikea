@@ -201,8 +201,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       setError('You must be logged in to like a comment.');
       return;
     }
-    setIsLoading(true);
-    setError(null);
+
     try {
       const token = await getIdToken();
       if (!token) {
@@ -241,9 +240,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
         </div>
 
         <div className="flex-grow overflow-y-auto p-4">
-          {isLoading && <p className="text-center">Loading comments...</p>}
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          {!isLoading && !error && (
+      
             <div className="mb-4">
               {comments.map(comment => (
                 <CommentItem 
@@ -255,7 +252,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
                 />
               ))}
             </div>
-          )}
+     
         </div>
 
         {user ? (

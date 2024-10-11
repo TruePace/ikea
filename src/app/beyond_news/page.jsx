@@ -1,6 +1,4 @@
 import Header from "@/components/Beyond_news_comps/beyond-header/Header";
-import BeThumbArticle from "@/components/Beyond_news_comps/beyond-thumbnail/BeThumbArticle";
-import BeThumbVideo from "@/components/Beyond_news_comps/beyond-thumbnail/BeThumbVideo";
 import BeyondContent from "@/components/Beyond_news_comps/beyond-thumbnail/BeyondContent";
 import SecondSocketHandler from "@/components/Socket io/SecondSocketHandler";
 import SocketHandler from "@/components/Socket io/SocketHandler";
@@ -19,8 +17,7 @@ const page = () => {
    <SocketHandler/>
    <SecondSocketHandler/>
     
-        {/* <BeThumbVideo/>
-        <BeThumbArticle/> */}
+       
         <BeyondContent/>
         </>
     );

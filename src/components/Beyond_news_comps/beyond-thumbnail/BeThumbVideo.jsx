@@ -21,8 +21,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const BeThumbVideo = ({video}) => {
     const { user ,firebaseUser} = useAuth();
     const router = useRouter();
-    // const [videos, setVideos] = useState([]);
-    // const [isLoading, setIsLoading] = useState(true);
+   
     const [clickedId, setClickedId] = useState(null);
     const dispatch = useDispatch();
     const commentCounts = useSelector(state => state.commentCount);
@@ -41,44 +40,7 @@ const BeThumbVideo = ({video}) => {
         };
     }, [dispatch]);
 
-    
-    // useEffect(() => {
-    //     const fetchVideos = async () => {
-    //         setIsLoading(true);
-    //         try {
-    //             const response = await fetch(`${API_BASE_URL}/api/BeyondVideo`);
-    //             if (response.ok) {
-    //                 const data = await response.json();
-    //                 setVideos(data);
-    //                 // Fetch initial comment count for each video
-    //                 data.forEach(video => fetchInitialCommentCount(video._id));
-    //             } else {
-    //                 console.error('Failed to fetch videos');
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching videos:', error);
-    //         }
-    //         finally {
-    //             setIsLoading(false);
-    //         }
-    //     };
-
-    //     const fetchInitialCommentCount = async (videoId) => {
-    //         try {
-    //             const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/count`);
-    //             if (response.ok) {
-    //                 const data = await response.json();
-    //                 dispatch(setCommentCount({ contentId: videoId, count: data.commentCount }));
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching initial comment count:', error);
-    //         }
-    //     };
-
-
-
-    //     fetchVideos();
-    // }, [dispatch]);
+  
 
     const handleClick = async (videoId) => {
         setClickedId(videoId);
@@ -111,15 +73,7 @@ const BeThumbVideo = ({video}) => {
       };
 
 
-    // if (isLoading) {
-    //     return (
-    //         <>
-    //             {[...Array(2)].map((_, index) => (
-    //                 <ThumbnailSkeletonLoader key={index} type="video" />
-    //             ))}
-    //         </>
-    //     );
-    // }
+ 
 
     return (
         <>
