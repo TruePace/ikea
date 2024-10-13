@@ -106,6 +106,14 @@ const FullArticle = () => {
             <div className="flex justify-between text-sm mb-4 text-gray-600">
                 <p>{formatDate(article.createdAt)}</p>
             </div>
+             {/* Display tags */}
+             <div className="mb-4">
+                {article.tags && article.tags.map((tag, index) => (
+                    <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
+                        #{tag}
+                    </span>
+                ))}
+            </div>
             <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: article.fullContent }} />
         </div>
     );

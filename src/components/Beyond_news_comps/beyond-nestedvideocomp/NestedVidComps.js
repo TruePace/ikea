@@ -432,6 +432,14 @@ const handleLike = async () => {
         </div>
         <div className='py-4 pl-4 pr-6'>
             <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
+             {/* Add this section to display tags */}
+             <div className="mb-4">
+                    {video.tags && video.tags.map((tag, index) => (
+                        <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
+                            #{tag}
+                        </span>
+                    ))}
+                </div>
             <div className="flex items-center mb-4">
                 <div className="avatar mr-4">
                     <div className="w-10 h-10 rounded-full">
