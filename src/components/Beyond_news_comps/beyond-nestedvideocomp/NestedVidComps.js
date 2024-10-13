@@ -34,9 +34,7 @@ const NestedVidComps = () => {
         state.subscriptions[user?.uid]?.[video?.channelId?._id] || false
     );
    
-//     const commentCount = useSelector(state => state.commentCount[video._id] || video.commentCount);
-// const { likeCount } = useSelector(state => state.likes[video._id] || { likeCount: video.likeCount });
-// const { viewCount } = useSelector(state => state.views[video._id] || { viewCount: video.viewCount });
+
     const commentCounts = useSelector(state => state.commentCount);
     const likes = useSelector(state => state.likes);
     const views = useSelector(state => state.views);
@@ -473,8 +471,9 @@ const handleLike = async () => {
                 <div className="flex space-x-4">
                     <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
                         <FaRegComment className="mr-1" />
-                        {/* {video.commentsCount} */}
-                        {commentCounts[video._id] || video.commentsCount}
+                       
+                        {/* {commentCounts[video._id] || video.commentsCount} */}
+                        {commentCounts[video._id] ?? video.commentsCount ?? 0}
                     </span>
                     <div key={likes}>
                     <span 
@@ -482,12 +481,14 @@ const handleLike = async () => {
     onClick={handleLike}
 >
     {likes[video._id]?.isLiked ? <BiSolidLike className="mr-1" /> : <BiLike className="mr-1" />}
-    {likes[video._id]?.likeCount || video.likeCount}
+    {/* {likes[video._id]?.likeCount || video.likeCount} */}
+    {likes[video._id]?.likeCount ?? video.likeCount ?? 0}
 </span>
                     </div>
                     <span className="flex items-center">
     <IoEyeOutline className="mr-1" /> 
-    {views[video._id]?.viewCount || video.viewsCount}
+    {/* {views[video._id]?.viewCount || video.viewsCount} */}
+    {views[video._id]?.viewCount ?? video.viewsCount ?? 0}
 </span>
 <ShareVideoComp video={video} onShare={handleShare}/>
                 </div>

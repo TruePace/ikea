@@ -7,7 +7,7 @@ const commentCountSlice = createSlice({
   reducers: {
     setCommentCount: (state, action) => {
       const { contentId, count } = action.payload;
-      state[contentId] = count;
+      state[contentId] = count ?? 0;
       // console.log('Comment state updated:', state);
     },
   },

@@ -14,12 +14,12 @@ export default function SocketHandler() {
     const handleVideoUpdate = (data) => {
       console.log('Received videoUpdated event:', data);
       if (data.commentCount !== undefined) {
-        dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
+        dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount ?? 0 }));
       }
       if (data.viewCount !== undefined) {
         dispatch(setViews({
           videoId: data.videoId,
-          viewCount: data.viewCount,
+          viewCount: data.viewCount ?? 0,
           avgWatchTime: data.avgWatchTime,
           engagementScore: data.engagementScore,
           viralScore: data.viralScore
@@ -28,7 +28,7 @@ export default function SocketHandler() {
       if (data.likeCount !== undefined) {
         dispatch(setLikes({
           videoId: data.videoId,
-          likeCount: data.likeCount,
+          likeCount: data.likeCount ?? 0,
           engagementScore: data.engagementScore,
           viralScore: data.viralScore
         }));
