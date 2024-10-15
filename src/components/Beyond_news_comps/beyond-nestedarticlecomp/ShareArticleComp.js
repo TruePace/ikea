@@ -13,13 +13,26 @@ const ShareArticleComp = ({ article }) => {
     if (firebaseUser) {
       try {
         const token = await firebaseUser.getIdToken();
+        
+        // Get user's location
+        let location = null;
+        if (navigator.geolocation) {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+          location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+        }
+
         const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/share`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ platform })
+          body: JSON.stringify({ platform, location })
         });
 
         if (response.ok) {
