@@ -116,7 +116,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
       <SubscribeFeed channel={channel} />
       <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)} />
-      <EngagementFeed content={content} />
+      <EngagementFeed content={content} channel={channel}/>
       
       <div className="absolute bottom-80 left-0 flex items-center space-x-2">
         <CountdownTimer expirationTime={content.headlineExpiresAt} />
@@ -167,7 +167,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
                   onView={() => handleJustInView(content._id)} 
                   isViewed={viewedIds.includes(content._id)} 
                 />
-                <EngagementFeed content={content} />
+                <EngagementFeed content={content} channel={channel} />
                 
                 <div className="absolute bottom-80 left-0 flex items-center space-x-2">
                   <JustInTimer expirationTime={content.justInExpiresAt} />

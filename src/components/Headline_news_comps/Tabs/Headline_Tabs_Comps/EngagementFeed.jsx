@@ -12,10 +12,11 @@ import socket from "@/components/Socket io/SocketClient";
 import { setContentInteractions } from "@/Redux/Slices/ContentInteractions";
 import { IoEyeOutline } from "react-icons/io5";
 import ShareComponent from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ShareComponent";
+import ScreenshotButton from "./ScreenshotButton";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const EngagementFeed = ({ content }) => {
+const EngagementFeed = ({ content, channel }) => {
   const dispatch = useDispatch();
   const { user } = useAuth();
   const interactions = useSelector(state => state.contentInteractions[content._id] || {
@@ -207,7 +208,7 @@ const EngagementFeed = ({ content }) => {
       }
     }
   };
-  const handleScreenshot = () => recordAction('screenshot');
+  
 
   const fetchCommentCount = useCallback(async () => {
     try {
@@ -269,11 +270,7 @@ const EngagementFeed = ({ content }) => {
             shareCount={interactions.shareCount}
           />
 
-
-        <a href='' onClick={handleScreenshot} className="">
-          <RiScreenshot2Line size='1.9em' className="m-auto" />
-          <p className="text-xs">({interactions.screenshotCount})</p>
-        </a>
+<ScreenshotButton content={content} channel={channel} />
         <span>
           <IoEyeOutline size='1.7em' className="m-auto" />
           {interactions.viewCount}

@@ -26,7 +26,7 @@ const ContentFeed = ({ content, onView, isViewed }) => {
   }, [onView, isViewed]);
 
   return (
-    <div ref={contentRef}>
+    <div ref={contentRef} id={`content-${content._id}`}>
       {content.picture ? (
         <div className="flex flex-col gap-2">
           <div className="xss:text-sm xs:p-2 xs:leading-7 sm:py-2 sm:px-2 sm:leading-8 sm:text-lg text-md text-gray-700 capitalize rounded-md h-40">
