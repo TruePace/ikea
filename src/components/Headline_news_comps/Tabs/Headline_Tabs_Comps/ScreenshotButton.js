@@ -1,4 +1,4 @@
-import React, { useState, useCallback ,useEffect} from 'react';
+import React, { useState, useCallback ,useEffect,useRef} from 'react';
 import html2canvas from 'html2canvas-pro';
 import { RiScreenshot2Line, RiShareLine, RiDownloadLine } from "react-icons/ri";
 
@@ -9,11 +9,24 @@ const ScreenshotButton = ({ content, channel }) => {
   const [screenshot, setScreenshot] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [logoImage, setLogoImage] = useState(null);
+  const dropdownRef = useRef(null);
+
 
   useEffect(() => {
     const img = new Image();
-    img.src = '/TruePace.svg'; // Replace with the actual path to your logo
+    img.src = '/TruePace.svg';
     img.onload = () => setLogoImage(img);
+
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowOptions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const captureContent = useCallback(async () => {
@@ -35,19 +48,27 @@ const ScreenshotButton = ({ content, channel }) => {
       // Add watermarks
       const ctx = canvas.getContext('2d');
       ctx.font = 'bold 9px Arial';
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+      
+      // Function to draw text with outline
+      const drawTextWithOutline = (text, x, y) => {
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.strokeText(text, x, y);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.fillText(text, x, y);
+      };
       
       // Draw logo
       if (logoImage) {
         const logoSize = 9; // Adjust size as needed
-        ctx.drawImage(logoImage, 20, 430, logoSize, logoSize);
-        ctx.fillText(`TruePace.com`, 30, 440); // Adjust position to be next to the logo
+        ctx.drawImage(logoImage, 20, 445, logoSize, logoSize);
+        drawTextWithOutline(`TruePace.com`, 30, 455); // Adjust position to be next to the logo
       } else {
-        ctx.fillText(`TruePace.com`, 15, 440);
+        drawTextWithOutline(`TruePace.com`, 15, 455);
       }
       
-      ctx.fillText(`@${channel.name}`, 20, 470);
-      ctx.fillText(`${new Date(content.createdAt).toLocaleString()}`, 260, 470);
+      drawTextWithOutline(`@${channel.name}`, 20, 470);
+      drawTextWithOutline(`${new Date(content.createdAt).toLocaleString()}`, 260, 470);
 
       // Convert to blob
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -118,25 +139,25 @@ const ScreenshotButton = ({ content, channel }) => {
   };
 
   return (
-    <div className="flex flex-col items-center relative">
-      <button onClick={handleScreenshotClick} className="flex flex-col items-center mb-2">
-        <RiScreenshot2Line size='1.9em' className="m-auto" />
-        <p className="text-xs">({screenshotCount})</p>
-      </button>
-      {showOptions && (
-        <div className="absolute top-full mt-2 bg-white shadow-md rounded-md p-2">
-          <button onClick={shareContent} className="flex items-center mb-2">
-            <RiShareLine size='1.5em' />
-            <span className="ml-1 text-xs">Share</span>
-          </button>
-          <button onClick={downloadContent} className="flex items-center">
-            <RiDownloadLine size='1.5em' />
-            <span className="ml-1 text-xs">Download</span>
-          </button>
-        </div>
-      )}
-    </div>
-  );
+    <div className="flex flex-col items-center relative" ref={dropdownRef}>
+    <button onClick={handleScreenshotClick} className="flex flex-col items-center mb-2">
+      <RiScreenshot2Line size='1.9em' className="m-auto" />
+      <p className="text-xs">({screenshotCount})</p>
+    </button>
+    {showOptions && (
+      <div className="absolute bottom-full mb-2 bg-white shadow-md rounded-md p-2">
+        <button onClick={shareContent} className="flex items-center mb-2">
+          <RiShareLine size='1.5em' />
+          <span className="ml-1 text-xs">Share</span>
+        </button>
+        <button onClick={downloadContent} className="flex items-center">
+          <RiDownloadLine size='1.5em' />
+          <span className="ml-1 text-xs">Download</span>
+        </button>
+      </div>
+    )}
+  </div>
+);
 };
 
 export default ScreenshotButton;

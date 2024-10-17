@@ -37,8 +37,8 @@ const ContentFeed = ({ content, onView, isViewed }) => {
           </div>
         </div>
       ) : (
-        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-md sm:py-16 sm:text-lg sm:leading-8 h-96 font-semibold text-gray-700 mt-2 w-full flex items-center capitalize justify-center">
-          {content.message}
+        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-md sm:py-16 sm:text-lg sm:leading-8 h-96 font-semibold text-gray-700 mt-2 w-full flex items-center capitalize ">
+          <p className="ml-1">{content.message}</p>
         </div>
       )}
     </div>
