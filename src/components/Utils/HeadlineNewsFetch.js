@@ -35,10 +35,11 @@ export const fetchJustInContents = async () => {
   }
   return response.json();
 };
-export const fetchHeadlineContents = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/GetJustIn/headline`);
+
+export const fetchHeadlineContents = async (page = 1) => {
+  const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/GetJustIn/headline?page=${page}`);
   if (!response.ok) {
-    throw new Error('Failed to fetch Just In contents');
+    throw new Error('Failed to fetch Headline contents');
   }
   return response.json();
 };

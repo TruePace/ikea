@@ -1,11 +1,14 @@
 import Header from "@/components/Beyond_news_comps/beyond-header/Header";
-import FullArticle from "@/components/Beyond_news_comps/beyond-nestedarticlecomp/FullArticle";
+import React, { lazy, Suspense } from 'react';
+const FullArticle = lazy(() => import("@/components/Beyond_news_comps/beyond-nestedarticlecomp/FullArticle"))
 
 const page = () => {
     return (
         <div>
           <Header/>
-          <FullArticle/>
+          <Suspense fallback={<div>Loading...</div>}>
+  <FullArticle/>
+</Suspense>
         </div>
     );
 }

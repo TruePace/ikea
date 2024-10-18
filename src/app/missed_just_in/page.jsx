@@ -8,6 +8,7 @@ import { useAuth } from "../(auth)/AuthContext";
 import { useDispatch } from 'react-redux';
 import { setHasMissedContent, setMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
 import MissedJustInSkeleton from '@/components/Missed_just_in_comps/MissedJustInSkeleton';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -15,46 +16,65 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const Page = () => {
   const [missedContent, setMissedContent] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const { user } = useAuth();
   const dispatch = useDispatch()
 
-  useEffect(() => {
+  const fetchMissedContent = async () => {
     if (user) {
       setIsLoading(true);
-      fetch(`${API_BASE_URL}/api/HeadlineNews/MissedJustIn/${user.uid}`)
-        .then(response => response.json())
-        .then(data => {
-          setMissedContent(data);
-          setIsLoading(false);
-          dispatch(setHasMissedContent(data.length > 0));
-          dispatch(setMissedContentCount(data.length));
-        })
-        .catch(error => {
-          console.error('Error fetching missed content:', error);
-          setIsLoading(false);
-        });
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/MissedJustIn/${user.uid}?page=${page}&limit=10`);
+        const data = await response.json();
+        setMissedContent(prevContent => [...prevContent, ...data.content]);
+        setHasMore(data.hasMore);
+        setPage(prevPage => prevPage + 1);
+        dispatch(setHasMissedContent(data.content.length > 0));
+        dispatch(setMissedContentCount(prevCount => prevCount + data.content.length));
+      } catch (error) {
+        console.error('Error fetching missed content:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [user, dispatch]);
+  };
+
+  useEffect(() => {
+    fetchMissedContent();
+  }, [user]);
 
   return (
     <ProtectedRoute>
       <Header/>
       <div className="py-8 w-full">
-        {isLoading ? (
-        <MissedJustInSkeleton/>
+        {isLoading && missedContent.length === 0 ? (
+          <MissedJustInSkeleton/>
         ) : missedContent.length > 0 ? (
-          missedContent.map(content => (
-            <MissedJustInContainer
-              key={content._id}
-              channelId={content.channelId}
-              channelName={content.channelName}
-              channelPicture={content.channelPicture}
-              message={content.message}
-              picture={content.picture}
-              createdAt={content.createdAt}
-              subscriberCount={content.subscriberCount}
-            />
-          ))
+          <InfiniteScroll
+            dataLength={missedContent.length}
+            next={fetchMissedContent}
+            hasMore={hasMore}
+            loader={<MissedJustInSkeleton />}
+            endMessage={
+              <p style={{ textAlign: 'center' }}>
+                <b>You're all caught up!</b>
+              </p>
+            }
+          >
+            {missedContent.map(content => (
+              <MissedJustInContainer
+                key={content._id}
+                channelId={content.channelId}
+                channelName={content.channelName}
+                channelPicture={content.channelPicture}
+                message={content.message}
+                picture={content.picture}
+                createdAt={content.createdAt}
+                subscriberCount={content.subscriberCount}
+              />
+            ))}
+          </InfiniteScroll>
         ) : (
           <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
             <p className="font-bold">Good news!</p>

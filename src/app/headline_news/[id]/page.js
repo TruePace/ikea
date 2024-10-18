@@ -22,7 +22,7 @@ const Page = () => {
   return (
     <div className="max-w-2xl mx-auto mt-8 p-4">
       <ContentFeed content={content} />
-      <EngagementFeed content={content} />
+      <EngagementFeed content={content} channel={channel} />
     </div>
   );
 };

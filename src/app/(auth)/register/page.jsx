@@ -7,8 +7,7 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
 import { auth } from '../firebase/ClientApp';
 import { useRouter } from 'next/navigation';
-import { getIdToken } from 'firebase/auth';
-import StatusMessage from './StatusMessage';
+
 import { useAuth } from '../AuthContext';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 

@@ -2,38 +2,45 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaPlay, FaNewspaper } from 'react-icons/fa';
 import Image from "next/image";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const BeyondHeadlineContent = ({ channelId }) => {
   const [combinedContent, setCombinedContent] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const videosResponse = await fetch(`${API_BASE_URL}/api/BeyondVideo?channelId=${channelId}`);
-        const articlesResponse = await fetch(`${API_BASE_URL}/api/BeyondArticle?channelId=${channelId}`);
+  const fetchContent = async () => {
+    try {
+      const videosResponse = await fetch(`${API_BASE_URL}/api/BeyondVideo?channelId=${channelId}&page=${page}&limit=5`);
+      const articlesResponse = await fetch(`${API_BASE_URL}/api/BeyondArticle?channelId=${channelId}&page=${page}&limit=5`);
 
-        if (videosResponse.ok && articlesResponse.ok) {
-          const videosData = await videosResponse.json();
-          const articlesData = await articlesResponse.json();
+      if (videosResponse.ok && articlesResponse.ok) {
+        const videosData = await videosResponse.json();
+        const articlesData = await articlesResponse.json();
 
-          // Combine and sort content
-          const combined = [
-            ...videosData.map(v => ({ ...v, type: 'video' })),
-            ...articlesData.map(a => ({ ...a, type: 'article' }))
-          ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const newContent = [
+          ...videosData.map(v => ({ ...v, type: 'video' })),
+          ...articlesData.map(a => ({ ...a, type: 'article' }))
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-          setCombinedContent(combined);
+        if (newContent.length === 0) {
+          setHasMore(false);
         } else {
-          console.error('Failed to fetch content');
+          setCombinedContent(prevContent => [...prevContent, ...newContent]);
+          setPage(prevPage => prevPage + 1);
         }
-      } catch (error) {
-        console.error('Error fetching content:', error);
+      } else {
+        console.error('Failed to fetch content');
       }
-    };
+    } catch (error) {
+      console.error('Error fetching content:', error);
+    }
+  };
 
+  useEffect(() => {
     if (channelId) {
       fetchContent();
     }
@@ -57,6 +64,12 @@ const BeyondHeadlineContent = ({ channelId }) => {
     }
 
     return (
+       <InfiniteScroll
+        dataLength={combinedContent.length}
+        next={fetchContent}
+        hasMore={hasMore}
+        loader={<h4>Loading...</h4>}
+      >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {combinedContent.map((item) => (
           <div
@@ -89,6 +102,7 @@ const BeyondHeadlineContent = ({ channelId }) => {
           </div>
         ))}
       </div>
+      </InfiniteScroll>
     );
   };
 

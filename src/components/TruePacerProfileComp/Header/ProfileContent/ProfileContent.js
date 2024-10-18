@@ -154,7 +154,7 @@ const handleUnsubscribe = async () => {
             <div className="mt-4 bg-base-200 rounded-lg mb-16">
                 {activeTab === "Beyond Headline" ? <BeyondHeadlineContent channelId={profile._id}/> : 
                     
-                <HeadlineNewsContent contents={headlineContents}/>
+                <HeadlineNewsContent initialContents={headlineContents} channel={profile} />
               
                 }
             </div>

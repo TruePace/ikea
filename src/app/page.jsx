@@ -10,6 +10,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import persistor from '@/Redux/store'
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -20,32 +21,46 @@ const Page = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const dispatch = useDispatch();
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-          fetchChannels(),
-          fetchHeadlineContents(),
-          fetchJustInContents()
-        ]);
-        setChannels(channelsData);
-        setHeadlineContents(headlineContentsData);
-        setJustInContents(justInContentsData);
-        dispatch(setJustInContent(justInContentsData));
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-
-    const dataInterval = setInterval(fetchData, 30000);
-
-    return () => clearInterval(dataInterval);
+    fetchInitialData();
   }, [dispatch]);
+
+  const fetchInitialData = async () => {
+    try {
+      const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
+        fetchChannels(),
+        fetchHeadlineContents(1), // Fetch first page
+        fetchJustInContents()
+      ]);
+      setChannels(channelsData);
+      setHeadlineContents(headlineContentsData);
+      setJustInContents(justInContentsData);
+      dispatch(setJustInContent(justInContentsData));
+      setIsLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
+  };
+
+  const fetchMoreData = async () => {
+    if (!hasMore) return;
+    try {
+      const nextPage = page + 1;
+      const moreHeadlineContents = await fetchHeadlineContents(nextPage);
+      if (moreHeadlineContents.length === 0) {
+        setHasMore(false);
+      } else {
+        setHeadlineContents(prev => [...prev, ...moreHeadlineContents]);
+        setPage(nextPage);
+      }
+    } catch (error) {
+      console.error("Error fetching more data:", error);
+    }
+  };
 
   useEffect(() => {
     const moveExpiredContent = () => {
@@ -112,8 +127,14 @@ const Page = () => {
 
   return (
     <>
-<HeadlineSocket/>
-      <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <HeadlineSocket/>
+      <InfiniteScroll
+        dataLength={headlineContents.length}
+        next={fetchMoreData}
+        hasMore={hasMore}
+        loader={<ContentFeedSkeleton />}
+        className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
         {channelsWithContent.map((channel) => (
           <div key={channel._id} className="h-screen snap-start">
             <Slide
@@ -121,12 +142,10 @@ const Page = () => {
               headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
               justInContents={justInContents}
             />
-          
           </div>
         ))}
-      </div>
+      </InfiniteScroll>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
-     
     </>
   );
 }
