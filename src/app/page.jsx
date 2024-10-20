@@ -93,7 +93,7 @@ const Page = () => {
       <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory">
         {[...Array(3)].map((_, index) => (
           <div key={index} className="h-screen snap-start">
-            <div className="max-w-md mx-auto pt-4">
+            <div className="max-w-md tablet:max-w-2xl desktop:max-w-4xl mx-auto pt-4">
               <ContentFeedSkeleton />
             </div>
           </div>
@@ -101,6 +101,7 @@ const Page = () => {
       </div>
     );
   }
+
   if (error) return <div>Error: {error}</div>;
 
   // Filter channels that have content
@@ -112,39 +113,35 @@ const Page = () => {
 
   if (channelsWithContent.length === 0) {
     return (
-      <div className="h-screen flex items-center justify-center bg-red-50 ">
-      <div className="text-center p-8 bg-white rounded-lg shadow-md border border-red-300">
-        <h2 className="text-2xl font-bold mb-4">No Content Available</h2>
-        <p className="text-gray-600">
-          Headline News content is not available at the moment. Please check back later.
-        </p>
+      <div className="h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
+          <h2 className="text-2xl font-bold mb-4">No Content Available</h2>
+          <p className="text-gray-600">
+            Headline News content is not available at the moment. Please check back later.
+          </p>
+        </div>
       </div>
-    </div>
-    
     );
   }
-
 
   return (
     <>
       <HeadlineSocket/>
-      <InfiniteScroll
-        dataLength={headlineContents.length}
-        next={fetchMoreData}
-        hasMore={hasMore}
-        loader={<ContentFeedSkeleton />}
-        className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-      >
-        {channelsWithContent.map((channel) => (
-          <div key={channel._id} className="h-screen snap-start">
-            <Slide
-              channel={channel}
-              headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
-              justInContents={justInContents}
-            />
+      <div className="flex justify-center">
+        <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
+          <div className="h-full overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {channelsWithContent.map((channel) => (
+              <div key={channel._id} className="h-screen snap-start">
+                <Slide
+                  channel={channel}
+                  headlineContents={headlineContents.filter(content => content.channelId === channel._id)}
+                  justInContents={justInContents}
+                />
+              </div>
+            ))}
           </div>
-        ))}
-      </InfiniteScroll>
+        </div>
+      </div>
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </>
   );

@@ -1,16 +1,21 @@
 import Header from "@/components/Beyond_news_comps/beyond-header/Header";
 import React, { lazy, Suspense } from 'react';
 const FullArticle = lazy(() => import("@/components/Beyond_news_comps/beyond-nestedarticlecomp/FullArticle"))
-import NestedSkeletonLoader from "@/components/Beyond_news_comps/beyond-header/NestedSkeletonLoader";
+
 
 const page = () => {
     return (
-        <div>
+        <>
+             <div className="flex flex-col h-screen">
           <Header/>
+
           <Suspense fallback={<div>Loading...</div>}>
+          <div className="flex-grow overflow-y-auto pt-4">
   <FullArticle/>
+  </div>
 </Suspense>
-        </div>
+</div>
+        </>
     );
 }
 

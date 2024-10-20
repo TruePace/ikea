@@ -6,12 +6,16 @@ const NestedVidComps = lazy(() => import('@/components/Beyond_news_comps/beyond-
 
 const page = () => {
     return (
-        <div>
+        <>
+            <div className="flex flex-col h-screen">
         <Header/>
         <Suspense fallback={<div>Loading...</div>}>
+        <div className="flex-grow overflow-y-auto pt-4">
   <NestedVidComps />
+  </div>
 </Suspense>
-        </div>
+</div>
+        </>
     );
 }
 

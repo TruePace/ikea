@@ -107,7 +107,7 @@ const SubscribeFeed = ({ channel }) => {
   return (
     <>
     
-      <div className="border-gray-200 w-full flex items-center justify-between">
+      <div className="border-gray-200 w-full flex items-center justify-between ">
         <div className="avatar">
           <div className="w-11 h-11 relative rounded-full overflow-hidden">
             <Image src={channel.picture} alt={channel.name} fill className="object-cover" />

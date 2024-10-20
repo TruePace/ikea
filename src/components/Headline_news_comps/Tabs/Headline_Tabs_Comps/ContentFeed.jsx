@@ -26,19 +26,19 @@ const ContentFeed = ({ content, onView, isViewed }) => {
   }, [onView, isViewed]);
 
   return (
-    <div ref={contentRef} id={`content-${content._id}`}>
+    <div ref={contentRef} id={`content-${content._id}`} className="w-full flex flex-col mt-1 gap-8  ">
       {content.picture ? (
-        <div className="flex flex-col gap-2">
-          <div className="xss:text-sm xs:p-2 xs:leading-7 sm:py-2 sm:px-2 sm:leading-8 sm:text-lg text-md text-gray-700 capitalize rounded-md h-40">
+        <>
+          <div className="text-sm tablet:text-base desktop:text-lg text-gray-700 capitalize rounded-md mb-2 desktop:mb-4 flex-grow overflow-y-auto ">
             {content.message}
           </div>
-          <div className="relative border-red-400 mt-1 xs:h-56 sm:h-60 xss:py-16 xss:mt-0 xss:text-xs h-60">
-            <Image src={content.picture} fill alt="Picture of the author" className="rounded-md object-cover" />
+          <div className="relative border-red-400 h-60 tablet:h-72 desktop:h-80 flex-shrink-0">
+            <Image src={content.picture} fill alt="Content image" className="rounded-md object-cover" />
           </div>
-        </div>
+        </>
       ) : (
-        <div className="xss:text-xs xss:py-3 xss:leading-5 xs:py-14 xs:text-md sm:py-16 sm:text-lg sm:leading-8 h-96 font-semibold text-gray-700 mt-2 w-full flex items-center capitalize ">
-          <p className="ml-1">{content.message}</p>
+        <div className="h-96 tablet:h-108 desktop:h-120 font-semibold text-gray-700 w-full flex items-center capitalize">
+          <p className="text-sm tablet:text-base desktop:text-lg">{content.message}</p>
         </div>
       )}
     </div>

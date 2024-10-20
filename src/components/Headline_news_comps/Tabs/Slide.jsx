@@ -197,7 +197,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     {
       title: 'Headline News',
       renderContent: () => (
-        <div className='h-screen overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+        <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
           {headlineContents.length > 0 ? (
             headlineContents.map((content) => (
               <div key={content._id} className='h-screen snap-start'>
@@ -220,38 +220,42 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
 
   return (
     <div ref={slideRef} className='h-full flex justify-center'>
-    <div className='max-w-md flex flex-col w-full'>
-      <div className='bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white'>
-        {items.map((item, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedTab(index)}
-            className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
-              selectedTab === index ? 'bg-white text-neutral-800' : ''
-            } relative`}
-          >
-            {item.title}
-            {index === 1 && unviewedCount > 0 && (
-              <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
-               <FaBell className="mr-1" />
-                {unviewedCount}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-        
-        <div className=''>
-        {selectedTab === 0 && (
-            <>
+      <div className='max-w-md tablet:max-w-2xl desktop:max-w-4xl '>
+        <div className='bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2'>
           {items.map((item, index) => (
-            <div  className={`${selectedTab === index ? '' : 'hidden'}`} key={index}>
-              {item.renderContent()}
-            </div>
+            <button
+              key={index}
+              onClick={() => setSelectedTab(index)}
+              className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
+                selectedTab === index ? 'bg-white text-neutral-800' : ''
+              } relative`}
+            >
+              {item.title}
+              {index === 1 && unviewedCount > 0 && (
+                <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
+                 <FaBell className="mr-1" />
+                  {unviewedCount}
+                </span>
+              )}
+            </button>
           ))}
- </>
-        )}
-          {selectedTab === 1 && renderJustInContent()}
+        </div>
+        
+        <div className='flex-grow overflow-y-auto'>
+          {selectedTab === 0 && (
+            <>
+              {items.map((item, index) => (
+                <div className={`${selectedTab === index ? 'flex flex-col h-full' : 'hidden'}`} key={index}>
+                  {item.renderContent()}
+                </div>
+              ))}
+            </>
+          )}
+          {selectedTab === 1 && (
+            <div className="flex flex-col h-full">
+              {renderJustInContent()}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -259,6 +263,3 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
 };
 
 export default Slide;
-
-
-
