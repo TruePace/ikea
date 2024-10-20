@@ -197,7 +197,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     {
       title: 'Headline News',
       renderContent: () => (
-        <div className='h-screen overflow-y-scroll snap-y snap-mandatory'>
+        <div className='h-screen overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
           {headlineContents.length > 0 ? (
             headlineContents.map((content) => (
               <div key={content._id} className='h-screen snap-start'>

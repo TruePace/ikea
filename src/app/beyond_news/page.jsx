@@ -12,14 +12,14 @@ export const metadata = {
 
 const page = () => {
     return (
-        <>
-        <Header/>
-   <SocketHandler/>
-   <SecondSocketHandler/>
-    
-       
-        <BeyondContent/>
-        </>
+        <div className="flex flex-col h-screen">
+            <Header />
+            <div className="flex-grow overflow-y-auto pt-4">
+                <SocketHandler />
+                <SecondSocketHandler />
+                <BeyondContent />
+            </div>
+        </div>
     );
 }
 

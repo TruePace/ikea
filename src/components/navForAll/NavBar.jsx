@@ -1,4 +1,3 @@
-'use client'
 import { GiNewspaper } from 'react-icons/gi';
 import { RiShieldFlashFill } from 'react-icons/ri';
 import { GrDocumentMissing } from 'react-icons/gr';
@@ -6,6 +5,7 @@ import { FaHistory } from 'react-icons/fa';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from '@/app/(auth)/AuthContext';
+import Image from "next/image";
 
 const NavBar = () => {
   const pathName = usePathname();
@@ -37,23 +37,27 @@ const NavBar = () => {
   ];
 
   return (
-    <div className="bg-white w-full fixed bottom-0 left-0 right-0 py-1.5 flex flex-nowrap justify-evenly">
+    <nav className="bg-white fixed bottom-0 left-0 tablet:left-0 tablet:top-0 desktop:left-0 desktop:top-0 w-full h-16 tablet:h-full desktop:h-full tablet:w-16 desktop:w-64 py-1.5 tablet:py-4 desktop:py-6 flex flex-nowrap tablet:flex-col desktop:flex-col justify-evenly items-center z-10">
       {links.map((link) => (
-        <div key={link.title} className={`w-1/4 flex flex-col justify-center items-center ${pathName === link.path && 'w-1/5 border border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 flex flex-col py-1 font-semibold'}`}>
+        <div key={link.title} className={`w-1/4 tablet:w-full desktop:w-full flex flex-col justify-center items-center ${pathName === link.path ? 'tablet:border-l-4 desktop:border-l-4 border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 py-1 font-semibold' : ''}`}>
           {!link.protected || user ? (
-            <>
-              <Link href={link.path}>{link.title}</Link>
-              <Link href={link.path} className="text-xs text-center w-2/3 text-gray-600">{link.titleName}</Link>
-            </>
+            <Link href={link.path} className="flex flex-col tablet:flex-row desktop:flex-row items-center p-2 hover:bg-gray-100 w-full">
+              <div className="tablet:mr-2 desktop:mr-4">{link.title}</div>
+              <span className="text-xs tablet:text-sm desktop:text-base text-center tablet:text-left desktop:text-left text-gray-600">{link.titleName}</span>
+            </Link>
           ) : (
-            <>
-              <Link href="/login">{link.title}</Link>
-              <Link href="/login" className="text-xs text-center w-2/3 text-gray-600">{link.titleName}</Link>
-            </>
+            <Link href="/login" className="flex flex-col tablet:flex-row desktop:flex-row items-center p-2 hover:bg-gray-100 w-full">
+              <div className="tablet:mr-2 desktop:mr-4">{link.title}</div>
+              <span className="text-xs tablet:text-sm desktop:text-base text-center tablet:text-left desktop:text-left text-gray-600">{link.titleName}</span>
+            </Link>
           )}
         </div>
       ))}
-    </div>
+      <div className="hidden tablet:flex desktop:flex flex-col items-center justify-center mt-auto mb-4">
+        <Image src='/TruePace.svg' height={25} width={25} alt="TruePace Logo" />
+        <p className="text-sm mt-2">TruePace</p>
+      </div>
+    </nav>
   );
 }
 

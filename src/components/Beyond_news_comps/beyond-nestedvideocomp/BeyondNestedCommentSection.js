@@ -227,8 +227,8 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out">
-      <div className="bg-white w-full h-3/4 rounded-t-3xl overflow-hidden flex flex-col">
+    <div className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className="bg-white w-full tablet:w-2/3 desktop:w-1/2 h-3/4 rounded-t-3xl overflow-hidden flex flex-col">
         <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b">
           <button 
             onClick={onClose} 

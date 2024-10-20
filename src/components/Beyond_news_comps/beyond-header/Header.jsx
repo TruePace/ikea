@@ -14,7 +14,7 @@ const Header = () => {
           router.push('/login');
           return;
         }
-      } 
+    }
 
     const handleLogout = async () => {
         try {
@@ -25,43 +25,40 @@ const Header = () => {
         }
     };
 
-    // Function to get the first letter of the user's name
     const getInitial = (name) => {
         return name ? name.charAt(0).toUpperCase() : 'U';
     };
 
     return (
-        <>
-            <div className="navbar bg-base-100">
-                <div className="flex-1 ">
-                    <Link href='' className="btn btn-ghost text-lg">
-                        <Image src='/TruePace.svg' height={25} width={25} />
-                        <p>TruePace</p>
-                    </Link>
-                </div>
-                <div className="flex-none gap-7 w-2/6">
-                    <span  onClick={handleSearch}>
-                    <ToggleSearchBar />
+        <header className="bg-base-100 shadow-md py-2">
+            <div className="container mx-auto flex items-center justify-between px-4">
+                <Link href='' className="flex items-center space-x-2">
+                    <Image src='/TruePace.svg' height={20} width={20} alt="TruePace Logo" />
+                    <span className="text-base font-semibold">TruePace</span>
+                </Link>
+                <div className="flex items-center space-x-4">
+                    <span onClick={handleSearch}>
+                        <ToggleSearchBar />
                     </span>
                     {user ? (
                         <div className="dropdown dropdown-end">
                             <div tabIndex={0} role="button" className="avatar placeholder">
-                                <div className="bg-red-600 text-neutral-content rounded-full w-9">
-                                    <span className="text-sm">{getInitial(user.username )}</span>{/**i can also use 'users.displayName' too */}
+                                <div className="bg-red-600 text-neutral-content rounded-full w-7 h-7 flex items-center justify-center">
+                                    <span className="text-xs">{getInitial(user.username)}</span>
                                 </div>
                             </div>
-                            <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                                <li><a>{user.username || 'My Profile'}</a></li>{/**i can also use 'users.displayName' too */}
+                            <ul tabIndex={0} className="mt-2 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                                <li><a>{user.username || 'My Profile'}</a></li>
                                 <li><a>Settings</a></li>
                                 <li><a onClick={handleLogout}>Logout</a></li>
                             </ul>
                         </div>
                     ) : (
-                        <Link href="/login" className="btn btn-primary">Login</Link>
+                        <Link href="/login" className="btn btn-primary btn-sm">Login</Link>
                     )}
                 </div>
             </div>
-        </>
+        </header>
     );
 }
 

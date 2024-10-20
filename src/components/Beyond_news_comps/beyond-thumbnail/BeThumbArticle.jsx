@@ -49,45 +49,43 @@ const BeThumbArticle = ({article}) => {
       };
 
   
-
-    return (
-       <>
-           
-                <div 
-                    key={article._id} 
-                    onClick={() => handleClick(article._id)} 
-                    className={`w-full px-3 mb-20 cursor-pointer transition-all duration-150 ${
-                        clickedId === article._id ? 'scale-95 opacity-80' : ''
-                    }`}
-                >
-                    <div className="border-gray-200 gap-3 flex items-center">
-                        <div className="avatar">
-                            <div className="w-11 rounded-full">
-                                <Image src={article.channelId?.picture || '/NopicAvatar.png'} alt={article.channelId?.name || 'Channel'} width={40} height={40} className="rounded-full" />
-                            </div>
+      return (
+        <div 
+            key={article._id} 
+            onClick={() => handleClick(article._id)} 
+            className={`w-full cursor-pointer transition-all duration-150 
+                border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md
+                ${clickedId === article._id ? 'scale-95 opacity-80' : ''}
+            `}
+        >
+            <div className="p-4">
+                <div className="border-gray-200 gap-3 flex items-center mb-3">
+                    <div className="avatar">
+                        <div className="w-11 rounded-full">
+                            <Image src={article.channelId?.picture || '/NopicAvatar.png'} alt={article.channelId?.name || 'Channel'} width={40} height={40} className="rounded-full" />
                         </div>
-                        <p className="font-semibold text-sm">@{article.channelId?.name || 'Unknown Channel'}</p>
-                        <p className="text-sm text-gray-400 flex"><LuDot size='1.2em'/>{formatDate(article.createdAt)}</p>
                     </div>
-                    <p className='font-semibold text-lg mt-2'>
-                        <TruncateText text={article.title} maxLength={40} />
-                    </p>
-                    <p className="text-md text-gray-600 mt-2">
-                        <TruncateText text={article.previewContent} maxLength={100} />
-                    </p>
-                    {article.previewImage && (
-                        <div className="relative h-60 mt-2">
-                            <Image src={article.previewImage} fill alt={article.title} className="rounded-md object-cover"/>
-                        </div>
-                    )}
-                    <div className="flex justify-between text-sm mt-2 text-gray-400">
-                        <p className='flex gap-0.5'><FaRegComment size="1.2em"/>{article.commentsCount}</p>
-                        <p className='flex gap-0.5'><BiLike size="1.2em"/>{article.likesCount}</p>
-                        <p className='flex gap-0.5'><IoEyeOutline size='1.4em'/>{article.viewsCount}</p>
-                    </div>
+                    <p className="font-semibold text-sm">@{article.channelId?.name || 'Unknown Channel'}</p>
+                    <p className="text-sm text-gray-400 flex items-center"><LuDot size='1.2em'/>{formatDate(article.createdAt)}</p>
                 </div>
-           
-        </>
+                <p className='font-semibold text-base tablet:text-lg mb-2'>
+                    <TruncateText text={article.title} maxLength={40} />
+                </p>
+                <p className="text-sm tablet:text-md text-gray-600 mb-3">
+                    <TruncateText text={article.previewContent} maxLength={100} />
+                </p>
+                {article.previewImage && (
+                    <div className="relative h-40 tablet:h-48 desktop:h-56 mb-3">
+                        <Image src={article.previewImage} fill alt={article.title} className="rounded-md object-cover"/>
+                    </div>
+                )}
+                <div className="flex justify-between text-sm text-gray-400">
+                    <p className='flex items-center gap-0.5'><FaRegComment size="1.2em"/>{article.commentsCount}</p>
+                    <p className='flex items-center gap-0.5'><BiLike size="1.2em"/>{article.likesCount}</p>
+                    <p className='flex items-center gap-0.5'><IoEyeOutline size='1.4em'/>{article.viewsCount}</p>
+                </div>
+            </div>
+        </div>
     );
 }
 

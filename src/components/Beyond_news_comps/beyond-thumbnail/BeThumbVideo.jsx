@@ -75,62 +75,60 @@ const BeThumbVideo = ({video}) => {
 
  
 
-    return (
-        <>
-              
-                <div
-                    key={video._id}
-                    onClick={() => handleClick(video._id)}
-                    className={`w-full py-3 cursor-pointer transition-all duration-150 ${
-                        clickedId === video._id ? 'scale-95 opacity-80' : ''
-                    }`}
-                >
-                    <div className='relative h-56'>
-                        <Image src={video.thumbnailUrl} fill alt={video.title} className="object-cover" />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                            <FaPlay className="text-white text-4xl" />
+      return (
+        <div
+            key={video._id}
+            onClick={() => handleClick(video._id)}
+            className={`w-full cursor-pointer transition-all duration-150 
+                border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md
+                ${clickedId === video._id ? 'scale-95 opacity-80' : ''}
+            `}
+        >
+            <div className='relative h-40 tablet:h-48 desktop:h-56'>
+                <Image src={video.thumbnailUrl} fill alt={video.title} className="object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <FaPlay className="text-white text-4xl" />
+                </div>
+            </div>
+            <div className='p-4'>
+                <div className="flex items-start">
+                    <div className="avatar mr-2">
+                        <div className="w-10 h-10 rounded-full">
+                            <Image 
+                                src={video.channelId?.picture || '/NopicAvatar.png'} 
+                                alt={video.channelId?.name || 'Channel'} 
+                                width={40} 
+                                height={40} 
+                                className="rounded-full" 
+                            />
                         </div>
                     </div>
-                    <div className='border border-gray-300-100 pt-2 pr-8 pl-2.5 pb-1 flex justify-between'>
-                        <div className="avatar">
-                            <div className="w-full h-10 rounded-full">
-                                <Image 
-                                    src={video.channelId?.picture || '/NopicAvatar.png'} 
-                                    alt={video.channelId?.name || 'Channel'} 
-                                    width={40} 
-                                    height={40} 
-                                    className="rounded-full" 
-                                />
-                            </div>
+                    <div className='flex-grow'>
+                        <p className='font-semibold text-base tablet:text-lg mb-1'>
+                            <TruncateText text={video.title} maxLength={25} />
+                        </p>
+                        <div className="flex flex-wrap text-sm mb-2 text-gray-400">
+                            <p className='flex items-center mr-2'><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
+                            <p className='flex items-center'><LuDot size='1.2em'/>{formatDate(video.createdAt)}</p>
                         </div>
-                        <div className='w-4/5 font-sans'>
-
-                            <p className='font-semibold text-lg'>
-                            <TruncateText text={video.title} maxLength={25} /></p>
-
-                            <div className="flex justify-between text-sm mt-2 text-gray-400">
-                                <p className='flex'><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
-                                <p className='flex'><LuDot size='1.2em'/>{formatDate(video.createdAt)}</p>
-                            </div>
-                         <div className="flex justify-between text-sm mt-2 text-gray-400">
-                        <p className='flex gap-0.5'>
-                            <FaRegComment size="1.2em"/>
-                            {commentCounts[video._id] || video.commentCount}
-                        </p>
-                        <p className='flex gap-0.5'>
-                            <BiLike size="1.2em"/>
-                            {likes[video._id]?.likeCount || video.likeCount}
-                        </p>
-                        <p className='flex gap-0.5'>
-                            <IoEyeOutline size='1.4em'/>
-                            {views[video._id]?.viewCount || video.viewCount}
-                        </p>
-                    </div>
+                        <div className="flex justify-between text-sm text-gray-400">
+                            <p className='flex items-center gap-0.5'>
+                                <FaRegComment size="1.2em"/>
+                                {commentCounts[video._id] || video.commentCount}
+                            </p>
+                            <p className='flex items-center gap-0.5'>
+                                <BiLike size="1.2em"/>
+                                {likes[video._id]?.likeCount || video.likeCount}
+                            </p>
+                            <p className='flex items-center gap-0.5'>
+                                <IoEyeOutline size='1.4em'/>
+                                {views[video._id]?.viewCount || video.viewCount}
+                            </p>
                         </div>
                     </div>
                 </div>
-           
-        </>
+            </div>
+        </div>
     );
 }
 

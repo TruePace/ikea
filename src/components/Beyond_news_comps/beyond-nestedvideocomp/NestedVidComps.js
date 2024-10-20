@@ -414,30 +414,29 @@ const handleLike = async () => {
     }
 
     return (
-        <div className="w-full">
-        <div className="">
-       <video 
-    className="w-full" 
-    controls
-    autoPlay
-    onPlay={handleVideoPlay}
-    onPause={handleVideoPause}
-    onEnded={handleVideoEnded}
->
-    <source src={video.videoUrl} type="video/mp4" />
-    Your browser does not support the video tag.
-</video>
+        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="aspect-w-16 aspect-h-9 mb-4">
+            <video 
+                className="w-full h-full object-cover"
+                controls
+                autoPlay
+                onPlay={handleVideoPlay}
+                onPause={handleVideoPause}
+                onEnded={handleVideoEnded}
+            >
+                <source src={video.videoUrl} type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
         </div>
-        <div className='py-4 pl-4 pr-6'>
-            <h1 className="text-2xl font-bold mb-4">{video.title}</h1>
-             {/* Add this section to display tags */}
-             <div className="mb-4">
-                    {video.tags && video.tags.map((tag, index) => (
-                        <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
-                            #{tag}
-                        </span>
-                    ))}
-                </div>
+        <div className='py-4'>
+            <h1 className="text-xl sm:text-2xl font-bold mb-4">{video.title}</h1>
+            <div className="mb-4 flex flex-wrap">
+                {video.tags && video.tags.map((tag, index) => (
+                    <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
+                        #{tag}
+                    </span>
+                ))}
+            </div>
             <div className="flex items-center mb-4">
                 <div className="avatar mr-4">
                     <div className="w-10 h-10 rounded-full">

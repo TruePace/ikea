@@ -230,65 +230,63 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out">
-      <div className="bg-white w-full h-3/4 rounded-t-3xl overflow-hidden flex flex-col">
-        <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b">
-          <button 
-            onClick={onClose} 
-            className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
-          >
-            <IoMdClose size="1.5em" />
-          </button>
-          <h2 className="text-xl font-bold">Comments ({commentCount})</h2>
-        </div>
-
-        <div className="flex-grow overflow-y-auto p-4">
-      
-            <div className="mb-4">
-              {comments.map(comment => (
-                <CommentItem 
-                  key={comment._id} 
-                  comment={comment} 
-                  onReply={handleReply} 
-                  onLike={handleLike} 
-                  currentUser={user} 
-                />
-              ))}
+    <div className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white w-full h-3/4 sm:h-5/6 desktop:h-90vh desktop:max-w-3xl rounded-t-3xl overflow-hidden flex flex-col">
+            <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b">
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
+                >
+                    <IoMdClose size="1.5em" />
+                </button>
+                <h2 className="text-xl font-bold">Comments ({commentCount})</h2>
             </div>
-        
-        </div>
 
-        {user ? (
-          <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={replyTo ? "Write a reply..." : "Write a comment..."}
-              className="w-full p-2 border rounded"
-              disabled={isLoading}
-            />
-            <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded" disabled={isLoading}>
-              {replyTo ? "Reply" : "Comment"}
-            </button>
-            {replyTo && (
-              <button 
-                onClick={() => setReplyTo(null)} 
-                className="mt-2 ml-2 bg-gray-300 text-gray-700 p-2 rounded"
-                disabled={isLoading}
-              >
-                Cancel Reply
-              </button>
+            <div className="flex-grow overflow-y-auto p-4">
+                <div className="mb-4">
+                    {comments.map(comment => (
+                        <CommentItem 
+                            key={comment._id} 
+                            comment={comment} 
+                            onReply={handleReply} 
+                            onLike={handleLike} 
+                            currentUser={user} 
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {user ? (
+                <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-2">
+                    <input
+                        type="text"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder={replyTo ? "Write a reply..." : "Write a comment..."}
+                        className="w-full p-2 border rounded"
+                        disabled={isLoading}
+                    />
+                    <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded" disabled={isLoading}>
+                        {replyTo ? "Reply" : "Comment"}
+                    </button>
+                    {replyTo && (
+                        <button 
+                            onClick={() => setReplyTo(null)} 
+                            className="mt-2 ml-2 bg-gray-300 text-gray-700 p-2 rounded"
+                            disabled={isLoading}
+                        >
+                            Cancel Reply
+                        </button>
+                    )}
+                </form>
+            ) : (
+                <div className="sticky bottom-0 bg-white p-2 text-center">
+                    Please log in to comment.
+                </div>
             )}
-          </form>
-        ) : (
-          <div className="sticky bottom-0 bg-white p-2 text-center">
-            Please log in to comment.
-          </div>
-        )}
-      </div>
+        </div>
     </div>
-  );
+);
 };
 
 export default CommentSection;

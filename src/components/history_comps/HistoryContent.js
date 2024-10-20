@@ -102,17 +102,17 @@ const HistoryContent = () => {
     };
 
     return (
-      <div className="container mx-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Watch/Read History</h2>
-          <button onClick={clearHistory} className="bg-red-500 text-white px-4 py-2 rounded">Clear History</button>
+      <div className="container mx-auto px-4 tablet:px-6 desktop:px-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl tablet:text-2xl desktop:text-3xl font-bold">Watch/Read History</h2>
+          <button onClick={clearHistory} className="bg-red-500 text-white px-3 py-1 tablet:px-4 tablet:py-2 rounded text-sm tablet:text-base">Clear History</button>
         </div>
         {loading && history.length === 0 ? (
-          <HistorySkeleton/>
+          <HistorySkeleton />
         ) : error ? (
-          <div>
-            <p>Error: {error}</p>
-            <button onClick={fetchHistory} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+          <div className="text-center">
+            <p className="text-red-500 mb-4">Error: {error}</p>
+            <button onClick={fetchHistory} className="bg-blue-500 text-white px-4 py-2 rounded text-sm tablet:text-base">
               Retry
             </button>
           </div>
@@ -123,63 +123,71 @@ const HistoryContent = () => {
             hasMore={hasMore}
             loader={<HistorySkeleton />}
             endMessage={
-              <p style={{ textAlign: 'center' }}>
+              <p className="text-center py-4">
                 <b>You have seen it all!</b>
               </p>
             }
           >
-            {history.map((item) => (
-              <div key={item._id} className="w-full border-gray-200 py-2 mb-4 flex gap-4 items-center">
-                <div className="relative w-4/12 h-24">
-                  {item.contentType === 'video' && item.video ? (
-                    <OverlayVideoThumbnail
-                      src={item.video.thumbnailUrl}
-                      alt={item.video.title}
-                      width={192}
-                      height={96}
-                    />
-                  ) : item.contentType === 'article' && item.article ? (
-                    <Image
-                      src={item.article.previewImage}
-                      alt={item.article.title}
-                      width={192}
-                      height={96}
-                      className="object-cover rounded-md"
-                    />
-                  ) : (
-                    <div>No image available</div>
-                  )}
-                </div>
-                <div className="font-sans w-7/12">
-                  <p className="text-sm font-extrabold capitalize">
-                    {item.contentType === 'video' && item.video ? item.video.title :
-                     item.contentType === 'article' && item.article ? item.article.title :
-                     'Unknown Content'}
-                  </p>
-                  <div className="text-sm mt-2 text-gray-400">
-                    <p className='flex gap-1'>
-                      <LuDot size='1.2em'/>
-                      {item.contentType === 'video' && item.video && item.video.channelId ? item.video.channelId.name :
-                       item.contentType === 'article' && item.article && item.article.channelId ? item.article.channelId.name :
-                       'Unknown Channel'}
-                    </p>
-                    <p className='flex gap-1'>
-                      <IoEyeOutline size='1.4em'/> 
-                      {item.contentType === 'video' ? 'Watched' : 'Read'} on {new Date(item.viewedAt).toLocaleDateString()}
-                    </p>
+            <div className="space-y-6">
+              {history.map((item) => (
+                <div key={item._id} className="flex flex-col tablet:flex-row gap-4 items-start tablet:items-center bg-white p-4 rounded-lg shadow-sm">
+                  <div className="relative w-full tablet:w-3/12 desktop:w-2/12 aspect-video">
+                    {item.contentType === 'video' && item.video ? (
+                      <OverlayVideoThumbnail
+                        src={item.video.thumbnailUrl}
+                        alt={item.video.title}
+                      />
+                    ) : item.contentType === 'article' && item.article ? (
+                      <Image
+                        src={item.article.previewImage}
+                        alt={item.article.title}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-md"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                        <span className="text-gray-400">No image</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div className="w-1/12">
-                  <button onClick={() => removeFromHistory(item._id)} className="text-red-500">
+                  <div className="font-sans flex-grow">
+                    <p className="text-sm tablet:text-base desktop:text-lg font-bold line-clamp-2">
+                      {item.contentType === 'video' && item.video ? item.video.title :
+                       item.contentType === 'article' && item.article ? item.article.title :
+                       'Unknown Content'}
+                    </p>
+                    <div className="text-xs tablet:text-sm text-gray-500 mt-2 space-y-1">
+                      <p className='flex items-center'>
+                        <LuDot className="mr-1" />
+                        <span className="line-clamp-1">
+                          {item.contentType === 'video' && item.video && item.video.channelId ? item.video.channelId.name :
+                           item.contentType === 'article' && item.article && item.article.channelId ? item.article.channelId.name :
+                           'Unknown Channel'}
+                        </span>
+                      </p>
+                      <p className='flex items-center'>
+                        <IoEyeOutline className="mr-1" />
+                        <span>
+                          {item.contentType === 'video' ? 'Watched' : 'Read'} on {new Date(item.viewedAt).toLocaleDateString()}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => removeFromHistory(item._id)} 
+                    className="text-red-500 hover:text-red-700 transition-colors mt-2 tablet:mt-0"
+                    aria-label="Remove from history"
+                  >
                     <FaTrash />
                   </button>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </InfiniteScroll>
         )}
       </div>
     );
-}
-
-export default HistoryContent;
+  }
+  
+  export default HistoryContent;

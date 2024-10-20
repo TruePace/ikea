@@ -10,12 +10,12 @@ const MissedJustInSkeleton = () => {
             <div className="h-4 bg-gray-300 rounded w-1/4"></div>
             <div className="h-8 bg-gray-300 rounded w-24 ml-auto"></div>
           </div>
-          <div className="flex justify-between mb-4">
-            <div className="w-7/12">
+          <div className="flex flex-col tablet:flex-row desktop:flex-row justify-between mb-4">
+            <div className="w-full tablet:w-7/12 desktop:w-7/12 mb-4 tablet:mb-0 desktop:mb-0">
               <div className="h-4 bg-gray-300 rounded w-full mb-2"></div>
               <div className="h-4 bg-gray-300 rounded w-3/4"></div>
             </div>
-            <div className="w-2/5 h-24 bg-gray-300 rounded-md"></div>
+            <div className="w-full tablet:w-2/5 desktop:w-2/5 h-24 bg-gray-300 rounded-md"></div>
           </div>
           <div className="h-4 bg-gray-300 rounded w-1/3"></div>
         </div>

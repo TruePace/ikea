@@ -46,7 +46,13 @@ const BeyondContent = () => {
   }, []);
 
   if (isLoading) {
-    return <ThumbnailSkeletonLoader />;
+    return (
+      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
+        {[...Array(6)].map((_, index) => (
+          <ThumbnailSkeletonLoader key={index} type={index % 2 === 0 ? 'video' : 'article'} />
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -54,13 +60,18 @@ const BeyondContent = () => {
       dataLength={combinedContent.length}
       next={fetchContent}
       hasMore={hasMore}
-      loader={<ThumbnailSkeletonLoader />}
+      loader={<h4>Loading...</h4>}
     >
-      {combinedContent.map(content => (
-        content.type === 'video' 
-          ? <BeThumbVideo key={content._id} video={content} />
-          : <BeThumbArticle key={content._id} article={content} />
-      ))}
+      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
+        {combinedContent.map(content => (
+          <div key={content._id} className="w-full ">
+            {content.type === 'video' 
+              ? <BeThumbVideo video={content} />
+              : <BeThumbArticle article={content} />
+            }
+          </div>
+        ))}
+      </div>
     </InfiniteScroll>
   );
 };
