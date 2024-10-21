@@ -58,7 +58,7 @@ const Page = () => {
             loader={<MissedJustInSkeleton />}
             endMessage={
               <p style={{ textAlign: 'center' }}>
-                <b>You're all caught up!</b>
+                <b>You&apos;re all caught up!</b>
               </p>
             }
           >
@@ -78,7 +78,7 @@ const Page = () => {
         ) : (
           <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
             <p className="font-bold">Good news!</p>
-            <p>You haven't missed any Just In content. You're all caught up!</p>
+            <p>You haven&apos;t missed any Just In content. You're all caught up!</p>
           </div>
         )}
       </div>

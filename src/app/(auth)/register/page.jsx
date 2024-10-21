@@ -185,7 +185,8 @@ const Register = () => {
                 {registrationStatus === 'success-with-username-change' && (
                     <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
                         <p className="font-bold">Username Changed</p>
-                        <p>The username "{username}" was already taken. Your account has been created with the username "{finalUsername}".</p>
+                        <p>&quot;The username &quot;{username}&quot; was already taken. Your account has been created with the username &quot;{finalUsername}&quot;.&quot;
+                        </p>
                         <button 
                             onClick={() => router.push('/')} 
                             className="mt-2 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
