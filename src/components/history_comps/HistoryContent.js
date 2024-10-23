@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react';
 import Image from "next/image";
+import Link from 'next/link';
 import { LuDot } from "react-icons/lu";
 import { IoEyeOutline } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
@@ -101,6 +102,16 @@ const HistoryContent = () => {
       }
     };
 
+    // Helper function to get the correct link path based on content type
+    const getContentLink = (item) => {
+      if (item.contentType === 'video' && item.video) {
+        return `/beyond_news/nestedvideo/${item.video._id}`;
+      } else if (item.contentType === 'article' && item.article) {
+        return `/beyond_news/nestedarticle/${item.article._id}`;
+      }
+      return '#';
+    };
+
     return (
       <div className="container mx-auto px-4 tablet:px-6 desktop:px-8">
         <div className="flex justify-between items-center mb-6">
@@ -131,28 +142,30 @@ const HistoryContent = () => {
             <div className="space-y-6">
               {history.map((item) => (
                 <div key={item._id} className="flex flex-col tablet:flex-row gap-4 items-start tablet:items-center bg-white p-4 rounded-lg shadow-sm">
-                  <div className="relative w-full tablet:w-3/12 desktop:w-2/12 aspect-video">
-                    {item.contentType === 'video' && item.video ? (
-                      <OverlayVideoThumbnail
-                        src={item.video.thumbnailUrl}
-                        alt={item.video.title}
-                      />
-                    ) : item.contentType === 'article' && item.article ? (
-                      <Image
-                        src={item.article.previewImage}
-                        alt={item.article.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-md"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
-                        <span className="text-gray-400">No image</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="font-sans flex-grow">
-                    <p className="text-sm tablet:text-base desktop:text-lg font-bold line-clamp-2">
+                  <Link href={getContentLink(item)} className="w-full tablet:w-3/12 desktop:w-2/12 aspect-video">
+                    <div className="relative w-full h-full">
+                      {item.contentType === 'video' && item.video ? (
+                        <OverlayVideoThumbnail
+                          src={item.video.thumbnailUrl}
+                          alt={item.video.title}
+                        />
+                      ) : item.contentType === 'article' && item.article ? (
+                        <Image
+                          src={item.article.previewImage}
+                          alt={item.article.title}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-md"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 rounded-md flex items-center justify-center">
+                          <span className="text-gray-400">No image</span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                  <Link href={getContentLink(item)} className="font-sans flex-grow">
+                    <p className="text-sm tablet:text-base desktop:text-lg font-bold line-clamp-2 hover:text-blue-600">
                       {item.contentType === 'video' && item.video ? item.video.title :
                        item.contentType === 'article' && item.article ? item.article.title :
                        'Unknown Content'}
@@ -173,7 +186,7 @@ const HistoryContent = () => {
                         </span>
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <button 
                     onClick={() => removeFromHistory(item._id)} 
                     className="text-red-500 hover:text-red-700 transition-colors mt-2 tablet:mt-0"

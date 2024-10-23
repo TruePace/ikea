@@ -467,30 +467,26 @@ const handleLike = async () => {
             </div>
             <div className="flex justify-between text-sm text-gray-500 mb-4">
                 <span>{new Date(video.createdAt).toLocaleDateString()}</span>
+                
                 <div className="flex space-x-4">
-                    <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
-                        <FaRegComment className="mr-1" />
-                       
-                        {/* {commentCounts[video._id] || video.commentsCount} */}
-                        {commentCounts[video._id] ?? video.commentsCount ?? 0}
-                    </span>
-                    <div key={likes}>
-                    <span 
-    className={`flex items-center cursor-pointer ${likes[video._id]?.isLiked ? 'text-blue-500' : ''}`} 
-    onClick={handleLike}
->
-    {likes[video._id]?.isLiked ? <BiSolidLike className="mr-1" /> : <BiLike className="mr-1" />}
-    {/* {likes[video._id]?.likeCount || video.likeCount} */}
-    {likes[video._id]?.likeCount ?? video.likeCount ?? 0}
-</span>
-                    </div>
-                    <span className="flex items-center">
-    <IoEyeOutline className="mr-1" /> 
-    {/* {views[video._id]?.viewCount || video.viewsCount} */}
-    {views[video._id]?.viewCount ?? video.viewsCount ?? 0}
-</span>
-<ShareVideoComp video={video} onShare={handleShare}/>
-                </div>
+    <ShareVideoComp video={video} onShare={handleShare}/>
+    <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
+        <FaRegComment className="mr-1" />
+        {commentCounts[video._id] ?? video.commentsCount ?? 0}
+    </span>
+    {/* Remove the extra div and keep just the span */}
+    <span 
+        className={`flex items-center cursor-pointer ${likes[video._id]?.isLiked ? 'text-blue-500' : ''}`} 
+        onClick={handleLike}
+    >
+        {likes[video._id]?.isLiked ? <BiSolidLike className="mr-1" /> : <BiLike className="mr-1" />}
+        {likes[video._id]?.likeCount ?? video.likeCount ?? 0}
+    </span>
+    <span className="flex items-center">
+        <IoEyeOutline className="mr-1" /> 
+        {views[video._id]?.viewCount ?? video.viewsCount ?? 0}
+    </span>
+</div>
             </div>
         </div>
         <BeyondCommentSection

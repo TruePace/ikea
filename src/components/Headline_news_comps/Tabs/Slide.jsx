@@ -130,7 +130,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const renderJustInContent = () => {
     if (currentJustInContent.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen font-sans">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white">
           <div className="text-4xl mb-4 flex items-center">
             <FaNewspaper className="mr-2" />
             <FaArrowLeft className="mx-2" />
@@ -149,18 +149,18 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     }
 
     return (
-      <div className="relative">
+      <div className="relative h-[calc(100vh-8rem)]">
         <div 
           ref={justInContainerRef}
-          className="flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          className="h-full flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           onScroll={handleJustInScroll}
         >
-          {currentJustInContent.map((content, index) => (
+          {currentJustInContent.map((content) => (
             <div 
               key={content._id} 
-              className="w-full flex-shrink-0 snap-start"
+              className="w-full flex-shrink-0 snap-start overflow-y-auto"
             >
-              <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
+              <div className="relative px-4 py-2">
                 <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
                 <ContentFeed 
                   content={content} 
@@ -169,7 +169,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
                 />
                 <EngagementFeed content={content} channel={channel} />
                 
-                <div className="absolute bottom-80 left-0 flex items-center space-x-2">
+                <div className="absolute bottom-20 left-0 flex items-center space-x-2">
                   <JustInTimer expirationTime={content.justInExpiresAt} />
                   <span className="text-xs text-red-800">
                     Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
@@ -219,10 +219,10 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   ];
 
   return (
-    <div ref={slideRef} className='h-full flex justify-center'>
-      <div className='max-w-md tablet:max-w-2xl desktop:max-w-4xl '>
-        <div className='bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2'>
-          {items.map((item, index) => (
+    <div ref={slideRef} className="h-screen flex justify-center">
+      <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
+        <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
+          {['Headline News', 'Just In'].map((title, index) => (
             <button
               key={index}
               onClick={() => setSelectedTab(index)}
@@ -230,10 +230,10 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
                 selectedTab === index ? 'bg-white text-neutral-800' : ''
               } relative`}
             >
-              {item.title}
+              {title}
               {index === 1 && unviewedCount > 0 && (
                 <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
-                 <FaBell className="mr-1" />
+                  <FaBell className="mr-1" />
                   {unviewedCount}
                 </span>
               )}
@@ -241,20 +241,17 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
           ))}
         </div>
         
-        <div className='flex-grow overflow-y-auto'>
-          {selectedTab === 0 && (
-            <>
-              {items.map((item, index) => (
-                <div className={`${selectedTab === index ? 'flex flex-col h-full' : 'hidden'}`} key={index}>
-                  {item.renderContent()}
+        <div className="flex-grow">
+          {selectedTab === 0 ? (
+            <div className="h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory">
+              {headlineContents.map((content) => (
+                <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
+                  {renderHeadlineContent(content)}
                 </div>
               ))}
-            </>
-          )}
-          {selectedTab === 1 && (
-            <div className="flex flex-col h-full">
-              {renderJustInContent()}
             </div>
+          ) : (
+            renderJustInContent()
           )}
         </div>
       </div>

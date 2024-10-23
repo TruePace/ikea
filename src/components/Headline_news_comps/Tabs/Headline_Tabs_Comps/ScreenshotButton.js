@@ -68,7 +68,7 @@ const ScreenshotButton = ({ content, channel }) => {
       }
       
       drawTextWithOutline(`@${channel.name}`, 20, 470);
-      drawTextWithOutline(`${new Date(content.createdAt).toLocaleString()}`, 260, 470);
+      drawTextWithOutline(`${new Date(content.createdAt).toLocaleString()}`, 245, 470);
 
       // Convert to blob
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
