@@ -150,40 +150,43 @@ const ProfileContent = ({profile}) => {
             </div>
 
             <div ref={tabsContainerRef} className="w-full">
-                <div 
-                    ref={tabsRef} 
-                    className={`flex bg-red-600 p-1 rounded-lg transition-all duration-300 ${
-                        isSticky 
-                            ? 'rounded-none' 
-                            : 'mx-4 mt-4'
-                    }`}
-                >
-                    <a 
-                        className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-colors duration-300 ${
-                            activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"
-                        }`}
-                        onClick={() => setActiveTab("Beyond Headline")}
-                    >
-                        Beyond Headline
-                    </a>
-                    <a 
-                        className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer transition-colors duration-300 ${
-                            activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"
-                        }`}
-                        onClick={() => setActiveTab("Headline News")}
-                    >
-                        Headline News
-                    </a>
-                </div>
+    <div 
+        ref={tabsRef} 
+        className={`w-full flex bg-red-600 p-1 ${
+            isSticky 
+                ? 'fixed top-0 left-0 tablet:left-16 desktop:left-64 right-0 z-50 rounded-none' 
+                : 'mx-4 mt-4 rounded-lg'
+        }`}
+    >
+        <a 
+            className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
+                activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"
+            }`}
+            onClick={() => setActiveTab("Beyond Headline")}
+        >
+            Beyond Headline
+        </a>
+        <a 
+            className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
+                activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"
+            }`}
+            onClick={() => setActiveTab("Headline News")}
+        >
+            Headline News
+        </a>
+    </div>
 
-                <div className="mt-4 bg-base-200 rounded-lg mb-16">
-                    {activeTab === "Beyond Headline" ? (
-                        <BeyondHeadlineContent channelId={profile._id}/>
-                    ) : (
-                        <HeadlineNewsContent initialContents={headlineContents} channel={profile} />
-                    )}
-                </div>
-            </div>
+    {/* This div maintains spacing when tabs become fixed */}
+    {isSticky && <div style={{ height: `${tabsHeight}px` }} />}
+
+    <div className="mt-4 bg-base-200 rounded-lg mb-16">
+        {activeTab === "Beyond Headline" ? (
+            <BeyondHeadlineContent channelId={profile._id}/>
+        ) : (
+            <HeadlineNewsContent initialContents={headlineContents} channel={profile} />
+        )}
+    </div>
+</div>
         </>
     );
 }
