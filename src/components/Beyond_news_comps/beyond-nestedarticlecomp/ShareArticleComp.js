@@ -60,7 +60,7 @@ const ShareArticleComp = ({ article }) => {
       }
     }
 
-    const shareUrl = `${window.location.origin}/article/${article._id}`;
+    const shareUrl = `${window.location.origin}//beyond_news/nestedarticle/${article._id}`;
     switch (platform) {
       case 'facebook':
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
