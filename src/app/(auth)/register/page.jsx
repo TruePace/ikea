@@ -54,49 +54,40 @@ const Register = () => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        if (passwordStrength !== 'Strong password') {
-            alert('Please ensure your password meets the strength requirements.');
-            setIsLoading(false);
-            return;
-        }
-        if (password !== confirmPassword) {
-            alert('Passwords do not match.');
-            setIsLoading(false);
-            return;
-        }
+        
         try {
-            console.log('Attempting to create user with Firebase...');
+            // Create Firebase user
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            console.log('User created with Firebase:', userCredential.user.uid);
-            
             const user = userCredential.user;
             const idToken = await user.getIdToken();
             
-            console.log('Sending user data to backend...');
+            // Register with backend
             const response = await fetch(`${API_BASE_URL}/api/users/register`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${idToken}`
-              },
-              body: JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                displayName: username,
-                photoURL: user.photoURL,
-                username: username
-              }),
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: username,
+                    photoURL: user.photoURL,
+                    username: username
+                }),
             });
-      
+    
             if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(`Failed to save user data to backend: ${errorData.message}`);
+                throw new Error(`Failed to save user data to backend`);
             }
-      
+    
             const userData = await response.json();
-            console.log('User data saved to backend:', userData);
             
+            // Fetch updated user details
             await fetchUserDetails(user);
+            
+            // Wait briefly to ensure data is synchronized
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             if (userData.user.username !== username) {
                 setFinalUsername(userData.user.username);
@@ -107,11 +98,7 @@ const Register = () => {
             }
         } catch (error) {
             console.error('Error registering user:', error);
-            if (error.code === 'auth/network-request-failed') {
-                setError('Network error. Please check your internet connection and try again.');
-            } else {
-                setError(error.message || 'An error occurred during registration. Please try again.');
-            }
+            setError(error.message || 'An error occurred during registration');
         } finally {
             setIsLoading(false);
         }
@@ -156,7 +143,7 @@ const Register = () => {
             const userData = await response.json();
             console.log('User signed in and saved:', userData);
             
-            router.push('/login');
+            router.push('/');
         } catch (error) {
             console.error('Error signing in with Google:', error);
             setError(`Error signing in with Google: ${error.message}`);
