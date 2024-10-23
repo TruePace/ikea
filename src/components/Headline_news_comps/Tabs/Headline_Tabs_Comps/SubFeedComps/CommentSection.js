@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { IoMdClose } from 'react-icons/io';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import { auth } from '@/app/(auth)/firebase/ClientApp';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2);
@@ -64,12 +64,35 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState(null);
   const { user } = useAuth();
+  const modalRef = useRef(null);
   
   useEffect(() => {
     if (isOpen) {
       fetchComments();
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
     }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen, contentId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const getIdToken = async () => {
     if (!user) return null;
@@ -126,7 +149,7 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
           contentId,
           text: newComment,
           replyTo,
-          username: user.username // Use the username from the user object
+          username: user.username
         }),
       });
       if (!response.ok) throw new Error('Failed to post comment');
@@ -191,9 +214,12 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out">
-      <div className="bg-white w-full h-3/4 rounded-t-3xl overflow-hidden flex flex-col">
-        <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b">
+    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-center tablet:items-center desktop:items-center transition-opacity duration-300 ease-in-out">
+      <div 
+        ref={modalRef}
+        className="bg-white w-full h-3/4 tablet:w-2/3 desktop:w-1/2 tablet:h-4/5 desktop:h-4/5 tablet:rounded-2xl desktop:rounded-2xl rounded-t-3xl overflow-hidden flex flex-col"
+      >
+        <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl tablet:rounded-t-2xl desktop:rounded-t-2xl border-b">
           <button 
             onClick={onClose} 
             className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
@@ -218,28 +244,35 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
         </div>
 
         {user ? (
-          <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-2">
-            <input
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={replyTo ? "Write a reply..." : "Write a comment..."}
-              className="w-full p-2 border rounded"
-            />
-            <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded">
-              {replyTo ? "Reply" : "Comment"}
-            </button>
-            {replyTo && (
-              <button 
-                onClick={() => setReplyTo(null)} 
-                className="mt-2 ml-2 bg-gray-300 text-gray-700 p-2 rounded"
-              >
-                Cancel Reply
-              </button>
-            )}
+          <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-4 border-t">
+            <div className="flex flex-col tablet:flex-row desktop:flex-row gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder={replyTo ? "Write a reply..." : "Write a comment..."}
+                className="flex-grow p-2 border rounded"
+              />
+              <div className="flex gap-2">
+                <button 
+                  type="submit" 
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+                >
+                  {replyTo ? "Reply" : "Comment"}
+                </button>
+                {replyTo && (
+                  <button 
+                    onClick={() => setReplyTo(null)} 
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </div>
           </form>
         ) : (
-          <div className="sticky bottom-0 bg-white p-2 text-center">
+          <div className="sticky bottom-0 bg-white p-4 text-center border-t">
             Please log in to comment.
           </div>
         )}

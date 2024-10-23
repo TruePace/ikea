@@ -156,7 +156,7 @@ const Register = () => {
             const userData = await response.json();
             console.log('User signed in and saved:', userData);
             
-            router.push('/');
+            router.push('/login');
         } catch (error) {
             console.error('Error signing in with Google:', error);
             setError(`Error signing in with Google: ${error.message}`);
