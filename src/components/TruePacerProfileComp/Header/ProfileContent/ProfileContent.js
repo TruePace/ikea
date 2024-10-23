@@ -148,15 +148,17 @@ const ProfileContent = ({profile}) => {
                     </div>
                 </div>
             </div>
-
-            <div ref={tabsContainerRef} className="w-full">
+<div ref={tabsContainerRef} className="w-full overflow-x-hidden">
     <div 
         ref={tabsRef} 
         className={`w-full flex bg-red-600 p-1 ${
             isSticky 
                 ? 'fixed top-0 left-0 tablet:left-16 desktop:left-64 right-0 z-50 rounded-none' 
-                : 'mx-4 mt-4 rounded-lg'
+                : 'rounded-lg mx-0 tablet:mx-4 desktop:mx-4 mt-4'
         }`}
+        style={{
+            width: isSticky ? '100%' : 'auto'
+        }}
     >
         <a 
             className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
@@ -179,7 +181,7 @@ const ProfileContent = ({profile}) => {
     {/* This div maintains spacing when tabs become fixed */}
     {isSticky && <div style={{ height: `${tabsHeight}px` }} />}
 
-    <div className="mt-4 bg-base-200 rounded-lg mb-16">
+    <div className="mt-4 bg-base-200 rounded-lg mb-16 mx-4">
         {activeTab === "Beyond Headline" ? (
             <BeyondHeadlineContent channelId={profile._id}/>
         ) : (
