@@ -69,16 +69,34 @@ const ArticleInteractions = ({ article }) => {
 
 
 const handleView = useCallback(async () => {
-    if (firebaseUser && userLocation) {
+    if (firebaseUser) {
         try {
             const token = await firebaseUser.getIdToken();
+            // Get location if available, otherwise send null
+            let locationData = null;
+            
+            try {
+                if (navigator.geolocation) {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject);
+                    });
+                    locationData = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                }
+            } catch (error) {
+                console.log('Location not available:', error);
+                // Continue without location
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ location: userLocation })
+                body: JSON.stringify({ location: locationData })
             });
 
             if (response.ok) {
@@ -89,7 +107,7 @@ const handleView = useCallback(async () => {
             console.error('Error updating view count:', error);
         }
     }
-}, [firebaseUser, article._id, dispatch, userLocation]);
+}, [firebaseUser, article._id, dispatch]);
 
 
   useEffect(() => {
