@@ -1,13 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaBell } from 'react-icons/fa';
 
-const SwipeableTabs = ({ items, selectedTab, setSelectedTab, unviewedCount }) => {
+const SwipeableTabs = ({ 
+  selectedTab, 
+  setSelectedTab, 
+  unviewedCount, 
+  children 
+}) => {
   const containerRef = useRef(null);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
-  // Minimum swipe distance for tab change (in pixels)
+  // Minimum swipe distance required (in pixels)
   const minSwipeDistance = 50;
 
   const onTouchStart = (e) => {
@@ -21,55 +26,36 @@ const SwipeableTabs = ({ items, selectedTab, setSelectedTab, unviewedCount }) =>
 
   const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
-    
+
     if (!isTransitioning) {
-      if (isLeftSwipe && selectedTab < items.length - 1) {
-        handleTabChange(selectedTab + 1);
-      }
-      if (isRightSwipe && selectedTab > 0) {
-        handleTabChange(selectedTab - 1);
+      if (isLeftSwipe && selectedTab === 0) {
+        setIsTransitioning(true);
+        setSelectedTab(1);
+        setTimeout(() => setIsTransitioning(false), 300);
+      } else if (isRightSwipe && selectedTab === 1) {
+        setIsTransitioning(true);
+        setSelectedTab(0);
+        setTimeout(() => setIsTransitioning(false), 300);
       }
     }
-    
-    setTouchStart(null);
-    setTouchEnd(null);
-  };
-
-  const handleTabChange = (index) => {
-    setIsTransitioning(true);
-    setSelectedTab(index);
-    setTimeout(() => setIsTransitioning(false), 300);
-  };
-
-  const getTransformStyle = () => {
-    if (touchStart && touchEnd) {
-      const distance = touchEnd - touchStart;
-      const maxDistance = containerRef.current?.offsetWidth || 0;
-      const clampedDistance = Math.max(
-        Math.min(distance, maxDistance),
-        -maxDistance
-      );
-      return `translateX(${-selectedTab * 100}%) translateX(${clampedDistance}px)`;
-    }
-    return `translateX(${-selectedTab * 100}%)`;
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-screen flex flex-col">
       <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
-        {items.map((item, index) => (
+        {['Headline News', 'Just In'].map((title, index) => (
           <button
             key={index}
-            onClick={() => handleTabChange(index)}
+            onClick={() => !isTransitioning && setSelectedTab(index)}
             className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
               selectedTab === index ? 'bg-white text-neutral-800' : ''
             } relative`}
           >
-            {item.title}
+            {title}
             {index === 1 && unviewedCount > 0 && (
               <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
                 <FaBell className="mr-1" />
@@ -82,20 +68,24 @@ const SwipeableTabs = ({ items, selectedTab, setSelectedTab, unviewedCount }) =>
 
       <div 
         ref={containerRef}
-        className="flex-grow overflow-hidden touch-pan-x"
+        className="flex-grow relative overflow-hidden"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         <div 
-          className="flex h-full transition-transform duration-300 ease-out"
-          style={{ transform: getTransformStyle() }}
+          className="absolute inset-0 transition-transform duration-300 ease-in-out flex"
+          style={{ 
+            transform: `translateX(-${selectedTab * 100}%)`,
+            width: '200%'
+          }}
         >
-          {items.map((item, index) => (
-            <div key={index} className="w-full flex-shrink-0">
-              {item.renderContent()}
-            </div>
-          ))}
+          <div className="w-full h-full flex-shrink-0">
+            {children[0]}
+          </div>
+          <div className="w-full h-full flex-shrink-0">
+            {children[1]}
+          </div>
         </div>
       </div>
     </div>
