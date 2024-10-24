@@ -184,7 +184,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     }
 
     return (
-      <div className="relative h-[calc(100vh-8rem)]">
+      <div className="relative ">{/*h-[calc(100vh-8rem)] */}
         <div 
           ref={justInContainerRef}
           className="h-full flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
