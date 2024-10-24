@@ -8,101 +8,49 @@ const SwipeableTabs = ({
   children 
 }) => {
   const containerRef = useRef(null);
-  const [startX, setStartX] = useState(null);
-  const [currentX, setCurrentX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Minimum swipe distance required (in pixels)
+  const minSwipeDistance = 50;
 
-  const handleTouchStart = (e) => {
-    setStartX(e.touches[0].clientX);
-    setIsDragging(true);
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.touches[0].clientX);
   };
 
-  const handleMouseDown = (e) => {
-    e.preventDefault();
-    setStartX(e.clientX);
-    setIsDragging(true);
+  const onTouchMove = (e) => {
+    setTouchEnd(e.touches[0].clientX);
   };
 
-  const handleTouchMove = (e) => {
-    if (!isDragging || startX === null) return;
-    e.preventDefault();
-    const currentPoint = e.touches[0].clientX;
-    const diff = currentPoint - startX;
-    
-    // Limit the swipe to one screen width in either direction
-    const maxSwipe = window.innerWidth;
-    const boundedDiff = Math.max(Math.min(diff, maxSwipe), -maxSwipe);
-    setCurrentX(boundedDiff);
-  };
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
 
-  const handleMouseMove = (e) => {
-    if (!isDragging || startX === null) return;
-    e.preventDefault();
-    const currentPoint = e.clientX;
-    const diff = currentPoint - startX;
-    
-    // Limit the swipe to one screen width in either direction
-    const maxSwipe = window.innerWidth;
-    const boundedDiff = Math.max(Math.min(diff, maxSwipe), -maxSwipe);
-    setCurrentX(boundedDiff);
-  };
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
 
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-
-    const threshold = window.innerWidth * 0.2; // 20% of screen width
-    const direction = currentX > 0 ? -1 : 1;
-    const shouldSwitch = Math.abs(currentX) > threshold;
-
-    if (shouldSwitch) {
-      const newTab = selectedTab + direction;
-      if (newTab >= 0 && newTab <= 1) {
-        setSelectedTab(newTab);
+    if (!isTransitioning) {
+      if (isLeftSwipe && selectedTab === 0) {
+        setIsTransitioning(true);
+        setSelectedTab(1);
+        setTimeout(() => setIsTransitioning(false), 300);
+      } else if (isRightSwipe && selectedTab === 1) {
+        setIsTransitioning(true);
+        setSelectedTab(0);
+        setTimeout(() => setIsTransitioning(false), 300);
       }
     }
-
-    setStartX(null);
-    setCurrentX(0);
-    setIsDragging(false);
   };
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const touchStart = (e) => handleTouchStart(e);
-    const touchMove = (e) => handleTouchMove(e);
-    const touchEnd = () => handleDragEnd();
-    const mouseDown = (e) => handleMouseDown(e);
-    const mouseMove = (e) => handleMouseMove(e);
-    const mouseUp = () => handleDragEnd();
-
-    container.addEventListener('touchstart', touchStart, { passive: false });
-    container.addEventListener('touchmove', touchMove, { passive: false });
-    container.addEventListener('touchend', touchEnd);
-    container.addEventListener('mousedown', mouseDown);
-    container.addEventListener('mousemove', mouseMove);
-    container.addEventListener('mouseup', mouseUp);
-    container.addEventListener('mouseleave', mouseUp);
-
-    return () => {
-      container.removeEventListener('touchstart', touchStart);
-      container.removeEventListener('touchmove', touchMove);
-      container.removeEventListener('touchend', touchEnd);
-      container.removeEventListener('mousedown', mouseDown);
-      container.removeEventListener('mousemove', mouseMove);
-      container.removeEventListener('mouseup', mouseUp);
-      container.removeEventListener('mouseleave', mouseUp);
-    };
-  }, [isDragging, startX, selectedTab]);
-
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-screen flex flex-col">
       <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
         {['Headline News', 'Just In'].map((title, index) => (
           <button
             key={index}
-            onClick={() => setSelectedTab(index)}
+            onClick={() => !isTransitioning && setSelectedTab(index)}
             className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
               selectedTab === index ? 'bg-white text-neutral-800' : ''
             } relative`}
@@ -117,28 +65,27 @@ const SwipeableTabs = ({
           </button>
         ))}
       </div>
-      
+
       <div 
         ref={containerRef}
-        className="flex-grow relative overflow-hidden touch-pan-x"
-        style={{ userSelect: 'none' }}
+        className="flex-grow relative overflow-hidden"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
-        <div
-          className="flex h-full transition-transform duration-300 ease-out"
-          style={{
-            transform: `translateX(calc(${-selectedTab * 100}% + ${currentX}px))`,
-            width: '200%', // Make room for both tabs
+        <div 
+          className="absolute inset-0 transition-transform duration-300 ease-in-out flex"
+          style={{ 
+            transform: `translateX(-${selectedTab * 100}%)`,
+            width: '200%'
           }}
         >
-          {React.Children.map(children, (child, index) => (
-            <div 
-              key={index} 
-              className="w-1/2 h-full flex-shrink-0"
-              style={{ overflow: 'hidden auto' }}
-            >
-              {child}
-            </div>
-          ))}
+          <div className="w-full h-full flex-shrink-0">
+            {children[0]}
+          </div>
+          <div className="w-full h-full flex-shrink-0">
+            {children[1]}
+          </div>
         </div>
       </div>
     </div>
