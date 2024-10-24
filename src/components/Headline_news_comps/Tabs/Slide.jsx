@@ -10,8 +10,8 @@ import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
 import CountdownTimer from '@/components/Utils/CountdownTimer';
 import JustInTimer from '@/components/Utils/JustInTimer';
 import JustInPagination from './Headline_Tabs_Comps/SubFeedComps/JustInPagination';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 import SwipeableTabs from './Headline_Tabs_Comps/SwipeableTabs';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const Slide = ({ channel, headlineContents, justInContents }) => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -112,6 +112,9 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     setCurrentJustInIndex(newIndex);
   };
 
+  const handleTabChange = (index) => {
+    setSelectedTab(index);
+  };
 
   const renderHeadlineContent = (content) => (
     <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
@@ -198,10 +201,10 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     {
       title: 'Headline News',
       renderContent: () => (
-        <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
+        <div className='h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory'>
           {headlineContents.length > 0 ? (
             headlineContents.map((content) => (
-              <div key={content._id} className='h-screen snap-start'>
+              <div key={content._id} className='min-h-[calc(100vh-8rem)] snap-start'>
                 {renderHeadlineContent(content)}
               </div>
             ))
@@ -219,23 +222,16 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     }
   ];
 
+
   return (
     <div ref={slideRef} className="h-screen flex justify-center">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
-        <SwipeableTabs 
-          selectedTab={selectedTab} 
-          setSelectedTab={setSelectedTab}
+        <SwipeableTabs
+          items={items}
           unviewedCount={unviewedCount}
-        >
-          <div className="h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory">
-            {headlineContents.map((content) => (
-              <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
-                {renderHeadlineContent(content)}
-              </div>
-            ))}
-          </div>
-          {renderJustInContent()}
-        </SwipeableTabs>
+          selectedTab={selectedTab}
+          onTabChange={handleTabChange}
+        />
       </div>
     </div>
   );
