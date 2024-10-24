@@ -193,10 +193,6 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     );
   };
 
-  const handleTabChange = (index) => {
-    setSelectedTab(index);
-  };
-
 
   const items = [
     {
@@ -223,14 +219,16 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     }
   ];
 
+
   return (
     <div ref={slideRef} className="h-screen flex justify-center">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
-      <SwipeableTabs
+
+      <SwipeableTabs 
           items={items}
-          unviewedCount={unviewedCount}
           selectedTab={selectedTab}
-          onTabChange={handleTabChange}
+          setSelectedTab={setSelectedTab}
+          unviewedCount={unviewedCount}
         />
         <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
           {['Headline News', 'Just In'].map((title, index) => (
