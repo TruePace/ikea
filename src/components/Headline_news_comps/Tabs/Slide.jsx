@@ -11,7 +11,6 @@ import CountdownTimer from '@/components/Utils/CountdownTimer';
 import JustInTimer from '@/components/Utils/JustInTimer';
 import JustInPagination from './Headline_Tabs_Comps/SubFeedComps/JustInPagination';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-import SwipeableTabs from './Headline_Tabs_Comps/SwipeableTabs';
 
 const Slide = ({ channel, headlineContents, justInContents }) => {
   const [selectedTab, setSelectedTab] = useState(0);
@@ -222,20 +221,39 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   return (
     <div ref={slideRef} className="h-screen flex justify-center">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
-        <SwipeableTabs 
-          selectedTab={selectedTab} 
-          setSelectedTab={setSelectedTab}
-          unviewedCount={unviewedCount}
-        >
-          <div className="h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory">
-            {headlineContents.map((content) => (
-              <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
-                {renderHeadlineContent(content)}
-              </div>
-            ))}
-          </div>
-          {renderJustInContent()}
-        </SwipeableTabs>
+        <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
+          {['Headline News', 'Just In'].map((title, index) => (
+            <button
+              key={index}
+              onClick={() => setSelectedTab(index)}
+              className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
+                selectedTab === index ? 'bg-white text-neutral-800' : ''
+              } relative`}
+            >
+              {title}
+              {index === 1 && unviewedCount > 0 && (
+                <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
+                  <FaBell className="mr-1" />
+                  {unviewedCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        
+        <div className="flex-grow">
+          {selectedTab === 0 ? (
+            <div className="h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory">
+              {headlineContents.map((content) => (
+                <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
+                  {renderHeadlineContent(content)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            renderJustInContent()
+          )}
+        </div>
       </div>
     </div>
   );
