@@ -193,15 +193,19 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     );
   };
 
+  const handleTabChange = (index) => {
+    setSelectedTab(index);
+  };
+
 
   const items = [
     {
       title: 'Headline News',
       renderContent: () => (
-        <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
+        <div className='h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory'>
           {headlineContents.length > 0 ? (
             headlineContents.map((content) => (
-              <div key={content._id} className='h-screen snap-start'>
+              <div key={content._id} className='min-h-[calc(100vh-8rem)] snap-start'>
                 {renderHeadlineContent(content)}
               </div>
             ))
@@ -222,26 +226,12 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   return (
     <div ref={slideRef} className="h-screen flex justify-center">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
-
       <SwipeableTabs
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
+          items={items}
           unviewedCount={unviewedCount}
-        >
-          <div className="w-full flex-shrink-0">
-            <div className="h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory">
-              {headlineContents.map((content) => (
-                <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
-                  {renderHeadlineContent(content)}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="w-full flex-shrink-0">
-            {renderJustInContent()}
-          </div>
-        </SwipeableTabs>
-
+          selectedTab={selectedTab}
+          onTabChange={handleTabChange}
+        />
         <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
           {['Headline News', 'Just In'].map((title, index) => (
             <button

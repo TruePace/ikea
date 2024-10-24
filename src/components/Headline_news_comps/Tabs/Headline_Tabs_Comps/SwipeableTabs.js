@@ -1,98 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaBell } from 'react-icons/fa';
 
-const SwipeableTabs = ({ 
-  selectedTab, 
-  setSelectedTab, 
-  unviewedCount, 
-  children 
-}) => {
-  const containerRef = useRef(null);
-  const [startX, setStartX] = useState(null);
-  const [currentX, setCurrentX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+const SwipeableTabs = ({ items, unviewedCount, selectedTab, onTabChange }) => {
+  const touchStartRef = useRef(null);
+  const touchEndRef = useRef(null);
+  const contentRef = useRef(null);
+  const minSwipeDistance = 50;
 
-  const handleTouchStart = (e) => {
-    setStartX(e.touches[0].clientX);
-    setIsDragging(true);
+  const onTouchStart = (e) => {
+    touchStartRef.current = e.touches[0].clientX;
+    touchEndRef.current = e.touches[0].clientX;
   };
 
-  const handleMouseDown = (e) => {
-    setStartX(e.clientX);
-    setIsDragging(true);
+  const onTouchMove = (e) => {
+    touchEndRef.current = e.touches[0].clientX;
   };
 
-  const handleTouchMove = (e) => {
-    if (!isDragging || startX === null) return;
-    const currentPoint = e.touches[0].clientX;
-    const diff = currentPoint - startX;
-    setCurrentX(diff);
-  };
+  const onTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return;
 
-  const handleMouseMove = (e) => {
-    if (!isDragging || startX === null) return;
-    const currentPoint = e.clientX;
-    const diff = currentPoint - startX;
-    setCurrentX(diff);
-  };
+    const distance = touchStartRef.current - touchEndRef.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
 
-  const handleDragEnd = () => {
-    if (!isDragging) return;
-
-    const threshold = window.innerWidth * 0.2; // 20% of screen width
-    const direction = currentX > 0 ? -1 : 1;
-    const shouldSwitch = Math.abs(currentX) > threshold;
-
-    if (shouldSwitch) {
-      const newTab = selectedTab + direction;
-      if (newTab >= 0 && newTab <= 1) {
-        setSelectedTab(newTab);
-      }
+    if (isLeftSwipe && selectedTab === 0) {
+      onTabChange(1);
+    } else if (isRightSwipe && selectedTab === 1) {
+      onTabChange(0);
     }
 
-    setStartX(null);
-    setCurrentX(0);
-    setIsDragging(false);
+    touchStartRef.current = null;
+    touchEndRef.current = null;
   };
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    container.addEventListener('touchstart', handleTouchStart);
-    container.addEventListener('touchmove', handleTouchMove);
-    container.addEventListener('touchend', handleDragEnd);
-    container.addEventListener('mousedown', handleMouseDown);
-    container.addEventListener('mousemove', handleMouseMove);
-    container.addEventListener('mouseup', handleDragEnd);
-    container.addEventListener('mouseleave', handleDragEnd);
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', handleTouchMove);
-      container.removeEventListener('touchend', handleDragEnd);
-      container.removeEventListener('mousedown', handleMouseDown);
-      container.removeEventListener('mousemove', handleMouseMove);
-      container.removeEventListener('mouseup', handleDragEnd);
-      container.removeEventListener('mouseleave', handleDragEnd);
-    };
-  }, [isDragging, startX, selectedTab]);
-
-  const translateX = isDragging ? currentX : 0;
-  const transition = isDragging ? 'none' : 'transform 0.3s ease-out';
-
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-screen flex flex-col">
       <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
-        {['Headline News', 'Just In'].map((title, index) => (
+        {items.map((item, index) => (
           <button
             key={index}
-            onClick={() => setSelectedTab(index)}
+            onClick={() => onTabChange(index)}
             className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
               selectedTab === index ? 'bg-white text-neutral-800' : ''
             } relative`}
           >
-            {title}
+            {item.title}
             {index === 1 && unviewedCount > 0 && (
               <span className="absolute top-0 right-0 bg-yellow-500 text-white rounded-full px-2 py-1 text-xs">
                 <FaBell className="mr-1" />
@@ -102,22 +54,28 @@ const SwipeableTabs = ({
           </button>
         ))}
       </div>
-      
+
       <div 
-        ref={containerRef}
-        className="flex-grow relative overflow-hidden touch-pan-x"
-        style={{
-          cursor: isDragging ? 'grabbing' : 'grab',
-        }}
+        ref={contentRef}
+        className="flex-grow relative"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
-        <div
-          className="flex h-full w-full"
+        <div 
+          className="absolute inset-0 transition-transform duration-300 ease-in-out"
           style={{
-            transform: `translateX(${-selectedTab * 100 + (translateX / window.innerWidth) * 100}%)`,
-            transition,
+            transform: `translateX(-${selectedTab * 100}%)`
           }}
         >
-          {children}
+          <div className="flex h-full">
+            <div className="w-full flex-shrink-0">
+              {items[0].renderContent()}
+            </div>
+            <div className="w-full flex-shrink-0">
+              {items[1].renderContent()}
+            </div>
+          </div>
         </div>
       </div>
     </div>
