@@ -10,7 +10,6 @@ import { FaNewspaper, FaArrowLeft, FaCalendarAlt } from 'react-icons/fa';
 import CountdownTimer from '@/components/Utils/CountdownTimer';
 import JustInTimer from '@/components/Utils/JustInTimer';
 import JustInPagination from './Headline_Tabs_Comps/SubFeedComps/JustInPagination';
-import SwipeableTabs from './Headline_Tabs_Comps/SwipeableTabs';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const Slide = ({ channel, headlineContents, justInContents }) => {
@@ -198,10 +197,10 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     {
       title: 'Headline News',
       renderContent: () => (
-        <div className='h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory'>
+        <div className='h-screen overflow-y-scroll snap-y snap-mandatory '>
           {headlineContents.length > 0 ? (
             headlineContents.map((content) => (
-              <div key={content._id} className='min-h-[calc(100vh-8rem)] snap-start'>
+              <div key={content._id} className='h-screen snap-start'>
                 {renderHeadlineContent(content)}
               </div>
             ))
@@ -219,17 +218,9 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     }
   ];
 
-
   return (
     <div ref={slideRef} className="h-screen flex justify-center">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
-
-      <SwipeableTabs 
-          items={items}
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
-          unviewedCount={unviewedCount}
-        />
         <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
           {['Headline News', 'Just In'].map((title, index) => (
             <button
