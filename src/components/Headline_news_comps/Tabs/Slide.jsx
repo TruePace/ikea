@@ -114,20 +114,53 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   };
 
 
-  const renderHeadlineContent = (content) => (
-    <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
-      <SubscribeFeed channel={channel} />
-      <ContentFeed content={content} onView={() => handleJustInView(content._id)} isViewed={viewedIds.includes(content._id)} />
-      <EngagementFeed content={content} channel={channel}/>
-      
-      <div className="absolute bottom-80 left-0 flex items-center space-x-2">
-        <CountdownTimer expirationTime={content.headlineExpiresAt} />
-        <span className="text-xs text-red-800">
-          Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-        </span>
+  const renderHeadlineContent = () => {
+    if (headlineContents.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
+          <div className="text-center">
+            <div className="text-4xl mb-4 flex items-center justify-center">
+              <FaNewspaper className="mr-2" />
+              <FaArrowLeft className="mx-2" />
+              <FaCalendarAlt className="ml-2" />
+            </div>
+            <p className="text-xl text-gray-500 mb-4 capitalize">
+              News Only available on the Just In tab.
+            </p>
+            <p className="text-lg text-gray-400 capitalize">
+              Check back later!
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className='h-screen overflow-y-scroll snap-y snap-mandatory'>
+        {headlineContents.map((content) => (
+          <div key={content._id} className='h-screen snap-start'>
+            <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
+              <SubscribeFeed channel={channel} />
+              <ContentFeed 
+                content={content} 
+                onView={() => handleJustInView(content._id)} 
+                isViewed={viewedIds.includes(content._id)} 
+              />
+              <EngagementFeed content={content} channel={channel}/>
+              
+              <div className="absolute bottom-80 left-0 flex items-center space-x-2">
+                <CountdownTimer expirationTime={content.headlineExpiresAt} />
+                <span className="text-xs text-red-800">
+                  Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  );
+    );
+  };
+
 
   const renderJustInContent = () => {
     if (currentJustInContent.length === 0) {
@@ -248,7 +281,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   return (
     <div ref={slideRef} className="h-screen flex justify-center overflow-hidden">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
-        {/* Animate the tab buttons */}
+        {/* Tab buttons */}
         <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
           {['Headline News', 'Just In'].map((title, index) => (
             <button
@@ -269,7 +302,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
           ))}
         </div>
 
-        {/* Tab content wrapper with animation */}
+        {/* Tab content wrapper */}
         <div 
           {...handlers} 
           className="relative flex-grow touch-pan-x"
@@ -284,13 +317,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
               height: 'calc(100vh - 8rem)'
             }}
           >
-            <div className="h-full overflow-y-scroll snap-y snap-mandatory">
-              {headlineContents.map((content) => (
-                <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
-                  {renderHeadlineContent(content)}
-                </div>
-              ))}
-            </div>
+            {renderHeadlineContent()}
           </div>
 
           {/* Just In Tab */}
