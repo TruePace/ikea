@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect,useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { markAsViewed, updateUnviewedCount,setJustInContent } from '../../../Redux/Slices/ViewContentSlice';
 import { FaBell } from 'react-icons/fa';
@@ -24,6 +24,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const dispatch = useDispatch();
   const viewedIds = useSelector(state => state.viewedContent.viewedIds);
   const unviewedCount = useSelector(state => state.viewedContent.unviewedCount);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // console.log("Current Just In Content:", currentJustInContent);
   // console.log("Viewed Content:", viewedIds);
@@ -220,33 +221,42 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   ];
 
 
-  // Add swipe handlers
+  const handleTabChange = useCallback((newTab) => {
+    if (isAnimating) return; // Prevent tab change during animation
+    setIsAnimating(true);
+    setSelectedTab(newTab);
+    // Reset animation state after transition completes
+    setTimeout(() => setIsAnimating(false), 300); // Match this with CSS transition duration
+  }, [isAnimating]);
+
   const { handlers } = useSwipeNavigation({
     onSwipeLeft: () => {
       if (selectedTab === 0) {
-        setSelectedTab(1); // Switch to Just In tab
+        handleTabChange(1);
       }
     },
     onSwipeRight: () => {
       if (selectedTab === 1) {
-        setSelectedTab(0); // Switch to Headline News tab
+        handleTabChange(0);
       }
     },
-    minSwipeDistance: 50 // Adjust this value as needed
+    minSwipeDistance: 50
   });
+
 
   
   return (
-    <div ref={slideRef} className="h-screen flex justify-center">
+    <div ref={slideRef} className="h-screen flex justify-center overflow-hidden">
       <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl">
+        {/* Animate the tab buttons */}
         <div className="bg-red-600 p-1 rounded-lg flex justify-between items-center gap-x-2 font-semibold text-white mb-2">
           {['Headline News', 'Just In'].map((title, index) => (
             <button
               key={index}
-              onClick={() => setSelectedTab(index)}
-              className={`outline-none w-full p-1 rounded-lg text-center transition-colors duration-300 ${
-                selectedTab === index ? 'bg-white text-neutral-800' : ''
-              } relative`}
+              onClick={() => handleTabChange(index)}
+              className={`outline-none w-full p-1 rounded-lg text-center 
+                transition-all duration-300 ease-in-out relative
+                ${selectedTab === index ? 'bg-white text-neutral-800' : ''}`}
             >
               {title}
               {index === 1 && unviewedCount > 0 && (
@@ -258,23 +268,42 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
             </button>
           ))}
         </div>
-        
+
+        {/* Tab content wrapper with animation */}
         <div 
           {...handlers} 
-          className="flex-grow touch-pan-x"
+          className="relative flex-grow touch-pan-x"
           style={{ touchAction: 'pan-x pan-y' }}
         >
-          {selectedTab === 0 ? (
-            <div className="h-[calc(100vh-8rem)] overflow-y-scroll snap-y snap-mandatory">
+          {/* Headline News Tab */}
+          <div 
+            className={`absolute w-full transition-transform duration-300 ease-in-out
+              ${selectedTab === 0 ? 'translate-x-0' : '-translate-x-full'}`}
+            style={{ 
+              visibility: selectedTab === 0 || isAnimating ? 'visible' : 'hidden',
+              height: 'calc(100vh - 8rem)'
+            }}
+          >
+            <div className="h-full overflow-y-scroll snap-y snap-mandatory">
               {headlineContents.map((content) => (
                 <div key={content._id} className="min-h-[calc(100vh-8rem)] snap-start">
                   {renderHeadlineContent(content)}
                 </div>
               ))}
             </div>
-          ) : (
-            renderJustInContent()
-          )}
+          </div>
+
+          {/* Just In Tab */}
+          <div 
+            className={`absolute w-full transition-transform duration-300 ease-in-out
+              ${selectedTab === 1 ? 'translate-x-0' : 'translate-x-full'}`}
+            style={{ 
+              visibility: selectedTab === 1 || isAnimating ? 'visible' : 'hidden',
+              height: 'calc(100vh - 8rem)'
+            }}
+          >
+            {renderJustInContent()}
+          </div>
         </div>
       </div>
     </div>
@@ -282,3 +311,4 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
 };
 
 export default Slide;
+
