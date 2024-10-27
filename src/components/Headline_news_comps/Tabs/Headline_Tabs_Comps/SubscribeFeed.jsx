@@ -20,13 +20,14 @@ const SubscribeFeed = ({ channel }) => {
     state.subscriptions[user?.uid]?.[channel._id] || false
   );
 
-
-  const handleChannel = async () => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-  }
+  //  if you want to navigate to profile page based on auth status 
+  
+  // const handleChannel = async () => {
+  //   if (!user) {
+  //     router.push('/login');
+  //     return;
+  //   }
+  // }
   
   const handleSearch = async () => {
     if (!user) {
@@ -113,11 +114,11 @@ const SubscribeFeed = ({ channel }) => {
             <Image src={channel.picture} alt={channel.name} fill className="object-cover" />
           </div>
         </div>
-        <div onClick={handleChannel}> 
+        {/* <div onClick={handleChannel}>  */}
         <Link href={`/truepacer_profile/${channel._id}`} >
           <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p>
         </Link>
-        </div>
+        {/* </div> */}
         <div className="relative" ref={dropdownRef}>
           {!isSubscribed ? (
             <button
