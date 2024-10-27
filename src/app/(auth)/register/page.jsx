@@ -112,6 +112,7 @@ const Register = () => {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const idToken = await user.getIdToken();
+            // console.log('Firebase ID Token:', idToken);
             
             console.log('Google Sign-In successful, sending data to backend:', {
                 uid: user.uid,

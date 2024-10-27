@@ -140,8 +140,8 @@ const ScreenshotButton = ({ content, channel }) => {
 
   return (
     <div className="flex flex-col items-center relative" ref={dropdownRef}>
-    <button onClick={handleScreenshotClick} className="flex flex-col items-center mb-2">
-      <RiScreenshot2Line size='1.9em' className="m-auto" />
+    <button onClick={handleScreenshotClick} className="flex flex-col items-center mb-2 h-11">
+      <RiScreenshot2Line size='1.6em' className="m-auto" />
       <p className="text-xs">({screenshotCount})</p>
     </button>
     {showOptions && (

@@ -7,7 +7,7 @@ const ShareComponent = ({ contentId, onShare, shareCount }) => {
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef(null);
 
-  const shareUrl = `${window.location.origin}/headline_news/${contentId}`;
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/headline_news/${contentId}` : '';
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -56,9 +56,9 @@ const ShareComponent = ({ contentId, onShare, shareCount }) => {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="flex flex-col items-center relative h-12" ref={dropdownRef}>
       {isOpen && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
           <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
             <button onClick={() => handleShare('facebook')} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full">
               <FaFacebook className="mr-2" /> Facebook
@@ -78,15 +78,18 @@ const ShareComponent = ({ contentId, onShare, shareCount }) => {
           </div>
         </div>
       )}
-      <button 
-  onClick={() => setIsOpen(!isOpen)} 
-  className="flex flex-col items-center text-gray-500 hover:text-gray-700"
->
-  <FaShareAlt />
-  <p>({shareCount})</p>
-</button>
-      
-      {copied && <span className="absolute top-full left-0 mt-2 text-green-500">Copied!</span>}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex flex-col items-center justify-center h-11"
+      >
+        <FaShareAlt size="1.4em" className="m-auto" />
+        <p className="text-xs">({shareCount})</p>
+      </button>
+      {copied && (
+        <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-green-500 text-xs">
+          Copied!
+        </span>
+      )}
     </div>
   );
 };

@@ -63,16 +63,23 @@ const BeThumbVideo = ({video}) => {
             console.error('Error adding video to history:', error);
           }
         }
-        setTimeout(() => {
-          if (!user) {
-            router.push('/login');
-          } else {
-            router.push(`/beyond_news/nestedvideo/${videoId}`);
-          }
-        }, 100);
-      };
+
+         // Navigate to video page based on auth status 
+    //     setTimeout(() => {
+    //       if (!user) {
+    //         router.push('/login');
+    //       } else {
+    //         router.push(`/beyond_news/nestedvideo/${videoId}`);
+    //       }
+    //     }, 100);
+    //   };
 
 
+  // Navigate to video page regardless of auth status
+  setTimeout(() => {
+    router.push(`/beyond_news/nestedvideo/${videoId}`);
+}, 100);
+};
  
 
       return (

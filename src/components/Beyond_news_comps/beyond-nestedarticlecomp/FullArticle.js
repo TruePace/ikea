@@ -91,7 +91,7 @@ const FullArticle = () => {
     }
 
     return (
-        <div className="max-w-3xl mx-auto p-4 pt-16 sm:pt-20 md:pt-24 desktop:max-w-4xl">
+        <div className="max-w-3xl mx-auto p-4 pt-8 sm:pt-12 md:pt-20 desktop:max-w-4xl ">
             <h1 className="text-2xl sm:text-3xl desktop:text-4xl font-bold mb-4">{article.title}</h1>
             <div className="mb-4 relative w-full" style={{ height: '0', paddingBottom: '56.25%' }}>
                 <Image

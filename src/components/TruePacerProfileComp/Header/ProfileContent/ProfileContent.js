@@ -8,6 +8,7 @@ import BeyondHeadlineContent from "./BeyondHeadlineContent";
 import HeadlineNewsContent from "./HeadlineNewsContent";
 import { fetchContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useAuth } from "@/app/(auth)/AuthContext";
+import { useRouter } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -16,6 +17,7 @@ const ProfileContent = ({profile}) => {
     const [subscriberCount, setSubscriberCount] = useState(profile.subscriberCount);
     const [isSticky, setIsSticky] = useState(false);
     const dispatch = useDispatch();
+    const router = useRouter()
     const { user } = useAuth();
     const isSubscribed = useSelector(state => 
         state.subscriptions[user?.uid]?.[profile._id] || false
@@ -67,6 +69,10 @@ const ProfileContent = ({profile}) => {
     }, [tabsHeight, isSticky]);
 
     const handleSubscribe = async () => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${profile._id}/subscribe`, {
                 method: 'POST',
@@ -82,6 +88,10 @@ const ProfileContent = ({profile}) => {
     };
 
     const handleUnsubscribe = async () => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
         try {
             const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Channel/${profile._id}/unsubscribe`, {
                 method: 'POST',

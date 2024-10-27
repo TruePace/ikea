@@ -39,14 +39,21 @@ const BeThumbArticle = ({article}) => {
             console.error('Error adding article to history:', error);
           }
         }
-        setTimeout(() => {
-          if (!user) {
-            router.push('/login');
-          } else {
-            router.push(`/beyond_news/nestedarticle/${articleId}`);
-          }
-        }, 100);
-      };
+// Navigate to article page based on auth status 
+      //   setTimeout(() => {
+      //     if (!user) {
+      //       router.push('/login');
+      //     } else {
+      //       router.push(`/beyond_news/nestedarticle/${articleId}`);
+      //     }
+      //   }, 100);
+      // };
+
+       // Navigate to article page regardless of auth status
+      setTimeout(() => {
+        router.push(`/beyond_news/nestedarticle/${articleId}`);
+    }, 100);
+    };
 
   
       return (

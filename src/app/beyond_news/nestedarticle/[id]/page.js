@@ -6,7 +6,7 @@ const FullArticle = lazy(() => import("@/components/Beyond_news_comps/beyond-nes
 const page = () => {
     return (
         <>
-             <div className="flex flex-col h-screen">
+             <div className="flex flex-col h-screen pb-11">
           <Header/>
 
           <Suspense fallback={<div>Loading...</div>}>

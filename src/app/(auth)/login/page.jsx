@@ -37,7 +37,7 @@ const LogIn = () => {
         
             // 2. Get ID token
             const idToken = await user.getIdToken();
-            // console.log('Firebase ID Token:', idToken);
+            console.log('Firebase ID Token:', idToken);
         
             // 3. Verify with your backend
             const response = await fetch(`${API_BASE_URL}/api/users/login`, {

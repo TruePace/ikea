@@ -243,7 +243,7 @@ const EngagementFeed = ({ content, channel }) => {
   return (
     <>
     <div id={`engagement-feed-${content._id}`}>
-      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center ">
+      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center">
         <div className="flex justify-between w-1/4 ">
         <button 
             onClick={handleLike} 
@@ -260,10 +260,10 @@ const EngagementFeed = ({ content, channel }) => {
             <p className="text-xs">({interactions.dislikeCount})</p>
           </button>
         </div>
-        <a href='' onClick={handleCommentClick} className="h-12">
-          <FaRegComment size='1.8em' className="m-auto" />
-          <p className="text-xs">{commentCount} </p>
-        </a>
+        <button onClick={handleCommentClick} className="h-12">
+          <FaRegComment size='1.6em' className="m-auto" />
+          <p className="text-xs">({commentCount}) </p>
+        </button>
         <ShareComponent 
             contentId={content._id} 
             onShare={handleShare} 
@@ -271,10 +271,11 @@ const EngagementFeed = ({ content, channel }) => {
           />
 
 <ScreenshotButton content={content} channel={channel} />
-        <span>
-          <IoEyeOutline size='1.7em' className="m-auto" />
-          {interactions.viewCount}
-          </span>
+
+        <button className="h-12">
+          <IoEyeOutline size='1.6em' className="m-auto" />
+          <p className="text-xs">({interactions.viewCount})</p>
+          </button>
       </div>
       <CommentSection
         isOpen={isCommentOpen}
