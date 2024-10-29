@@ -90,7 +90,7 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory">
+      <div className="h-screen overflow-y-scroll bg-red-50 snap-y snap-mandatory ">
         {[...Array(3)].map((_, index) => (
           <div key={index} className="h-screen snap-start">
             <div className="max-w-md tablet:max-w-2xl desktop:max-w-4xl mx-auto pt-4">
@@ -129,7 +129,7 @@ const Page = () => {
       <HeadlineSocket/>
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
-          <div className="h-full overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="h-full overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">
             {channelsWithContent.map((channel) => (
               <div key={channel._id} className="h-screen snap-start">
                 <Slide

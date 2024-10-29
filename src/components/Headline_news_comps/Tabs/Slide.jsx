@@ -148,7 +148,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
               />
               <EngagementFeed content={content} channel={channel}/>
               
-              <div className="absolute bottom-80 left-0 flex items-center space-x-2">
+              <div className="absolute bottom-24 left-0 flex items-center space-x-2">
                 <CountdownTimer expirationTime={content.headlineExpiresAt} />
                 <span className="text-xs text-red-800">
                   Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}

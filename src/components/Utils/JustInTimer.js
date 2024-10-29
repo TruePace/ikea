@@ -28,11 +28,11 @@ const JustInTimer = ({ expirationTime }) => {
   const percentage = (timeLeft / (15 * 60)) * 100;
 
   return (
-    <div className="relative w-16 h-16">
+    <div className="relative w-11 h-11">
       <svg className="w-full h-full" viewBox="0 0 100 100">
         <circle
           className="text-gray-200 stroke-current"
-          strokeWidth="8"
+          strokeWidth="2"
           cx="50"
           cy="50"
           r="40"
@@ -40,7 +40,7 @@ const JustInTimer = ({ expirationTime }) => {
         />
         <circle
           className="text-red-800 progress-ring__circle stroke-current"
-          strokeWidth="8"
+          strokeWidth="2"
           strokeLinecap="round"
           cx="50"
           cy="50"
@@ -52,7 +52,7 @@ const JustInTimer = ({ expirationTime }) => {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-semibold">
+        <span className="text-[8px] font-semibold">
           {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
         </span>
       </div>

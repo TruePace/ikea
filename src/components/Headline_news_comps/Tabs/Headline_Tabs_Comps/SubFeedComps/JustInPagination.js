@@ -37,7 +37,7 @@ const JustInPagination = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-center items-center gap-2">
+    <div className="fixed -bottom-6 left-0 right-0 z-50 flex justify-center items-center gap-2 bg-blue-400">
       <button 
         onClick={() => handlePageClick(Math.max(0, currentIndex - 1))}
         disabled={currentIndex === 0}
