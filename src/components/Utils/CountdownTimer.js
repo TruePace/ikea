@@ -47,7 +47,7 @@ const CountdownTimer = ({ expirationTime }) => {
           transform="rotate(-90 20 20)"
         ></circle>
       </svg>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[8px] text-center">
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[8px] text-center dark:text-gray-200">
         <div>{`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}</div>
       </div>
     </div>

@@ -37,7 +37,7 @@ const NavBar = () => {
   ];
 
   return (
-    <nav className="bg-white fixed bottom-0 left-0 tablet:left-0 tablet:top-0 desktop:left-0 desktop:top-0 w-full h-14 tablet:h-full desktop:h-full tablet:w-16 desktop:w-64 py-1 tablet:py-4 desktop:py-6 flex flex-nowrap tablet:flex-col desktop:flex-col justify-evenly items-center z-10">
+    <nav className="bg-white fixed bottom-0 left-0 tablet:left-0 tablet:top-0 desktop:left-0 desktop:top-0 w-full h-14 tablet:h-full desktop:h-full tablet:w-16 desktop:w-64 py-1 tablet:py-4 desktop:py-6 flex flex-nowrap tablet:flex-col desktop:flex-col justify-evenly items-center z-10 dark:bg-gray-900 dark:text-gray-200">
       {links.map((link) => (
         <div 
           key={link.title} 
@@ -49,19 +49,19 @@ const NavBar = () => {
           {!link.protected || user ? (
             <Link 
               href={link.path} 
-              className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 w-full"
+              className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
             >
               <div className="tablet:mr-2 desktop:mr-4 mb-0.5 tablet:mb-0">
                 {link.title}
               </div>
-              <span className="text-[11px] tablet:text-sm desktop:text-base text-center tablet:text-left desktop:text-left text-gray-600 leading-tight">
+              <span className="text-[11px] tablet:text-sm desktop:text-base text-center tablet:text-left desktop:text-left text-gray-600 leading-tight dark:text-gray-200 ">
                 {link.titleName}
               </span>
             </Link>
           ) : (
             <Link 
               href="/login" 
-              className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 w-full"
+              className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 w-full  dark:hover:bg-gray-700"
             >
               <div className="tablet:mr-2 desktop:mr-4 mb-0.5 tablet:mb-0">
                 {link.title}

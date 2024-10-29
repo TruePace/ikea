@@ -218,7 +218,7 @@ const handleUnsubscribe = async () => {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 dark:text-gray-200">
                 <div className="flex items-center">
                     <img src={article.channelId.picture} alt={article.channelId.name} className="w-10 h-10 rounded-full mr-2" />
                 </div>
@@ -226,7 +226,7 @@ const handleUnsubscribe = async () => {
                     <Link href={`/truepacer_profile/${article.channelId?._id}`}>
                         <span className="font-semibold">{article.channelId?.name}</span>
                     </Link>
-                    <p className="text-sm text-gray-500">{subscriberCount} subscribers</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-200">{subscriberCount} subscribers</p>
                 </div>
                 {!isSubscribed ? (
                     <button 
@@ -244,7 +244,7 @@ const handleUnsubscribe = async () => {
                     </button>
                 )}
             </div>
-            <div className="flex justify-between text-sm text-gray-500 mb-4">
+            <div className="flex justify-between text-sm text-gray-500 dark:text-gray-200 mb-4">
             <div className="flex space-x-4">
                     <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
                         <FaRegComment className="mr-1" />

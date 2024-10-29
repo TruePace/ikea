@@ -87,7 +87,7 @@ const BeThumbVideo = ({video}) => {
             key={video._id}
             onClick={() => handleClick(video._id)}
             className={`w-full cursor-pointer transition-all duration-150 
-                border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md
+                border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md
                 ${clickedId === video._id ? 'scale-95 opacity-80' : ''}
             `}
         >
@@ -111,11 +111,11 @@ const BeThumbVideo = ({video}) => {
                         </div>
                     </div>
                     <div className='flex-grow'>
-                        <p className='font-semibold text-base tablet:text-lg mb-1'>
+                        <p className='font-semibold text-base tablet:text-lg mb-1 dark:text-gray-200'>
                             <TruncateText text={video.title} maxLength={25} />
                         </p>
-                        <div className="flex flex-wrap text-sm mb-2 text-gray-400">
-                            <p className='flex items-center mr-2'><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
+                        <div className="flex flex-wrap text-sm mb-2 text-gray-400 ">
+                            <p className='flex items-center mr-2 '><LuDot size='1.2em'/>{video.channelId?.name || 'not show'}</p>
                             <p className='flex items-center'><LuDot size='1.2em'/>{formatDate(video.createdAt)}</p>
                         </div>
                         <div className="flex justify-between text-sm text-gray-400">

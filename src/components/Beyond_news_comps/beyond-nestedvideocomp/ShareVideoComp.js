@@ -63,9 +63,9 @@ const ShareVideoComp = ({ video, onShare }) => {
       <button 
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)} 
-        className="flex items-center space-x-1 hover:bg-gray-100 p-2 rounded-md"
+        className="flex items-center space-x-1 hover:bg-gray-100 dark:bg-gray-700 p-2 rounded-md"
       >
-        <FaShare className="text-gray-600" />
+        <FaShare className="text-gray-600 dark:text-gray-200" />
         <span>Share</span>
         <span>({video.shareCount || 0})</span>
       </button>
@@ -73,39 +73,39 @@ const ShareVideoComp = ({ video, onShare }) => {
       {isOpen && (
         <div 
           ref={dropdownRef}
-          className="absolute bottom-full left-0 mb-2 bg-white shadow-lg rounded-md p-2 w-48 border border-gray-200"
+          className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-700 shadow-lg rounded-md p-2 w-48 border border-gray-200"
         >
           <button 
             onClick={() => handleShare('facebook')} 
-            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 dark:hover:bg-gray-400 rounded-md transition-colors"
           >
             <FaFacebook className="text-blue-600 mr-2" />
             <span>Facebook</span>
           </button>
           <button 
             onClick={() => handleShare('twitter')} 
-            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 dark:hover:bg-gray-400 rounded-md transition-colors"
           >
             <FaTwitter className="text-blue-400 mr-2" />
             <span>Twitter</span>
           </button>
           <button 
             onClick={() => handleShare('whatsapp')} 
-            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 dark:hover:bg-gray-400 rounded-md transition-colors"
           >
             <FaWhatsapp className="text-green-500 mr-2" />
             <span>WhatsApp</span>
           </button>
           <button 
             onClick={() => handleShare('instagram')} 
-            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center justify-center w-full p-3 hover:bg-gray-100  dark:hover:bg-gray-400 rounded-md transition-colors"
           >
             <FaInstagram className="text-pink-600 mr-2" />
             <span>Instagram</span>
           </button>
           <button 
             onClick={() => handleShare('copy')} 
-            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center justify-center w-full p-3 hover:bg-gray-100 dark:hover:bg-gray-400 rounded-md transition-colors"
           >
             <FaCopy className="text-gray-600 mr-2" />
             <span>Copy Link</span>

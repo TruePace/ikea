@@ -128,7 +128,7 @@ const ProfileContent = ({profile}) => {
                     </div>
 
                     <div className="flex-1 font-sans">
-                        <p className="font-bold text-xl mt-2">{profile.name}</p>
+                        <p className="font-bold text-xl mt-2 dark:text-gray-200">{profile.name}</p>
                         <p className="text-sm mt-2 text-gray-400">@Coolchannel</p>
                         <div className="flex gap-2 text-sm mt-2 text-gray-400">
                             <p className="flex">{subscriberCount} Subscriber{subscriberCount !== 1 ? 's' : ''} </p>

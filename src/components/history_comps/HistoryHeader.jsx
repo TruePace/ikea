@@ -27,7 +27,7 @@ const HistoryHeader = () => {
 
     return (
         <>
-  <div className="navbar bg-base-100">
+  <div className="navbar bg-base-100 dark:bg-gray-900 dark:text-gray-200">
                 <div className="flex-1 ">
                     <Link href='' className="btn btn-ghost text-lg">
                         <Image src='/TruePace.svg' height={25} width={25} />

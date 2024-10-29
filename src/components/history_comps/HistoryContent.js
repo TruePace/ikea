@@ -115,7 +115,7 @@ const HistoryContent = () => {
     return (
       <div className="container mx-auto px-4 tablet:px-6 desktop:px-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl tablet:text-2xl desktop:text-3xl font-bold">Watch/Read History</h2>
+          <h2 className="text-xl tablet:text-2xl desktop:text-3xl font-bold dark:text-gray-200">Watch/Read History</h2>
           <button onClick={clearHistory} className="bg-red-500 text-white px-3 py-1 tablet:px-4 tablet:py-2 rounded text-sm tablet:text-base">Clear History</button>
         </div>
         {loading && history.length === 0 ? (
@@ -141,7 +141,7 @@ const HistoryContent = () => {
           >
             <div className="space-y-6">
               {history.map((item) => (
-                <div key={item._id} className="flex flex-col tablet:flex-row gap-4 items-start tablet:items-center bg-white p-4 rounded-lg shadow-sm">
+                <div key={item._id} className="flex flex-col tablet:flex-row gap-4 items-start tablet:items-center bg-white p-4 rounded-lg shadow-sm dark:text-gray-200 dark:bg-gray-700">
                   <Link href={getContentLink(item)} className="w-full tablet:w-3/12 desktop:w-2/12 aspect-video">
                     <div className="relative w-full h-full">
                       {item.contentType === 'video' && item.video ? (

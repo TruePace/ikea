@@ -116,44 +116,49 @@ const SubscribeFeed = ({ channel }) => {
         </div>
         {/* <div onClick={handleChannel}>  */}
         <Link href={`/truepacer_profile/${channel._id}`} >
-          <p className="font-semibold text-sm whitespace-nowrap">{channel.name}</p>
+          <p className="font-semibold text-sm whitespace-nowrap dark:text-white">{channel.name}</p>
         </Link>
         {/* </div> */}
         <div className="relative" ref={dropdownRef}>
-          {!isSubscribed ? (
+        {!isSubscribed ? (
+          <button
+            className="btn btn-sm font-bold bg-neutral-content dark:bg-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            onClick={handleSubscribe}
+          >
+            Subscribe
+          </button>
+        ) : (
+          <>
             <button
-              className="btn btn-sm font-bold bg-neutral-content"
-              onClick={handleSubscribe}
+              className="btn btn-sm font-bold bg-gray-300 dark:bg-gray-700 dark:text-white hover:bg-gray-400 dark:hover:bg-gray-600 flex items-center transition-colors"
+              onClick={() => setShowDropdown(!showDropdown)}
             >
-              Subscribe
-            </button>
-          ) : (
-            <>
-              <button
-                className="btn btn-sm font-bold bg-gray-300 flex items-center"
-                onClick={() => setShowDropdown(!showDropdown)}
+              <span>Subscribed</span>
+              <svg
+                className="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <span>Subscribed</span>
-                <svg
-                  className="w-4 h-4 ml-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10">
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={handleUnsubscribe}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                  <button
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={handleUnsubscribe}
-                  >
-                    Unsubscribe
-                  </button>
-                </div>
-              )}
+                  Unsubscribe
+                </button>
+              </div>
+            )}
             </>
           )}
         </div>

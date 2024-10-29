@@ -61,24 +61,24 @@ const BeThumbArticle = ({article}) => {
             key={article._id} 
             onClick={() => handleClick(article._id)} 
             className={`w-full cursor-pointer transition-all duration-150 
-                border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md
+                border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md
                 ${clickedId === article._id ? 'scale-95 opacity-80' : ''}
             `}
         >
             <div className="p-4">
-                <div className="border-gray-200 gap-3 flex items-center mb-3">
+                <div className="border-gray-200 dark:border-gray-700  gap-3 flex items-center mb-3">
                     <div className="avatar">
                         <div className="w-11 rounded-full">
                             <Image src={article.channelId?.picture || '/NopicAvatar.png'} alt={article.channelId?.name || 'Channel'} width={40} height={40} className="rounded-full" />
                         </div>
                     </div>
-                    <p className="font-semibold text-sm">@{article.channelId?.name || 'Unknown Channel'}</p>
+                    <p className="font-semibold text-sm dark:text-gray-200">@{article.channelId?.name || 'Unknown Channel'}</p>
                     <p className="text-sm text-gray-400 flex items-center"><LuDot size='1.2em'/>{formatDate(article.createdAt)}</p>
                 </div>
-                <p className='font-semibold text-base tablet:text-lg mb-2'>
+                <p className='font-semibold text-base tablet:text-lg mb-2 dark:text-gray-200'>
                     <TruncateText text={article.title} maxLength={40} />
                 </p>
-                <p className="text-sm tablet:text-md text-gray-600 mb-3">
+                <p className="text-sm tablet:text-md text-gray-600 mb-3 dark:text-gray-200">
                     <TruncateText text={article.previewContent} maxLength={100} />
                 </p>
                 {article.previewImage && (

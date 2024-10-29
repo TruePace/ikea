@@ -243,18 +243,18 @@ const EngagementFeed = ({ content, channel }) => {
   return (
     <>
     <div id={`engagement-feed-${content._id}`}>
-      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center">
+      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
         <div className="flex justify-between w-1/4 ">
         <button 
             onClick={handleLike} 
-            className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-500'}`}
+            className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-500 dark:text-gray-200'}`}
           >
             <BiLike size='1.6em' className="m-auto" />
             <p className="text-xs">({interactions.likeCount})</p>
           </button>
           <button 
             onClick={handleDislike} 
-            className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500'}`}
+            className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500 dark:text-gray-200'}`}
           >
             <BiDislike size='1.6em' className="m-auto" />
             <p className="text-xs">({interactions.dislikeCount})</p>

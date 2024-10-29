@@ -429,7 +429,7 @@ const handleLike = async () => {
             </video>
         </div>
         <div className='py-4'>
-            <h1 className="text-xl sm:text-2xl font-bold mb-4">{video.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold mb-4 dark:text-gray-200">{video.title}</h1>
             <div className="mb-4 flex flex-wrap">
                 {video.tags && video.tags.map((tag, index) => (
                     <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
@@ -437,7 +437,7 @@ const handleLike = async () => {
                     </span>
                 ))}
             </div>
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-4 dark:text-gray-200">
                 <div className="avatar mr-4">
                     <div className="w-10 h-10 rounded-full">
                         <img src={video.channelId?.picture} alt={video.channelId?.name} />
@@ -447,7 +447,7 @@ const handleLike = async () => {
                     <Link href={`/truepacer_profile/${video.channelId?._id}`}>
                         <span className="font-semibold">{video.channelId?.name}</span>
                     </Link>
-                    <p className="text-sm text-gray-500">{video.channelId?.subscriberCount} subscribers</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-200">{video.channelId?.subscriberCount} subscribers</p>
                 </div>
                 {!isSubscribed ? (
                     <button 
@@ -465,10 +465,10 @@ const handleLike = async () => {
                     </button>
                 )}
             </div>
-            <div className="flex justify-between text-sm text-gray-500 mb-4">
+            <div className="flex justify-between text-sm text-gray-500 mb-4 dark:text-gray-200">
                 <span>{new Date(video.createdAt).toLocaleDateString()}</span>
                 
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 dark:text-gray-200">
     <ShareVideoComp video={video} onShare={handleShare}/>
     <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>
         <FaRegComment className="mr-1" />

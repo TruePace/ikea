@@ -92,7 +92,7 @@ const FullArticle = () => {
 
     return (
         <div className="max-w-3xl mx-auto p-4 pt-8 sm:pt-12 md:pt-20 desktop:max-w-4xl ">
-            <h1 className="text-2xl sm:text-3xl desktop:text-4xl font-bold mb-4">{article.title}</h1>
+            <h1 className="text-2xl sm:text-3xl desktop:text-4xl font-bold mb-4 dark:text-gray-200">{article.title}</h1>
             <div className="mb-4 relative w-full" style={{ height: '0', paddingBottom: '56.25%' }}>
                 <Image
                     src={article.previewImage}
@@ -104,7 +104,7 @@ const FullArticle = () => {
             </div>
             <ArticleInteractions article={article} />
             <ShareArticleComp article={article} />
-            <div className="flex justify-between text-sm mb-4 text-gray-600">
+            <div className="flex justify-between text-sm mb-4 text-gray-600 dark:text-gray-200">
                 <p>{formatDate(article.createdAt)}</p>
             </div>
             {/* Display tags */}
@@ -115,7 +115,7 @@ const FullArticle = () => {
                     </span>
                 ))}
             </div>
-            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: article.fullContent }} />
+            <div className="prose max-w-none dark:text-gray-200" dangerouslySetInnerHTML={{ __html: article.fullContent }} />
         </div>
     );
 };

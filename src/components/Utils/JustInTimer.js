@@ -52,7 +52,7 @@ const JustInTimer = ({ expirationTime }) => {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[8px] font-semibold">
+        <span className="text-[8px] font-semibold dark:text-gray-200">
           {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
         </span>
       </div>
