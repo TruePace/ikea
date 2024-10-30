@@ -29,27 +29,18 @@ body {
 
 
 :root {
+  color-scheme: light;
+}
+
+html[data-force-theme="light"] {
   color-scheme: light !important;
 }
 
-/* Force light theme styles */
-[data-force-theme="light"] {
-  color-scheme: light !important;
+html[data-force-theme="dark"] {
+  color-scheme: dark !important;
 }
 
-/* Override any system-level dark mode */
-@media (prefers-color-scheme: dark) {
-  [data-force-theme="light"] {
-    background-color: white !important;
-    color: black !important;
-  }
-}
-
-/* Specific overrides for components */
-.btn-primary {
-  color-scheme: normal !important;
-}
-
-.dropdown-content {
-  color-scheme: inherit !important;
+body {
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
