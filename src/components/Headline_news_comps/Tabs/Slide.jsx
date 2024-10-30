@@ -118,16 +118,16 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     if (headlineContents.length === 0) {
       return (
         <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
-          <div className="text-center">
+          <div className="text-center dark:text-gray-200">
             <div className="text-4xl mb-4 flex items-center justify-center">
               <FaNewspaper className="mr-2" />
               <FaArrowLeft className="mx-2" />
               <FaCalendarAlt className="ml-2" />
             </div>
-            <p className="text-xl text-gray-500 mb-4 capitalize">
+            <p className="text-xl text-gray-500 mb-4 capitalize dark:text-gray-200">
               News Only available on the Just In tab.
             </p>
-            <p className="text-lg text-gray-400 capitalize">
+            <p className="text-lg text-gray-400 capitalize dark:text-gray-200">
               Check back later!
             </p>
           </div>
@@ -165,18 +165,18 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const renderJustInContent = () => {
     if (currentJustInContent.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white dark:text-gray-200">
           <div className="text-4xl mb-4 flex items-center">
             <FaNewspaper className="mr-2" />
             <FaArrowLeft className="mx-2" />
             <FaCalendarAlt className="ml-2" />
           </div>
-          <p className="text-center text-md mb-4 capitalize">
+          <p className="text-center text-md mb-4 capitalize dark:text-gray-200">
             No breaking news right now.
             <br/>
             Recent updates moved to Headline News
           </p>
-          <p className="text-center text-md capitalize">
+          <p className="text-center text-md capitalize dark:text-gray-200">
             Visit <b>Missed Just In</b> to catch up
           </p>
         </div>
