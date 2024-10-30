@@ -36,7 +36,7 @@ const SearchBar = ({ onClose, channels }) => {
   };
 
   return (
-    <div className={`fixed top-0 right-0 h-full w-full bg-white z-50 transition-transform duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+    <div className={`fixed top-0 right-0 h-full w-full dark:text-gray-200 dark:bg-gray-900 bg-white z-50 transition-transform duration-300 ease-in-out transform ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
       <div className="p-4 flex items-center">
         <button onClick={handleClose} className="mr-4">
           <FaArrowLeft size="1.6em"/>
@@ -47,7 +47,7 @@ const SearchBar = ({ onClose, channels }) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
-            className="w-full p-2 border border-gray-300 rounded pr-10"
+            className="w-full p-2 border border-gray-300 dark:bg-gray-900 rounded pr-10"
           />
           {searchQuery && (
             <button type="button" onClick={handleClear} className="absolute right-2 top-1/2 transform -translate-y-1/2">

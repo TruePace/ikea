@@ -145,12 +145,12 @@ const ScreenshotButton = ({ content, channel }) => {
       <p className="text-xs">({screenshotCount})</p>
     </button>
     {showOptions && (
-      <div className="absolute bottom-full mb-2 bg-white shadow-md rounded-md p-2">
-        <button onClick={shareContent} className="flex items-center mb-2">
+      <div className="absolute bottom-full mb-2 bg-white shadow-md rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
+        <button onClick={shareContent} className="flex items-center mb-2  w-full dark:hover:bg-gray-600">
           <RiShareLine size='1.5em' />
-          <span className="ml-1 text-xs">Share</span>
+          <span className="ml-1 text-xs ">Share</span>
         </button>
-        <button onClick={downloadContent} className="flex items-center">
+        <button onClick={downloadContent} className="flex items-center dark:hover:bg-gray-600 w-full">
           <RiDownloadLine size='1.5em' />
           <span className="ml-1 text-xs">Download</span>
         </button>
