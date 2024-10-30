@@ -136,9 +136,9 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
     }
 
     return (
-      <div className='h-screen overflow-y-scroll snap-y snap-mandatory dark:bg-gray-700'>
+      <div className='h-screen overflow-y-scroll snap-y snap-mandatory'>
         {headlineContents.map((content) => (
-          <div key={content._id} className='h-screen snap-start dark:bg-gray-70'>
+          <div key={content._id} className='h-screen snap-start'>
             <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
               <SubscribeFeed channel={channel} />
               <ContentFeed 
