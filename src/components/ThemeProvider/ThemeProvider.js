@@ -7,15 +7,16 @@ const ThemeContext = createContext({
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('light');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Only check for saved theme, ignore system preferences
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    
-    // Force disable any system color scheme preference
-    document.documentElement.style.colorScheme = 'none';
+    setMounted(true);
+    // Only check localStorage, ignore system preferences
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -24,6 +25,11 @@ export function ThemeProvider({ children }) {
     document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme', newTheme);
   };
+
+  // Prevent flash of incorrect theme
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

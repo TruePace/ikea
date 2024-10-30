@@ -8,7 +8,7 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   // Enable dark mode that works with OS settings
-  darkMode: ['class'],
+  darkMode: 'class',
   theme: {
     extend: {
       screens: {

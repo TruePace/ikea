@@ -11,15 +11,18 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} flex flex-col tablet:flex-row desktop:flex-row min-h-screen dark:bg-gray-900`}>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="color-scheme" content="light" />
+      </head>
+      <body className={`${inter.className} flex flex-col tablet:flex-row desktop:flex-row min-h-screen bg-white dark:bg-gray-900`}>
         <Provider store={store}>
           <AuthProvider>
             <ThemeProvider>
-            <NavBar />
-            <main className="flex-grow tablet:ml-16 desktop:ml-64 overflow-y-auto">
-              {children}
-            </main>
+              <NavBar />
+              <main className="flex-grow tablet:ml-16 desktop:ml-64 overflow-y-auto">
+                {children}
+              </main>
             </ThemeProvider>
           </AuthProvider>
         </Provider>
