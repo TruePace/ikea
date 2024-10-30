@@ -117,8 +117,8 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const renderHeadlineContent = () => {
     if (headlineContents.length === 0) {
       return (
-        <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
-          <div className="text-center dark:text-gray-200">
+        <div className="flex items-center justify-center h-[calc(100vh-8rem)] ">
+          <div className="text-center dark:text-gray-200 ">
             <div className="text-4xl mb-4 flex items-center justify-center">
               <FaNewspaper className="mr-2" />
               <FaArrowLeft className="mx-2" />
@@ -165,7 +165,7 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   const renderJustInContent = () => {
     if (currentJustInContent.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white dark:text-gray-200">
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white dark:text-gray-200 dark:bg-gray-900">
           <div className="text-4xl mb-4 flex items-center">
             <FaNewspaper className="mr-2" />
             <FaArrowLeft className="mx-2" />
