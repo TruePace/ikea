@@ -1,6 +1,6 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; 
   
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
@@ -26,3 +26,21 @@ body {
       /* scrollbar-width: none; Firefox */
     /* }
 } */
+
+
+:root {
+  color-scheme: light;
+}
+
+html[data-force-theme="light"] {
+  color-scheme: light !important;
+}
+
+html[data-force-theme="dark"] {
+  color-scheme: dark !important;
+}
+
+body {
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
