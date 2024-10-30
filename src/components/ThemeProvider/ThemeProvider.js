@@ -9,17 +9,34 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
+    // Remove any system color scheme preference media query
+    const meta = document.createElement('meta');
+    meta.name = 'color-scheme';
+    meta.content = 'light dark';
+    document.head.appendChild(meta);
+    
+    // Add CSS to override system color scheme
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (prefers-color-scheme: dark) {
+        html {
+          color-scheme: only light;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
     // Check if theme was previously saved
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(prefersDark ? 'dark' : 'light');
-      document.documentElement.classList.toggle('dark', prefersDark);
     }
+
+    return () => {
+      document.head.removeChild(meta);
+      document.head.removeChild(style);
+    };
   }, []);
 
   const toggleTheme = () => {
