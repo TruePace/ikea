@@ -1,3 +1,4 @@
+// ThemeProvider.js
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext({
@@ -11,50 +12,52 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     setMounted(true);
-    
-    // Add meta tags to force color scheme
-    const metaColorScheme = document.createElement('meta');
-    metaColorScheme.name = 'color-scheme';
-    metaColorScheme.content = 'normal';
-    document.head.appendChild(metaColorScheme);
 
-    // Force disable system dark mode with CSS
+    // Force color scheme
+    const meta = document.createElement('meta');
+    meta.name = 'color-scheme';
+    meta.content = 'only light';
+    document.head.appendChild(meta);
+
+    // Add style to override system preferences
     const style = document.createElement('style');
     style.textContent = `
-      /* Force light mode styles regardless of system preference */
+      /* Override system dark mode */
       @media (prefers-color-scheme: dark) {
-        html[data-force-theme="light"] {
+        html {
+          color-scheme: only light !important;
+        }
+        
+        html[data-theme="light"] {
           background-color: white !important;
           color: black !important;
-          color-scheme: light !important;
         }
-
-        html[data-force-theme="light"] * {
-          color-scheme: light !important;
+        
+        html[data-theme="light"] * {
+          color-scheme: only light !important;
         }
       }
 
-      /* Force dark mode styles when app theme is dark */
-      html[data-force-theme="dark"] {
+      /* Explicit dark mode styles when theme is dark */
+      html[data-theme="dark"] {
         background-color: rgb(17 24 39) !important;
+        color: rgb(229 231 235) !important;
         color-scheme: dark !important;
       }
 
-      html[data-force-theme="dark"] * {
+      html[data-theme="dark"] * {
         color-scheme: dark !important;
       }
     `;
     document.head.appendChild(style);
 
-    // Check saved theme
+    // Load saved theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
-    
-    // Apply theme
     applyTheme(savedTheme);
 
     return () => {
-      document.head.removeChild(metaColorScheme);
+      document.head.removeChild(meta);
       document.head.removeChild(style);
     };
   }, []);
@@ -62,23 +65,18 @@ export function ThemeProvider({ children }) {
   const applyTheme = (newTheme) => {
     const root = document.documentElement;
     
-    // Remove existing classes
+    // Remove existing theme classes
     root.classList.remove('light', 'dark');
     
     // Add new theme class
     root.classList.add(newTheme);
     
-    // Set force-theme attribute
-    root.setAttribute('data-force-theme', newTheme);
+    // Set data-theme attribute
+    root.setAttribute('data-theme', newTheme);
     
-    // Update body background and text color
-    if (newTheme === 'light') {
-      document.body.style.backgroundColor = 'white';
-      document.body.style.color = 'black';
-    } else {
-      document.body.style.backgroundColor = 'rgb(17 24 39)'; // dark:bg-gray-900
-      document.body.style.color = 'rgb(229 231 235)'; // dark:text-gray-200
-    }
+    // Update body styles
+    document.body.style.backgroundColor = newTheme === 'light' ? 'white' : 'rgb(17 24 39)';
+    document.body.style.color = newTheme === 'light' ? 'black' : 'rgb(229 231 235)';
   };
 
   const toggleTheme = () => {
@@ -88,10 +86,7 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('theme', newTheme);
   };
 
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

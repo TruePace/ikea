@@ -122,7 +122,7 @@ const SubscribeFeed = ({ channel }) => {
         <div className="relative" ref={dropdownRef}>
         {!isSubscribed ? (
           <button
-            className="btn btn-sm font-bold bg-red-600 text-black hover:bg-red-700 transition-colors"
+            className="btn btn-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-colors"
             onClick={handleSubscribe}
           >
             Subscribe
