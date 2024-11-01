@@ -22,7 +22,7 @@ const indentationClass = level === 1
 : '';
 
 return (
-<div className={`mb-4 ${indentationClass}   pl-4 ${level > 0 ? 'border-l-2 border-gray-300 dark:border-gray-500' : ''}`}>
+<div className={`mb-4 ${indentationClass}    ${level > 0 ? 'border-l-2 border-gray-300 dark:border-gray-500 pl-3' : ''}`}>
   <div className="flex items-center mb-2">
     <Image 
       src={comment.picture || '/NopicAvatar.png'} 
