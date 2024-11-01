@@ -13,52 +13,80 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const hasReplies = comment.replies && comment.replies.length > 0;
 
-  return (
-    <div className="mb-4">
-      <div className="flex items-center mb-2">
-        <Image src={comment.picture || '/NopicAvatar.png'} alt="User" width={32} height={32} className="rounded-full mr-2" />
-        <p className="font-bold">{comment.username || 'Anonymous'}</p>
-      </div>
-      <p>{comment.text}</p>
-      <div className="flex items-center mt-1">
-        {comment.userId !== currentUser?.uid && (
-          <button onClick={() => onReply(comment._id)} className="text-blue-600 text-sm mr-4">Reply</button>
-        )}
-        <button 
-          onClick={() => onLike(comment._id)} 
-          className={`text-sm flex items-center ${comment.likes.includes(currentUser?.uid) ? 'text-blue-500' : 'text-gray-500 dark:text-gray-200'}`}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-          </svg>
-          {comment.likes.length}
-        </button>
-        {hasReplies && (
-          <button 
-            onClick={() => setIsExpanded(!isExpanded)} 
-            className="ml-4 text-gray-500 text-sm flex items-center dark:text-gray-200"
-          >
-            {isExpanded ? <FaChevronUp className="mr-1" /> : <FaChevronDown className="mr-1" />}
-            {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
-          </button>
-        )}
-      </div>
-      {hasReplies && isExpanded && (
-        <div className={`ml-${Math.min(level + 1, 4) * 4} mt-2`}>
-          {comment.replies.map(reply => (
-            <CommentItem 
-              key={reply._id} 
-              comment={reply} 
-              onReply={onReply} 
-              onLike={onLike} 
-              currentUser={currentUser}
-              level={level + 1}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+   // Sort replies by likes count if they exist
+   const sortedReplies = hasReplies 
+   ? [...comment.replies].sort((a, b) => b.likes.length - a.likes.length)
+   : [];
+
+ // Calculate margin and border styling based on nesting level
+ const getCommentStyles = () => {
+   const baseStyles = "mb-4";
+   if (level === 0) return baseStyles;
+   
+   return `${baseStyles} pl-4 ml-4 border-l-2 border-gray-300 dark:border-gray-500`;
+ };
+
+ return (
+   <div className={getCommentStyles()}>
+     <div className="flex items-center mb-2">
+       <Image 
+         src={comment.picture || '/NopicAvatar.png'} 
+         alt="User" 
+         width={32} 
+         height={32} 
+         className="rounded-full mr-2" 
+       />
+       <p className="font-bold">{comment.username || 'Anonymous'}</p>
+     </div>
+     <p>{comment.text}</p>
+     <div className="flex items-center mt-1">
+       {comment.userId !== currentUser?.uid && level < 2 && (
+         <button 
+           onClick={() => onReply(comment._id)} 
+           className="text-blue-600 text-sm mr-4"
+         >
+           Reply
+         </button>
+       )}
+       <button 
+         onClick={() => onLike(comment._id)} 
+         className={`text-sm flex items-center ${
+           comment.likes.includes(currentUser?.uid) 
+             ? 'text-blue-500' 
+             : 'text-gray-500 dark:text-gray-200'
+         }`}
+       >
+         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+           <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+         </svg>
+         {comment.likes.length}
+       </button>
+       {hasReplies && (
+         <button 
+           onClick={() => setIsExpanded(!isExpanded)} 
+           className="ml-4 text-gray-500 text-sm flex items-center dark:text-gray-200"
+         >
+           {isExpanded ? <FaChevronUp className="mr-1" /> : <FaChevronDown className="mr-1" />}
+           {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+         </button>
+       )}
+     </div>
+     {hasReplies && isExpanded && (
+       <div className="mt-2">
+         {sortedReplies.map(reply => (
+           <CommentItem 
+             key={reply._id} 
+             comment={reply} 
+             onReply={onReply} 
+             onLike={onLike} 
+             currentUser={currentUser}
+             level={level + 1}
+           />
+         ))}
+       </div>
+     )}
+   </div>
+ );
 };
 
 const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
@@ -108,7 +136,11 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
       });
       if (!response.ok) throw new Error('Failed to fetch comments');
       const data = await response.json();
-      setComments(data.comments);
+      
+      // Sort top-level comments by likes count
+      const sortedComments = data.comments.sort((a, b) => b.likes.length - a.likes.length);
+      
+      setComments(sortedComments);
       dispatch(setCommentCount({ contentId: articleId, count: data.commentCount }));
     } catch (error) {
       console.error('Error fetching comments:', error);

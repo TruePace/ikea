@@ -11,20 +11,41 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const hasReplies = comment.replies && comment.replies.length > 0;
 
+  // Sort replies by likes count if they exist
+  const sortedReplies = hasReplies 
+    ? [...comment.replies].sort((a, b) => b.likes.length - a.likes.length)
+    : [];
+
+  // Calculate margin and border styling based on nesting level
+  const getCommentStyles = () => {
+    const baseStyles = "mb-4";
+    if (level === 0) return baseStyles;
+    
+    return `${baseStyles} pl-4 ml-4 border-l-2 border-gray-300 dark:border-gray-500`;
+  };
+
   return (
-    <div className="mb-4">
+    <div className={getCommentStyles()}>
       <div className="flex items-center mb-2">
-        <Image src={comment.picture || '/NopicAvatar.png'} alt="User" width={32} height={32} className="rounded-full mr-2" />
+        <Image 
+          src={comment.picture || '/NopicAvatar.png'} 
+          alt="User" 
+          width={32} 
+          height={32} 
+          className="rounded-full mr-2" 
+        />
         <p className="font-bold">{comment.username || 'Anonymous'}</p>
       </div>
       <p>{comment.text}</p>
       <div className="flex items-center mt-1">
-        {comment.userId !== currentUser?.uid && (
-          <button onClick={() => onReply(comment._id)} className="text-blue-600 text-sm mr-4">Reply</button>
+        {comment.userId !== currentUser?.uid && level < 2 && (
+          <button onClick={() => onReply(comment._id)} className="text-blue-600 text-sm mr-4">
+            Reply
+          </button>
         )}
         <button 
           onClick={() => onLike(comment._id)} 
-          className={`text-sm flex items-center ${comment.likes.includes(currentUser?.uid) ? 'text-blue-500' : 'text-gray-500 dark:text-gray-200 '}`}
+          className={`text-sm flex items-center ${comment.likes.includes(currentUser?.uid) ? 'text-blue-500' : 'text-gray-500 dark:text-gray-200'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
@@ -42,8 +63,8 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
         )}
       </div>
       {hasReplies && isExpanded && (
-        <div className={`ml-${Math.min(level + 1, 4) * 4} mt-2`}>
-          {comment.replies.map(reply => (
+        <div className="mt-2">
+          {sortedReplies.map(reply => (
             <CommentItem 
               key={reply._id} 
               comment={reply} 
@@ -72,7 +93,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
     if (isOpen && videoId) {
       fetchComments();
     }
-  }, [isOpen,  videoId]);
+  }, [isOpen, videoId]);
 
   const getIdToken = async () => {
     if (!user) return null;
@@ -100,7 +121,11 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       });
       if (!response.ok) throw new Error('Failed to fetch comments');
       const data = await response.json();
-      setComments(data.comments);
+      
+      // Sort top-level comments by likes count
+      const sortedComments = data.comments.sort((a, b) => b.likes.length - a.likes.length);
+      
+      setComments(sortedComments);
       setCommentCount(data.commentCount);
       onCommentAdded(data.commentCount);
     } catch (error) {
@@ -134,7 +159,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
           text: newComment,
           replyTo: replyTo,
           deviceInfo: navigator.userAgent,
-          location: await getCurrentLocation() // Implement this function to get user's location
+          location: await getCurrentLocation()
         })
       });
       if (!response.ok) {
@@ -153,8 +178,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       setIsLoading(false);
     }
   };
-  
-  // Function to get user's location
+
   const getCurrentLocation = () => {
     return new Promise((resolve, reject) => {
       if ("geolocation" in navigator) {
@@ -172,8 +196,8 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       }
     });
   };
-  
-  const handleReply = (videoId) => {
+
+  const handleReply = (commentId) => {
     if (!user) {
       setError('You must be logged in to reply.');
       return;
@@ -188,26 +212,25 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
       }
       return null;
     };
-    const parentComment = findComment(comments, videoId);
+    const parentComment = findComment(comments, commentId);
     if (parentComment && parentComment.userId === user.uid) {
       setError('You cannot reply to your own comment.');
       return;
     }
-    setReplyTo(videoId);
+    setReplyTo(commentId);
   };
 
-  const handleLike = async (videoId) => {
+  const handleLike = async (commentId) => {
     if (!user) {
       setError('You must be logged in to like a comment.');
       return;
     }
-
     try {
       const token = await getIdToken();
       if (!token) {
         throw new Error('Unable to authenticate. Please try logging in again.');
       }
-      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${videoId}/likecomment`, {
+      const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${commentId}/likecomment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -228,7 +251,7 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
 
   return (
     <div className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className="bg-white w-full tablet:w-2/3 desktop:w-1/2 h-3/4 rounded-t-3xl overflow-hidden flex flex-col dark:bg-gray-700">
+      <div className="bg-white w-full tablet:w-2/3 desktop:w-1/2 h-3/4 rounded-t-3xl overflow-hidden flex flex-col dark:bg-gray-700">
         <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b dark:bg-gray-700">
           <button 
             onClick={onClose} 
@@ -240,19 +263,17 @@ const BeyondCommentSection = ({ isOpen, onClose, videoId, onCommentAdded }) => {
         </div>
 
         <div className="flex-grow overflow-y-auto p-4">
-      
-            <div className="mb-4">
-              {comments.map(comment => (
-                <CommentItem 
-                  key={comment._id} 
-                  comment={comment} 
-                  onReply={handleReply} 
-                  onLike={handleLike} 
-                  currentUser={user} 
-                />
-              ))}
-            </div>
-     
+          <div className="mb-4">
+            {comments.map(comment => (
+              <CommentItem 
+                key={comment._id} 
+                comment={comment} 
+                onReply={handleReply} 
+                onLike={handleLike} 
+                currentUser={user}
+              />
+            ))}
+          </div>
         </div>
 
         {user ? (
