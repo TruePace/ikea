@@ -22,11 +22,11 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
       <p>{comment.text}</p>
       <div className="flex items-center mt-1">
         {comment.userId !== currentUser?.uid && (
-          <button onClick={() => onReply(comment._id)} className="text-blue-500 text-sm mr-4">Reply</button>
+          <button onClick={() => onReply(comment._id)} className="text-blue-600 text-sm mr-4">Reply</button>
         )}
         <button 
           onClick={() => onLike(comment._id)} 
-          className={`text-sm flex items-center ${comment.likes.includes(currentUser?.uid) ? 'text-blue-500' : 'text-gray-500'}`}
+          className={`text-sm flex items-center ${comment.likes.includes(currentUser?.uid) ? 'text-blue-500' : 'text-gray-500 dark:text-gray-200'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
@@ -36,7 +36,7 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
         {hasReplies && (
           <button 
             onClick={() => setIsExpanded(!isExpanded)} 
-            className="ml-4 text-gray-500 text-sm flex items-center"
+            className="ml-4 text-gray-500 text-sm flex items-center dark:text-gray-200"
           >
             {isExpanded ? <FaChevronUp className="mr-1" /> : <FaChevronDown className="mr-1" />}
             {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
@@ -231,11 +231,11 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
 
   return (
     <div className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-50 flex justify-center items-end transition-opacity duration-300 ease-in-out ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="bg-white w-full h-3/4 sm:h-5/6 desktop:h-90vh desktop:max-w-3xl rounded-t-3xl overflow-hidden flex flex-col">
-            <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b">
+        <div className="bg-white w-full h-3/4 sm:h-5/6 desktop:h-90vh desktop:max-w-3xl rounded-t-3xl overflow-hidden flex flex-col dark:bg-gray-700">
+            <div className="sticky top-0 bg-white z-10 p-4 rounded-t-3xl border-b dark:bg-gray-700">
                 <button 
                     onClick={onClose} 
-                    className="absolute top-4 right-4 text-gray-600 hover:text-gray-800"
+                    className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 dark:text-gray-200"
                 >
                     <IoMdClose size="1.5em" />
                 </button>
@@ -257,13 +257,13 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
             </div>
 
             {user ? (
-                <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-2">
+                <form onSubmit={handleSubmitComment} className="sticky bottom-0 bg-white p-2 dark:bg-gray-700">
                     <input
                         type="text"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder={replyTo ? "Write a reply..." : "Write a comment..."}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border rounded dark:bg-gray-700"
                         disabled={isLoading}
                     />
                     <button type="submit" className="mt-2 bg-blue-500 text-white p-2 rounded" disabled={isLoading}>
@@ -280,7 +280,7 @@ const CommentSection = ({ isOpen, onClose, articleId, onCommentAdded }) => {
                     )}
                 </form>
             ) : (
-                <div className="sticky bottom-0 bg-white p-2 text-center">
+                <div className="sticky bottom-0 bg-white p-2 text-center dark:bg-gray-700">
                     Please log in to comment.
                 </div>
             )}

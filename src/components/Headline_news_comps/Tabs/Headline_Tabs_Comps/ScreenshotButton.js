@@ -1,6 +1,7 @@
 import React, { useState, useCallback ,useEffect,useRef} from 'react';
 import html2canvas from 'html2canvas-pro';
 import { RiScreenshot2Line, RiShareLine, RiDownloadLine } from "react-icons/ri";
+import { useTheme } from '@/components/ThemeProvider/ThemeProvider';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -10,7 +11,7 @@ const ScreenshotButton = ({ content, channel }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [logoImage, setLogoImage] = useState(null);
   const dropdownRef = useRef(null);
-
+  const { theme } = useTheme(); // Get current theme
 
   useEffect(() => {
     const img = new Image();
@@ -37,26 +38,59 @@ const ScreenshotButton = ({ content, channel }) => {
         return;
       }
 
+      
+      // Clone the element to modify it for screenshot
+      const clonedElement = contentElement.cloneNode(true);
+      
+
+        // Apply theme-specific styles to the cloned element
+        if (theme === 'dark') {
+          clonedElement.style.backgroundColor = 'rgb(17 24 39)'; // dark mode background
+          clonedElement.style.color = 'rgb(229 231 235)'; // dark mode text
+          // Ensure all text elements are visible in dark mode
+          const textElements = clonedElement.querySelectorAll('*');
+          textElements.forEach(el => {
+            if (window.getComputedStyle(el).color === 'rgb(0, 0, 0)') {
+              el.style.color = 'rgb(229 231 235)';
+            }
+          });
+        } else {
+          clonedElement.style.backgroundColor = '#fef2f2'; // light mode background
+          clonedElement.style.color = 'black'; // light mode text
+        }
+  
+
       const canvas = await html2canvas(contentElement, {
         allowTaint: true,
         useCORS: true,
         scale: 2,
         logging: true,
-        backgroundColor: '#fef2f2' // Pinkish background
+      backgroundColor: theme === 'dark' ? 'rgb(17 24 39)' : '#fef2f2'
       });
 
       // Add watermarks
       const ctx = canvas.getContext('2d');
       ctx.font = 'bold 9px Arial';
       
-      // Function to draw text with outline
+    
+      // Function to draw text with outline - adjusted for dark mode
       const drawTextWithOutline = (text, x, y) => {
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
-        ctx.strokeText(text, x, y);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        if (theme === 'dark') {
+          // Dark mode text style
+          ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+          ctx.lineWidth = 2;
+          ctx.strokeText(text, x, y);
+          ctx.fillStyle = 'rgba(229, 231, 235, 0.9)'; // Light gray for dark mode
+        } else {
+          // Light mode text style
+          ctx.strokeStyle = 'white';
+          ctx.lineWidth = 2;
+          ctx.strokeText(text, x, y);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        }
         ctx.fillText(text, x, y);
       };
+
       
       // Draw logo
       if (logoImage) {
