@@ -12,7 +12,7 @@ export const metadata = {
 
 const page = () => {
     return (
-        <div className="flex flex-col h-screen  pb-11">
+        <div className="flex flex-col h-screen  pb-16">
             <Header />
             <div className="flex-grow overflow-y-auto pt-4">
                 <SocketHandler />
