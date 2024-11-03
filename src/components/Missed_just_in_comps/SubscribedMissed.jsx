@@ -83,7 +83,7 @@ const SubscribeMissed = ({ channelId, channelName, channelPicture, subscriberCou
       </div>
       <p className="font-semibold text-sm capitalize text-gray-600">{channelName}</p>
       <button 
-        className={`btn btn-sm font-bold ${isSubscribed ? 'bg-gray-200 text-gray-700' : 'bg-neutral-content'}`}
+        className={`btn btn-sm font-bold ${isSubscribed ? 'bg-gray-200 text-black   hover:bg-gray-300' : 'bg-red-600 text-black hover:bg-red-700'}`}
         onClick={handleSubscriptionAction}
       >
         {isSubscribed ? 'Subscribed' : 'Subscribe'}

@@ -9,32 +9,44 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2);
   const hasReplies = comment.replies && comment.replies.length > 0;
-// Sort replies by likes
-const sortedReplies = hasReplies 
-? [...comment.replies].sort((a, b) => b.likes.length - a.likes.length)
-: [];
+  const sortedReplies = hasReplies 
+    ? [...comment.replies].sort((a, b) => b.likes.length - a.likes.length)
+    : [];
 
-// Calculate indentation based on level
-const indentationClass = level === 1 
-? 'ml-6 ' 
-: level === 2 
-? 'ml-8'
-: '';
+  // Get the appropriate avatar URL
+  const getAvatarUrl = () => {
+    // Check for photoURL in the comment
+    if (comment.photoURL) {
+      return comment.photoURL;
+    }
+    // Check if it's a Google profile picture (starts with https://lh3.googleusercontent.com)
+    if (comment.picture && comment.picture.startsWith('https://lh3.googleusercontent.com')) {
+      return comment.picture;
+    }
+    // Fallback to default avatar
+    return '/NopicAvatar.png';
+  };
 
-return (
-<div className={`mb-4 ${indentationClass}    ${level > 0 ? 'border-l-2 border-gray-300 dark:border-gray-500 pl-3' : ''}`}>
-  <div className="flex items-center mb-2">
-    <Image 
-      src={comment.picture || '/NopicAvatar.png'} 
-      alt="User" 
-      width={32} 
-      height={32} 
-      className="rounded-full mr-2" 
-    />
-    <p className="font-bold">
-      {comment.username || comment.displayName || 'Anonymous'}
-    </p>
-  </div>
+  const indentationClass = level === 1 
+    ? 'ml-6' 
+    : level === 2 
+      ? 'ml-8'
+      : '';
+
+  return (
+    <div className={`mb-4 ${indentationClass} ${level > 0 ? 'border-l-2 border-gray-300 dark:border-gray-500 pl-3' : ''}`}>
+      <div className="flex items-center mb-2">
+        <Image 
+          src={getAvatarUrl()} 
+          alt="User" 
+          width={32} 
+          height={32} 
+          className="rounded-full mr-2" 
+        />
+        <p className="font-bold">
+          {comment.username || comment.displayName || 'Anonymous'}
+        </p>
+      </div>
   <p>{comment.text}</p>
   <div className="flex items-center mt-1">
     {comment.userId !== currentUser.uid && level < 2 && (
@@ -185,7 +197,9 @@ const CommentSection = ({ isOpen, onClose, contentId, onCommentAdded }) => {
           contentId,
           text: newComment,
           replyTo,
-          username: user.username
+          username: user.username,
+          photoURL: user.photoURL || null, // Include the user's photoURL
+          picture: user.photoURL || null    // Include as picture for compatibility
         }),
       });
       if (!response.ok) throw new Error('Failed to post comment');

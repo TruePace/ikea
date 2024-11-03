@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect ,useCallback} from 'react';
+import React, { useState, useEffect ,useCallback,useRef} from 'react';
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -22,34 +22,37 @@ const ArticleInteractions = ({ article }) => {
     const router = useRouter();
     const dispatch = useDispatch();
     const [isCommentOpen, setIsCommentOpen] = useState(false);
+    const [userLocation, setUserLocation] = useState(null);
+    const [readStartTime, setReadStartTime] = useState(null);
+    const viewTimeoutRef = useRef(null);
+    const viewCheckIntervalRef = useRef(null);
+    const lastViewTimeRef = useRef(null);
+
     const isSubscribed = useSelector(state => 
         state.subscriptions[user?.uid]?.[article.channelId._id] || false
     );
     const channelData = useSelector(state => state.channels[article.channelId._id] || {});
     const subscriberCount = channelData.subscriberCount ?? article.channelId.subscriberCount;
     const likes = useSelector(state => state.likesArticle[article._id] ?? article.likesCount);
-  const views = useSelector(state => state.viewsArticle[article._id] ?? article.viewsCount);
-  const commentCount = useSelector(state => state.commentCountArticle[article._id] ?? article.commentsCount);
-  const [userLocation, setUserLocation] = useState(null);
+    const views = useSelector(state => state.viewsArticle[article._id] ?? article.viewsCount);
+    const commentCount = useSelector(state => state.commentCountArticle[article._id] ?? article.commentsCount);
 
-
-
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                setUserLocation({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                });
-            },
-            (error) => {
-                console.error("Error getting location:", error);
-            }
-        );
-    }
-}, []);
+    // Get user's location
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                }
+            );
+        }
+    }, []);
 
   useEffect(() => {
     const fetchSubscriberCount = async () => {
@@ -68,51 +71,105 @@ const ArticleInteractions = ({ article }) => {
 }, [article.channelId._id, dispatch]);
 
 
-const handleView = useCallback(async () => {
-    if (firebaseUser) {
-        try {
-            const token = await firebaseUser.getIdToken();
-            // Get location if available, otherwise send null
-            let locationData = null;
-            
-            try {
-                if (navigator.geolocation) {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject);
-                    });
-                    locationData = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                }
-            } catch (error) {
-                console.log('Location not available:', error);
-                // Continue without location
-            }
+ // Initialize view tracking
+ useEffect(() => {
+    setReadStartTime(Date.now());
+    
+    // Set up activity tracking
+    let lastActivity = Date.now();
+    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    
+    const handleActivity = () => {
+        lastActivity = Date.now();
+    };
 
-            const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ location: locationData })
-            });
+    activityEvents.forEach(event => {
+        document.addEventListener(event, handleActivity);
+    });
 
-            if (response.ok) {
-                const data = await response.json();
-                dispatch(setViews({ contentId: article._id, views: data.viewsCount }));
-            }
-        } catch (error) {
-            console.error('Error updating view count:', error);
+    // Check for minimum time spent after 3 seconds
+    viewTimeoutRef.current = setTimeout(() => {
+        const timeSpent = Date.now() - readStartTime;
+        if (timeSpent >= 3000) { // 3 seconds minimum
+            handleView();
         }
+    }, 3000);
+
+    // Set up interval to check for engaged reading time
+    viewCheckIntervalRef.current = setInterval(() => {
+        const currentTime = Date.now();
+        const timeSpent = currentTime - readStartTime;
+        const timeSinceLastActivity = currentTime - lastActivity;
+
+        if (timeSpent >= 120000 && timeSinceLastActivity < 30000) { // 2 minutes and active
+            updateViewDuration(timeSpent);
+        }
+    }, 30000);
+
+    return () => {
+        clearTimeout(viewTimeoutRef.current);
+        clearInterval(viewCheckIntervalRef.current);
+        activityEvents.forEach(event => {
+            document.removeEventListener(event, handleActivity);
+        });
+    };
+}, [article._id]);
+
+const handleView = useCallback(async () => {
+    if (!firebaseUser || !article._id) return;
+    
+    // Check if 24 hours have passed since last view
+    const now = Date.now();
+    if (lastViewTimeRef.current && (now - lastViewTimeRef.current) < 24 * 60 * 60 * 1000) {
+        return;
     }
-}, [firebaseUser, article._id, dispatch]);
 
+    try {
+        const token = await firebaseUser.getIdToken();
+        const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ 
+                location: userLocation,
+                duration: 0 // Initial view
+            })
+        });
 
-  useEffect(() => {
-    handleView();
-  }, [handleView]);
+        if (response.ok) {
+            const data = await response.json();
+            dispatch(setViews({ contentId: article._id, views: data.viewsCount }));
+            lastViewTimeRef.current = now;
+        }
+    } catch (error) {
+        console.error('Error updating view count:', error);
+    }
+}, [firebaseUser, article._id, userLocation, dispatch]);
+
+const updateViewDuration = async (duration) => {
+    if (!firebaseUser || !article._id) return;
+
+    try {
+        const token = await firebaseUser.getIdToken();
+        await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                location: userLocation,
+                duration: Math.floor(duration / 1000) // Convert to seconds
+            })
+        });
+    } catch (error) {
+        console.error('Error updating view duration:', error);
+    }
+};
+
+ 
 
   const handleLike = async () => {
     if (firebaseUser) {

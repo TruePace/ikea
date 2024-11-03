@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from "next/image";
 import { formatDate } from '@/components/Utils/DateFormat';
@@ -13,10 +13,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const FullArticle = () => {
     const [article, setArticle] = useState(null);
     const { id } = useParams();
-    const { user, firebaseUser } = useAuth();
-    const [hasViewed, setHasViewed] = useState(false);
-    const articleRef = useRef(null);
-    const viewTimerRef = useRef(null);
 
     useEffect(() => {
         const fetchArticle = async () => {
@@ -34,64 +30,14 @@ const FullArticle = () => {
         };
 
         fetchArticle();
-
-        // Set up scroll and mouse movement listeners
-        let lastActivityTime = Date.now();
-        const activityThreshold = 5000; // 5 seconds
-
-        const handleActivity = () => {
-            lastActivityTime = Date.now();
-        };
-
-        window.addEventListener('scroll', handleActivity);
-        window.addEventListener('mousemove', handleActivity);
-
-        // Check for view after 20 seconds
-        viewTimerRef.current = setTimeout(() => {
-            if (Date.now() - lastActivityTime < activityThreshold) {
-                handleView();
-            }
-        }, 20000);
-
-        return () => {
-            clearTimeout(viewTimerRef.current);
-            window.removeEventListener('scroll', handleActivity);
-            window.removeEventListener('mousemove', handleActivity);
-        };
     }, [id]);
-
-    const handleView = async () => {
-        if (firebaseUser && !hasViewed) {
-            try {
-                const token = await firebaseUser.getIdToken();
-                const response = await fetch(`${API_BASE_URL}/api/BeyondArticle/${id}/view`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setArticle(prevArticle => ({
-                        ...prevArticle,
-                        viewsCount: data.viewsCount
-                    }));
-                    setHasViewed(true);
-                }
-            } catch (error) {
-                console.error('Error updating view count:', error);
-            }
-        }
-    };
 
     if (!article) {
         return <NestedSkeletonLoader />
     }
 
     return (
-        <div className="max-w-3xl mx-auto p-4 pt-8 sm:pt-12 md:pt-20 desktop:max-w-4xl ">
+        <div className="max-w-3xl mx-auto p-4 pt-8 sm:pt-12 md:pt-20 desktop:max-w-4xl">
             <h1 className="text-2xl sm:text-3xl desktop:text-4xl font-bold mb-4 dark:text-gray-200">{article.title}</h1>
             <div className="mb-4 relative w-full" style={{ height: '0', paddingBottom: '56.25%' }}>
                 <Image
@@ -107,7 +53,6 @@ const FullArticle = () => {
             <div className="flex justify-between text-sm mb-4 text-gray-600 dark:text-gray-200">
                 <p>{formatDate(article.createdAt)}</p>
             </div>
-            {/* Display tags */}
             <div className="mb-4">
                 {article.tags && article.tags.map((tag, index) => (
                     <span key={index} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
