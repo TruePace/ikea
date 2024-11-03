@@ -92,17 +92,78 @@ const ScreenshotButton = ({ content, channel }) => {
       };
 
       
-      // Draw logo
-      if (logoImage) {
-        const logoSize = 9; // Adjust size as needed
-        ctx.drawImage(logoImage, 20, 445, logoSize, logoSize);
-        drawTextWithOutline(`TruePace.com`, 30, 455); // Adjust position to be next to the logo
-      } else {
-        drawTextWithOutline(`TruePace.com`, 15, 455);
-      }
+      // // Draw logo
+      // if (logoImage) {
+      //   const logoSize = 9; // Adjust size as needed
+      //   ctx.drawImage(logoImage, 20, 445, logoSize, logoSize);
+      //   drawTextWithOutline(`TruePace.com`, 30, 455); // Adjust position to be next to the logo
+      // } else {
+      //   drawTextWithOutline(`TruePace.com`, 15, 455);
+      // }
       
-      drawTextWithOutline(`@${channel.name}`, 20, 470);
-      drawTextWithOutline(`${new Date(content.createdAt).toLocaleString()}`, 245, 470);
+      // drawTextWithOutline(`@${channel.name}`, 20, 470);
+      // drawTextWithOutline(`${new Date(content.createdAt).toLocaleString()}`, 245, 470);
+      
+
+      // Get screen width once
+const screenWidth = window.innerWidth;
+
+// Draw logo
+if (logoImage) {
+  // Adjust logo size based on screen width
+  const logoSize = screenWidth > 1024 ? 12 : // desktop
+                  screenWidth > 640 ? 10 : // tablet
+                  9; // mobile (original size)
+                  
+  // Position logo
+  const logoX = screenWidth > 1024 ? 410 : // desktop
+                screenWidth > 640 ? 30 : // tablet (i haven't done the tab position as of 3/11/2024)
+                20; // mobile (original position)
+                
+  const logoY = screenWidth > 1024 ? 465 : // desktop
+                screenWidth > 640 ? 455 : // tablet 
+                445; // mobile (original position)
+
+  ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+  
+  // Position TruePace.com text next to logo
+  const textX = screenWidth > 1024 ? 426 : // desktop
+                screenWidth > 640 ? 45 : // tablet (i haven't done the tab position as of 3/11/2024)
+                30; // mobile (original position)
+                
+  const textY = screenWidth > 1024 ? 478 : // desktop
+                screenWidth > 640 ? 465 : // tablet(i haven't done the tab position as of 3/11/2024)
+                455; // mobile (original position)
+
+  drawTextWithOutline(`TruePace.com`, textX, textY);
+} else {
+  // If no logo, just draw text
+  const textX = screenWidth > 1024 ? 426 : // desktop
+                screenWidth > 640 ? 30 : // tablet (i haven't done the tab position as of 3/11/2024)
+                15; // mobile (original position)
+                
+  const textY = screenWidth > 1024 ? 478 : // desktop
+                screenWidth > 640 ? 465 : // tablet (i haven't done the tab position as of 3/11/2024)
+                455; // mobile (original position)
+
+  drawTextWithOutline(`TruePace.com`, textX, textY);
+}
+
+// Position channel name and date
+const channelX = screenWidth > 1024 ? 410 : // desktop 
+                screenWidth > 640 ? 30 : // tablet (i haven't done the tab position as of 3/11/2024)
+                20; // mobile (original position)
+                
+const dateX = screenWidth > 1024 ? 1100 : // desktop
+             screenWidth > 640 ? 305 : // tablet (i haven't done the tab position as of 3/11/2024)
+             245; // mobile (original position)
+             
+const bottomY = screenWidth > 1024 ? 490 : // desktop
+               screenWidth > 640 ? 480 : // tablet
+               470; // mobile (original position)
+
+drawTextWithOutline(`@${channel.name}`, channelX, bottomY);
+drawTextWithOutline(`${new Date(content.createdAt).toLocaleString()}`, dateX, bottomY);
 
       // Convert to blob
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
