@@ -17,6 +17,10 @@ import { setChannelData } from '@/Redux/Slices/ArticleSlice/ChannelSlice';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+const SIGNIFICANT_ENGAGEMENT_TIME = 60000; // 1 minutes
+const ACTIVITY_TIMEOUT = 30000; // 30 seconds without activity is considered inactive
+
+
 const ArticleInteractions = ({ article }) => {
     const { user, firebaseUser } = useAuth();
     const router = useRouter();
@@ -24,9 +28,10 @@ const ArticleInteractions = ({ article }) => {
     const [isCommentOpen, setIsCommentOpen] = useState(false);
     const [userLocation, setUserLocation] = useState(null);
     const [readStartTime, setReadStartTime] = useState(null);
-    const viewTimeoutRef = useRef(null);
-    const viewCheckIntervalRef = useRef(null);
-    const lastViewTimeRef = useRef(null);
+    const [hasRecordedView, setHasRecordedView] = useState(false);
+    const lastActivityRef = useRef(Date.now());
+    const activeTimeRef = useRef(0);
+    const activityCheckInterval = useRef(null);
 
     const isSubscribed = useSelector(state => 
         state.subscriptions[user?.uid]?.[article.channelId._id] || false
@@ -71,58 +76,60 @@ const ArticleInteractions = ({ article }) => {
 }, [article.channelId._id, dispatch]);
 
 
- // Initialize view tracking
+ /// Track user activity and engagement
  useEffect(() => {
     setReadStartTime(Date.now());
-    
-    // Set up activity tracking
-    let lastActivity = Date.now();
+    lastActivityRef.current = Date.now();
+    let startTime = Date.now();
+
     const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
     
     const handleActivity = () => {
-        lastActivity = Date.now();
+        const now = Date.now();
+        const timeSinceLastActivity = now - lastActivityRef.current;
+        
+        // If user was inactive and is now active again, update the start time
+        if (timeSinceLastActivity > ACTIVITY_TIMEOUT) {
+            startTime = now;
+        }
+        
+        lastActivityRef.current = now;
     };
 
+    // Add activity event listeners
     activityEvents.forEach(event => {
         document.addEventListener(event, handleActivity);
     });
 
-    // Check for minimum time spent after 3 seconds
-    viewTimeoutRef.current = setTimeout(() => {
-        const timeSpent = Date.now() - readStartTime;
-        if (timeSpent >= 3000) { // 3 seconds minimum
-            handleView();
-        }
-    }, 3000);
+    // Check for significant engagement every second
+    activityCheckInterval.current = setInterval(() => {
+        const now = Date.now();
+        const timeSinceLastActivity = now - lastActivityRef.current;
 
-    // Set up interval to check for engaged reading time
-    viewCheckIntervalRef.current = setInterval(() => {
-        const currentTime = Date.now();
-        const timeSpent = currentTime - readStartTime;
-        const timeSinceLastActivity = currentTime - lastActivity;
+        // Only count time if user is active
+        if (timeSinceLastActivity < ACTIVITY_TIMEOUT) {
+            activeTimeRef.current = now - startTime;
 
-        if (timeSpent >= 120000 && timeSinceLastActivity < 30000) { // 2 minutes and active
-            updateViewDuration(timeSpent);
+            // If we've reached significant engagement time and haven't recorded the view
+            if (activeTimeRef.current >= SIGNIFICANT_ENGAGEMENT_TIME && !hasRecordedView) {
+                handleSignificantEngagement();
+            }
+        } else {
+            // User is inactive, update start time for when they return
+            startTime = now;
         }
-    }, 30000);
+    }, 1000);
 
     return () => {
-        clearTimeout(viewTimeoutRef.current);
-        clearInterval(viewCheckIntervalRef.current);
+        clearInterval(activityCheckInterval.current);
         activityEvents.forEach(event => {
             document.removeEventListener(event, handleActivity);
         });
     };
 }, [article._id]);
 
-const handleView = useCallback(async () => {
-    if (!firebaseUser || !article._id) return;
-    
-    // Check if 24 hours have passed since last view
-    const now = Date.now();
-    if (lastViewTimeRef.current && (now - lastViewTimeRef.current) < 24 * 60 * 60 * 1000) {
-        return;
-    }
+const handleSignificantEngagement = useCallback(async () => {
+    if (!firebaseUser || !article._id || hasRecordedView) return;
 
     try {
         const token = await firebaseUser.getIdToken();
@@ -134,40 +141,21 @@ const handleView = useCallback(async () => {
             },
             body: JSON.stringify({ 
                 location: userLocation,
-                duration: 0 // Initial view
+                duration: Math.floor(activeTimeRef.current / 1000) // Convert to seconds
             })
         });
 
         if (response.ok) {
             const data = await response.json();
             dispatch(setViews({ contentId: article._id, views: data.viewsCount }));
-            lastViewTimeRef.current = now;
+            setHasRecordedView(true);
         }
     } catch (error) {
-        console.error('Error updating view count:', error);
+        console.error('Error recording significant engagement:', error);
     }
-}, [firebaseUser, article._id, userLocation, dispatch]);
+}, [firebaseUser, article._id, userLocation, dispatch, hasRecordedView]);
 
-const updateViewDuration = async (duration) => {
-    if (!firebaseUser || !article._id) return;
 
-    try {
-        const token = await firebaseUser.getIdToken();
-        await fetch(`${API_BASE_URL}/api/BeyondArticle/${article._id}/view`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                location: userLocation,
-                duration: Math.floor(duration / 1000) // Convert to seconds
-            })
-        });
-    } catch (error) {
-        console.error('Error updating view duration:', error);
-    }
-};
 
  
 
@@ -335,4 +323,4 @@ const handleUnsubscribe = async () => {
     );
 };
 
-export default ArticleInteractions;
+export default ArticleInteractions; 
