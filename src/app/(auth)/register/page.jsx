@@ -7,6 +7,7 @@ import { FaEye } from "react-icons/fa";
 import { FaEyeSlash } from "react-icons/fa6";
 import { auth } from '../firebase/ClientApp';
 import { useRouter } from 'next/navigation';
+import { getDeviceInfo,getLocation } from '../DeviceInfo';
 
 import { useAuth } from '../AuthContext';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -56,6 +57,9 @@ const Register = () => {
         setIsLoading(true);
         
         try {
+            const deviceInfo = getDeviceInfo();
+            const location = await getLocation();
+            
             // Create Firebase user
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
@@ -73,7 +77,14 @@ const Register = () => {
                     email: user.email,
                     displayName: username,
                     photoURL: user.photoURL,
-                    username: username
+                    username: username,
+                    deviceInfo,
+                    location,
+                    loginHistory: [{
+                        timestamp: new Date(),
+                        deviceInfo,
+                        location
+                    }]
                 }),
             });
     
@@ -82,12 +93,7 @@ const Register = () => {
             }
     
             const userData = await response.json();
-            
-            // Fetch updated user details
             await fetchUserDetails(user);
-            
-            // Wait briefly to ensure data is synchronized
-            await new Promise(resolve => setTimeout(resolve, 1000));
             
             if (userData.user.username !== username) {
                 setFinalUsername(userData.user.username);
@@ -103,24 +109,18 @@ const Register = () => {
             setIsLoading(false);
         }
     };
-
     const handleGoogleSignIn = async () => {
         setError('');
         setIsLoading(true);
         try {
+            const deviceInfo = getDeviceInfo();
+            const location = await getLocation();
+            
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const idToken = await user.getIdToken();
-            // console.log('Firebase ID Token:', idToken);
             
-            console.log('Google Sign-In successful, sending data to backend:', {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL
-            });
-    
             const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
                 headers: {
@@ -132,28 +132,30 @@ const Register = () => {
                     email: user.email,
                     displayName: user.displayName,
                     photoURL: user.photoURL,
+                    deviceInfo,
+                    location,
+                    loginHistory: [{
+                        timestamp: new Date(),
+                        deviceInfo,
+                        location
+                    }]
                 }),
             });
     
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Backend error:', errorData);
-                throw new Error(`Failed to save user data to backend: ${errorData.message}`);
+                throw new Error(errorData.message || 'Failed to sign in with Google');
             }
     
             const userData = await response.json();
-            console.log('User signed in and saved:', userData);
-            
             router.push('/');
         } catch (error) {
             console.error('Error signing in with Google:', error);
-            setError(`Error signing in with Google: ${error.message}`);
-        }
-        finally {
+            setError(error.message);
+        } finally {
             setIsLoading(false);
         }
     };
-
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };

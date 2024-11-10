@@ -7,6 +7,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
+import { getDeviceInfo,getLocation } from '../DeviceInfo';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -31,25 +32,33 @@ const LogIn = () => {
         setError('');
         setIsLoading(true);
         try {
-            // 1. Sign in with Firebase
+            const deviceInfo = getDeviceInfo();
+            const location = await getLocation();
+            
+            // Sign in with Firebase
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
         
-            // 2. Get ID token
+            // Get ID token
             const idToken = await user.getIdToken();
-            console.log('Firebase ID Token:', idToken);
         
-            // 3. Verify with your backend
+            // Send login details to backend
             const response = await fetch(`${API_BASE_URL}/api/users/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${idToken}`
-                    
                 },
                 body: JSON.stringify({
                     uid: user.uid,
-                    email: user.email
+                    email: user.email,
+                    deviceInfo,
+                    location,
+                    loginHistory: [{
+                        timestamp: new Date(),
+                        deviceInfo,
+                        location
+                    }]
                 }),
             });
         
@@ -57,10 +66,7 @@ const LogIn = () => {
                 throw new Error('Failed to verify user with backend');
             }
         
-            // 4. Update local auth context
             await fetchUserDetails(user);
-        
-            // 5. Set authentication state
             setIsAuthenticated(true);
         } catch (error) {
             console.error('Error during sign-in process:', error);
@@ -74,13 +80,15 @@ const LogIn = () => {
 
     const handleGoogleSignIn = async () => {
         setError('');
+        setIsLoading(true);
         try {
+            const deviceInfo = getDeviceInfo();
+            const location = await getLocation();
+            
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const idToken = await user.getIdToken();
-
-            console.log('Google Sign In Firebase ID Token:', idToken);
             
             const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
@@ -93,6 +101,13 @@ const LogIn = () => {
                     email: user.email,
                     displayName: user.displayName,
                     photoURL: user.photoURL,
+                    deviceInfo,
+                    location,
+                    loginHistory: [{
+                        timestamp: new Date(),
+                        deviceInfo,
+                        location
+                    }]
                 }),
             });
     
@@ -102,12 +117,12 @@ const LogIn = () => {
             }
     
             const userData = await response.json();
-            console.log('User signed in with Google:', userData);
-            
             router.push('/');
         } catch (error) {
             console.error('Error signing in with Google:', error);
             setError(error.message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
