@@ -86,9 +86,33 @@ const LogIn = () => {
             const location = await getLocation();
             
             const provider = new GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/user.birthday.read');
+            provider.addScope('https://www.googleapis.com/auth/user.gender.read');
+           
+            
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const idToken = await user.getIdToken();
+            
+            // Get access token for Google API calls
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const accessToken = credential.accessToken;
+            
+            // Fetch user profile data from Google People API
+            const profileResponse = await fetch(
+                'https://people.googleapis.com/v1/people/me?personFields=birthdays,genders',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                }
+            );
+            
+            const profileData = await profileResponse.json();
+            
+            // Extract birthday and gender
+            const birthday = profileData.birthdays?.[0]?.date;
+            const gender = profileData.genders?.[0]?.value;
             
             const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
@@ -101,6 +125,8 @@ const LogIn = () => {
                     email: user.email,
                     displayName: user.displayName,
                     photoURL: user.photoURL,
+                    birthday: birthday ? `${birthday.year}-${birthday.month}-${birthday.day}` : null,
+                    gender: gender || null,
                     deviceInfo,
                     location,
                     loginHistory: [{
@@ -125,7 +151,6 @@ const LogIn = () => {
             setIsLoading(false);
         }
     };
-
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };

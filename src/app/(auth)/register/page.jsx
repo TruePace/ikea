@@ -109,6 +109,53 @@ const Register = () => {
             setIsLoading(false);
         }
     };
+    // const handleGoogleSignIn = async () => {
+    //     setError('');
+    //     setIsLoading(true);
+    //     try {
+    //         const deviceInfo = getDeviceInfo();
+    //         const location = await getLocation();
+            
+    //         const provider = new GoogleAuthProvider();
+    //         const result = await signInWithPopup(auth, provider);
+    //         const user = result.user;
+    //         const idToken = await user.getIdToken();
+            
+    //         const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${idToken}`
+    //             },
+    //             body: JSON.stringify({
+    //                 uid: user.uid,
+    //                 email: user.email,
+    //                 displayName: user.displayName,
+    //                 photoURL: user.photoURL,
+    //                 deviceInfo,
+    //                 location,
+    //                 loginHistory: [{
+    //                     timestamp: new Date(),
+    //                     deviceInfo,
+    //                     location
+    //                 }]
+    //             }),
+    //         });
+    
+    //         if (!response.ok) {
+    //             const errorData = await response.json();
+    //             throw new Error(errorData.message || 'Failed to sign in with Google');
+    //         }
+    
+    //         const userData = await response.json();
+    //         router.push('/');
+    //     } catch (error) {
+    //         console.error('Error signing in with Google:', error);
+    //         setError(error.message);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
     const handleGoogleSignIn = async () => {
         setError('');
         setIsLoading(true);
@@ -117,9 +164,33 @@ const Register = () => {
             const location = await getLocation();
             
             const provider = new GoogleAuthProvider();
+            provider.addScope('https://www.googleapis.com/auth/user.birthday.read');
+            provider.addScope('https://www.googleapis.com/auth/user.gender.read');
+           
+            
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const idToken = await user.getIdToken();
+            
+            // Get access token for Google API calls
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const accessToken = credential.accessToken;
+            
+            // Fetch user profile data from Google People API
+            const profileResponse = await fetch(
+                'https://people.googleapis.com/v1/people/me?personFields=birthdays,genders',
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                }
+            );
+            
+            const profileData = await profileResponse.json();
+            
+            // Extract birthday and gender
+            const birthday = profileData.birthdays?.[0]?.date;
+            const gender = profileData.genders?.[0]?.value;
             
             const response = await fetch(`${API_BASE_URL}/api/users/google-signin`, {
                 method: 'POST',
@@ -132,6 +203,8 @@ const Register = () => {
                     email: user.email,
                     displayName: user.displayName,
                     photoURL: user.photoURL,
+                    birthday: birthday ? `${birthday.year}-${birthday.month}-${birthday.day}` : null,
+                    gender: gender || null,
                     deviceInfo,
                     location,
                     loginHistory: [{
@@ -156,6 +229,9 @@ const Register = () => {
             setIsLoading(false);
         }
     };
+
+
+
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };

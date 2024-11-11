@@ -1,6 +1,7 @@
 // File: firebase/clientApp.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth ,GoogleAuthProvider} from "firebase/auth";
+
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,3 +16,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app)
+
+
+export const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/user.birthday.read');
+provider.addScope('https://www.googleapis.com/auth/user.gender.read');
+// provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
