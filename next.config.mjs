@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    reactStrictMode: true,
+  reactStrictMode: true,
   images: {
     domains: ['lh3.googleusercontent.com'],
     remotePatterns: [
@@ -10,8 +10,13 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'mytruepaceconnectbucket.s3.eu-north-1.amazonaws.com',
+        port: '',
+        pathname: '/uploads/**',
+      },
     ],
-    
   },
 };
 

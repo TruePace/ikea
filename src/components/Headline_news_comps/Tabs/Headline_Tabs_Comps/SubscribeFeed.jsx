@@ -12,6 +12,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const SubscribeFeed = ({ channel }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(channel.subscriberCount || 0);
+  const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
   const { user } = useAuth();
@@ -28,6 +29,10 @@ const SubscribeFeed = ({ channel }) => {
   //     return;
   //   }
   // }
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
   
   const handleSearch = async () => {
     if (!user) {
@@ -111,7 +116,13 @@ const SubscribeFeed = ({ channel }) => {
       <div className="border-gray-200 w-full flex items-center justify-between ">
         <div className="avatar">
           <div className="w-11 h-11 relative rounded-full overflow-hidden">
-            <Image src={channel.picture} alt={channel.name} fill className="object-cover" />
+          <Image 
+  src={imageError ? '/NopicAvatar.png' : channel.picture} 
+  alt={channel.name} 
+  fill 
+  className="object-cover"
+  onError={handleImageError}
+/>
           </div>
         </div>
         {/* <div onClick={handleChannel}>  */}
