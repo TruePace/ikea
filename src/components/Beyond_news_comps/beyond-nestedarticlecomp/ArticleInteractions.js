@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect ,useCallback,useRef} from 'react';
+import Image from 'next/image';
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -41,6 +42,12 @@ const ArticleInteractions = ({ article }) => {
     const likes = useSelector(state => state.likesArticle[article._id] ?? article.likesCount);
     const views = useSelector(state => state.viewsArticle[article._id] ?? article.viewsCount);
     const commentCount = useSelector(state => state.commentCountArticle[article._id] ?? article.commentsCount);
+    const [imgError, setImgError] = useState(false);
+
+
+    const handleImageError = () => {
+        setImgError(true);
+    };
 
     // Get user's location
     useEffect(() => {
@@ -263,32 +270,42 @@ const handleUnsubscribe = async () => {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4 dark:text-gray-200">
-                <div className="flex items-center">
-                    <img src={article.channelId.picture} alt={article.channelId.name} className="w-10 h-10 rounded-full mr-2" />
+        <div className="flex justify-between items-center mb-4 dark:text-gray-200">
+            <div className="relative w-10 h-10 mr-2">
+                <div className="w-full h-full rounded-full overflow-hidden relative">
+                    <Image
+                        src={imgError ? '/fallback-avatar.png' : article.channelId.picture}
+                        alt={article.channelId.name}
+                        fill
+                        sizes="40px"
+                        className="object-cover rounded-full"
+                        onError={handleImageError}
+                        priority
+                    />
                 </div>
-                <div className="flex-1">
-                    <Link href={`/truepacer_profile/${article.channelId?._id}`}>
-                        <span className="font-semibold">{article.channelId?.name}</span>
-                    </Link>
-                    <p className="text-sm text-gray-500 dark:text-gray-200">{subscriberCount} subscribers</p>
-                </div>
-                {!isSubscribed ? (
-                    <button 
-                        className="btn btn-sm bg-red-600 text-white hover:bg-red-700"
-                        onClick={handleSubscribe}
-                    >
-                        Subscribe
-                    </button>
-                ) : (
-                    <button 
-                        className="btn btn-sm bg-gray-200 text-black hover:bg-gray-300"
-                        onClick={handleUnsubscribe}
-                    >
-                        Subscribed
-                    </button>
-                )}
             </div>
+            <div className="flex-1">
+                <Link href={`/truepacer_profile/${article.channelId?._id}`}>
+                    <span className="font-semibold">{article.channelId?.name}</span>
+                </Link>
+                <p className="text-sm text-gray-500 dark:text-gray-200">{subscriberCount} subscribers</p>
+            </div>
+            {!isSubscribed ? (
+                <button 
+                    className="btn btn-sm bg-red-600 text-white hover:bg-red-700"
+                    onClick={handleSubscribe}
+                >
+                    Subscribe
+                </button>
+            ) : (
+                <button 
+                    className="btn btn-sm bg-gray-200 text-black hover:bg-gray-300"
+                    onClick={handleUnsubscribe}
+                >
+                    Subscribed
+                </button>
+            )}
+        </div>
             <div className="flex justify-between text-sm text-gray-500 dark:text-gray-200 mb-4">
             <div className="flex space-x-4">
                     <span className="flex items-center cursor-pointer" onClick={handleCommentClick}>

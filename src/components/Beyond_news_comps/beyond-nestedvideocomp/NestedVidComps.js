@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect,useRef } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { FaRegComment } from "react-icons/fa";
 import { BiLike,BiSolidLike } from "react-icons/bi";
@@ -43,9 +44,13 @@ const NestedVidComps = () => {
     const [viewCounted, setViewCounted] = useState(false);
      const [totalWatchDuration, setTotalWatchDuration] = useState(0);
      const [viewTimer, setViewTimer] = useState(null);
+     const [imgError, setImgError] = useState(false);
 
 
-
+ // Handler for image error
+ const handleImageError = () => {
+    setImgError(true);
+};
 
      useEffect(() => {
         const fetchInitialData = async () => {
@@ -413,11 +418,12 @@ const handleLike = async () => {
         return <NestedSkeletonLoader  type="video"/>
     }
 
+
     return (
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="aspect-w-16 aspect-h-9 mb-4">
+        <div className="relative w-full h-[480px] mb-4 bg-black">
             <video 
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-contain"
                 controls
                 autoPlay
                 onPlay={handleVideoPlay}
@@ -438,16 +444,26 @@ const handleLike = async () => {
                 ))}
             </div>
             <div className="flex items-center mb-4 dark:text-gray-200">
-                <div className="avatar mr-4">
-                    <div className="w-10 h-10 rounded-full">
-                        <img src={video.channelId?.picture} alt={video.channelId?.name} />
+                <div className="relative mr-4">
+                    <div className="w-10 h-10 rounded-full overflow-hidden relative">
+                        <Image
+                            src={imgError ? '/NopicAvatar.png' : video.channelId?.picture}
+                            alt={video.channelId?.name}
+                            fill
+                            sizes="40px"
+                            className="object-cover rounded-full"
+                            onError={handleImageError}
+                            priority
+                        />
                     </div>
                 </div>
                 <div className="flex-1">
                     <Link href={`/truepacer_profile/${video.channelId?._id}`}>
                         <span className="font-semibold">{video.channelId?.name}</span>
                     </Link>
-                    <p className="text-sm text-gray-500 dark:text-gray-200">{video.channelId?.subscriberCount} subscribers</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-200">
+                        {video.channelId?.subscriberCount} subscribers
+                    </p>
                 </div>
                 {!isSubscribed ? (
                     <button 
