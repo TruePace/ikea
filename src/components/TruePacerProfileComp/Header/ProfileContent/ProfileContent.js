@@ -15,6 +15,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const ProfileContent = ({profile}) => {
     const [activeTab, setActiveTab] = useState("Beyond Headline");
     const [subscriberCount, setSubscriberCount] = useState(profile.subscriberCount);
+    const [imageError, setImageError] = useState(false);
     const [isSticky, setIsSticky] = useState(false);
     const dispatch = useDispatch();
     const router = useRouter()
@@ -26,6 +27,11 @@ const ProfileContent = ({profile}) => {
     const tabsRef = useRef(null);
     const tabsContainerRef = useRef(null);
     const [tabsHeight, setTabsHeight] = useState(0);
+
+
+    const handleImageError = () => {
+        setImageError(true);
+      };
 
     useEffect(() => {
         const fetchCreatorContent = async () => {
@@ -117,12 +123,13 @@ const ProfileContent = ({profile}) => {
                 <div className="avatar w-28 h-28 relative">
                         <div className="w-full h-full rounded-full overflow-hidden">
                             <Image 
-                                src={profile.picture} 
+                                src={imageError ? '/NopicAvatar.png' : profile.picture} 
                                 alt="Avatar" 
                                 fill
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 className="rounded-full object-cover"
                                 quality={100}
+                                onError={handleImageError}
                             />
                         </div>
                     </div>
