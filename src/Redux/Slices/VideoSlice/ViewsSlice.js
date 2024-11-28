@@ -8,7 +8,7 @@ const viewsSlice = createSlice({
     setViews: (state, action) => {
       const { videoId, viewCount, avgWatchTime, engagementScore, viralScore } = action.payload;
       state[videoId] = { viewCount, avgWatchTime, engagementScore, viralScore };
-      console.log('View state updated:', state);
+      // console.log('View state updated:', state);
     },
   },
 });

@@ -45,6 +45,8 @@ const NestedVidComps = () => {
      const [totalWatchDuration, setTotalWatchDuration] = useState(0);
      const [viewTimer, setViewTimer] = useState(null);
      const [imgError, setImgError] = useState(false);
+     const [videoDuration, setVideoDuration] = useState(0); // Add this new state
+     const videoRef = useRef(null); // Add this to reference the video element
 
 
  // Handler for image error
@@ -88,7 +90,7 @@ const NestedVidComps = () => {
 
   useEffect(() => {
     socket.on('videoUpdated', (data) => {
-        console.log(data)
+        // console.log(data)
       if (data.commentCount) dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount }));
       if (data.likesCount) dispatch(setLikes({ videoId: data.videoId, likes: data.likesCount }));
       if (data.viewsCount) dispatch(setViews({ videoId: data.videoId, views: data.viewsCount }));
@@ -137,43 +139,80 @@ const NestedVidComps = () => {
     }
 }, []);
 
+
+
+
+// Add this function to handle video metadata loading
+const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+        setVideoDuration(videoRef.current.duration);
+        // console.log("Video duration loaded:", videoRef.current.duration);
+    }
+};
+
 const handleVideoPlay = () => {
-    console.log('Video started playing');
+    // console.log('Video started playing');
+    const currentTime = videoRef.current?.currentTime || 0;
     setWatchStartTime(Date.now());
-    if (!viewCounted) {
+    
+    if (!viewCounted && videoDuration > 0) {
+        // console.log('Starting view timer. Required duration:', videoDuration * 0.7);
+        const requiredWatchTime = videoDuration * 0.7;
+        
+        // Clear existing timer if any
+        if (viewTimer) {
+            clearTimeout(viewTimer);
+        }
+        
+        // Set new timer
         const timer = setTimeout(() => {
             const currentWatchDuration = (Date.now() - watchStartTime) / 1000;
-            handleView(currentWatchDuration);
-            setViewCounted(true);
-        }, 10000); // 10 seconds
+            const totalDurationWatched = totalWatchDuration + currentWatchDuration;
+            // console.log('Watch duration check:', {
+            //     totalDurationWatched,
+            //     requiredWatchTime,
+            //     videoDuration
+            // });
+            
+            if (totalDurationWatched >= requiredWatchTime) {
+                // console.log('Triggering view count');
+                handleView(totalDurationWatched);
+                setViewCounted(true);
+            }
+        }, Math.max(0, (requiredWatchTime - totalWatchDuration) * 1000));
+        
         setViewTimer(timer);
     }
 };
 
 const handleVideoPause = () => {
-    console.log('Video paused');
+    // console.log('Video paused');
     if (viewTimer) {
         clearTimeout(viewTimer);
         setViewTimer(null);
     }
-    if (watchStartTime) {
+    
+    if (watchStartTime && videoDuration > 0) {
         const currentWatchDuration = (Date.now() - watchStartTime) / 1000;
-        setTotalWatchDuration(prevDuration => prevDuration + currentWatchDuration);
-        setWatchStartTime(null);
-        if (viewCounted) {
-            handleView(currentWatchDuration);
+        const newTotalDuration = totalWatchDuration + currentWatchDuration;
+        // console.log('Pause - Total duration watched:', newTotalDuration);
+        
+        setTotalWatchDuration(newTotalDuration);
+        
+        // Check if we've hit 70% threshold
+        if (!viewCounted && newTotalDuration >= (videoDuration * 0.7)) {
+            // console.log('70% threshold reached on pause');
+            handleView(newTotalDuration);
+            setViewCounted(true);
         }
     }
-};
-
-const handleVideoEnded = () => {
-    console.log('Video ended');
-    handleVideoPause();
+    setWatchStartTime(null);
 };
 
 const handleView = async (watchDuration) => {
     if (firebaseUser) {
         try {
+            // console.log('Sending view request with duration:', watchDuration);
             const token = await firebaseUser.getIdToken();
             const response = await fetch(`${API_BASE_URL}/api/BeyondVideo/${id}/view`, {
                 method: 'POST',
@@ -184,12 +223,14 @@ const handleView = async (watchDuration) => {
                 body: JSON.stringify({
                     watchDuration,
                     deviceInfo: navigator.userAgent,
-                    location
+                    location,
+                    videoDuration // Add this to send total video duration
                 })
             });
 
             if (response.ok) {
                 const data = await response.json();
+                // console.log('View response:', data);
                 dispatch(setViews({ 
                     videoId: id, 
                     viewCount: data.viewCount, 
@@ -198,14 +239,15 @@ const handleView = async (watchDuration) => {
                     viralScore: data.viralScore
                 }));
             } else {
-                console.error('Server responded with an error:', await response.text());
+                console.error('Server responded with:', await response.text());
             }
         } catch (error) {
             console.error('Error updating view count:', error);
         }
+    } else {
+        router.push('/login');
     }
 };
-
 
 const handleLike = async () => {
     if (firebaseUser) {
@@ -421,19 +463,21 @@ const handleLike = async () => {
 
     return (
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative w-full h-[480px] mb-4 bg-black">
-            <video 
-                className="absolute inset-0 w-full h-full object-contain"
-                controls
-                autoPlay
-                onPlay={handleVideoPlay}
-                onPause={handleVideoPause}
-                onEnded={handleVideoEnded}
-            >
-                <source src={video.videoUrl} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
-        </div>
+            <div className="relative w-full h-[480px] mb-4 bg-black">
+                <video 
+                    ref={videoRef}
+                    className="absolute inset-0 w-full h-full object-contain"
+                    controls
+                    autoPlay
+                    onPlay={handleVideoPlay}
+                    onPause={handleVideoPause}
+                    onEnded={handleVideoPause}
+                    onLoadedMetadata={handleLoadedMetadata}
+                >
+                    <source src={video.videoUrl} type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         <div className='py-4'>
             <h1 className="text-xl sm:text-2xl font-bold mb-4 dark:text-gray-200">{video.title}</h1>
             <div className="mb-4 flex flex-wrap">

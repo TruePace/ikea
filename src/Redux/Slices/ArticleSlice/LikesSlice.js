@@ -10,7 +10,7 @@ const likesSlice = createSlice({
       setLikes: (state, action) => {
         const { contentId, likes } = action.payload;
         state[contentId] = likes;
-        console.log('Likes state updated:', state);
+        // console.log('Likes state updated:', state);
       },
     },
   });
