@@ -13,6 +13,7 @@ import { setContentInteractions } from "@/Redux/Slices/ContentInteractions";
 import { IoEyeOutline } from "react-icons/io5";
 import ShareComponent from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ShareComponent";
 import ScreenshotButton from "./ScreenshotButton";
+import LikeDislikeButtons from "./SubFeedComps/LikeDislikeButtons";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -245,20 +246,15 @@ const EngagementFeed = ({ content, channel }) => {
     <div id={`engagement-feed-${content._id}`}>
       <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
         <div className="flex justify-between w-1/4 ">
-        <button 
-            onClick={handleLike} 
-            className={`h-12 ${activeButton === 'like' ? 'text-blue-500' : 'text-gray-500 dark:text-gray-200'}`}
-          >
-            <BiLike size='1.6em' className="m-auto" />
-            <p className="text-xs">({interactions.likeCount})</p>
-          </button>
-          <button 
-            onClick={handleDislike} 
-            className={`h-12 ${activeButton === 'dislike' ? 'text-red-500' : 'text-gray-500 dark:text-gray-200'}`}
-          >
-            <BiDislike size='1.6em' className="m-auto" />
-            <p className="text-xs">({interactions.dislikeCount})</p>
-          </button>
+        <LikeDislikeButtons 
+  contentId={content._id}
+  initialLikes={interactions.likeCount}
+  initialDislikes={interactions.dislikeCount}
+  initialUserInteraction={activeButton}
+  onInteraction={async (action) => {
+    await recordAction(action);
+  }}
+/>
         </div>
         <button onClick={handleCommentClick} className="h-12">
           <FaRegComment size='1.6em' className="m-auto" />
