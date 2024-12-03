@@ -196,8 +196,7 @@ const EngagementFeed = ({ content, channel }) => {
 
 
 
-  const handleLike = () => recordAction('like');
-  const handleDislike = () => recordAction('dislike');
+
 
   
   const handleShare = async (platform) => {

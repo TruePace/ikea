@@ -12,6 +12,9 @@ const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
+         <head>
+         <link rel="icon" href="/TruePace.svg" sizes="any" />
+         </head>
       <body className={`${inter.className} flex flex-col tablet:flex-row desktop:flex-row min-h-screen bg-white text-black dark:bg-gray-900 dark:text-gray-200`}>
         <Provider store={store}>
           <AuthProvider>

@@ -9,7 +9,8 @@ import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
-import InfiniteScroll from "react-infinite-scroll-component";
+// import InfiniteScroll from "react-infinite-scroll-component";
+import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -20,8 +21,27 @@ const Page = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const dispatch = useDispatch();
-  // const [page, setPage] = useState(1);
-  // const [hasMore, setHasMore] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false); 
+ 
+
+
+
+
+  
+  useEffect(() => {
+    // Only show tutorial for new users who haven't seen it
+    if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
+      setShowTutorial(true);
+      // console.log('Should show tutorial:', true); // Debug log
+    }
+  }, [user]);
+  
+  const handleTutorialComplete = () => {
+    localStorage.setItem('hasSeenHeadlineNewsTutorial', 'true');
+    setShowTutorial(false);
+    // console.log('Tutorial completed and hidden'); // Debug log
+  };
+
 
   useEffect(() => {
     fetchInitialData();
@@ -45,21 +65,7 @@ const Page = () => {
     }
   };
 
-  // const fetchMoreData = async () => {
-  //   if (!hasMore) return;
-  //   try {
-  //     const nextPage = page + 1;
-  //     const moreHeadlineContents = await fetchHeadlineContents(nextPage);
-  //     if (moreHeadlineContents.length === 0) {
-  //       setHasMore(false);
-  //     } else {
-  //       setHeadlineContents(prev => [...prev, ...moreHeadlineContents]);
-  //       setPage(nextPage);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching more data:", error);
-  //   }
-  // };
+  
 
   useEffect(() => {
     const moveExpiredContent = () => {
@@ -126,6 +132,7 @@ const Page = () => {
   return (
     <>
       <HeadlineSocket/>
+      {showTutorial && <SwipeTutorial onComplete={handleTutorialComplete} />}
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
           <div className="h-full overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ">

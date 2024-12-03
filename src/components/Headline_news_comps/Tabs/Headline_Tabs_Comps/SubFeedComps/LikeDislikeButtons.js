@@ -68,7 +68,7 @@ const LikeDislikeButtons = ({
   }, [isProcessing, currentInteraction, counts, initialLikes, initialDislikes, initialUserInteraction, onInteraction]);
 
   return (
-    // <div className="flex gap-4">
+   
     <>
       <button 
         onClick={() => handleInteraction('like')}
@@ -79,7 +79,7 @@ const LikeDislikeButtons = ({
             : 'text-gray-500 dark:text-gray-200'
         }`}
       >
-        <BiLike size="1.6em" className="mb-1" />
+        <BiLike size="1.6em" className="mt-1" />
         <span className="text-xs">({counts.likes})</span>
       </button>
 
@@ -92,10 +92,10 @@ const LikeDislikeButtons = ({
             : 'text-gray-500 dark:text-gray-200'
         }`}
       >
-        <BiDislike size="1.6em" className="mb-1" />
+        <BiDislike size="1.6em" className="mt-1" />
         <span className="text-xs">({counts.dislikes})</span>
       </button>
-    {/* </div> */}
+
     </>
   );
 };
