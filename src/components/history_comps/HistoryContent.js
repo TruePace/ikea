@@ -19,126 +19,147 @@ const HistoryContent = () => {
     const [error, setError] = useState(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [isFirstLoad, setIsFirstLoad] = useState(true);
   
     useEffect(() => {
       if (firebaseUser) {
-        fetchHistory();
+          // Reset everything when component mounts or user changes
+          setHistory([]);
+          setPage(1);
+          setHasMore(true);
+          setIsFirstLoad(true);
+          fetchHistory(1, true);
       }
-    }, [firebaseUser]);
-  
-    const fetchHistory = async () => {
-      if (firebaseUser) {
-        try {
+  }, [firebaseUser]);
+
+  const fetchHistory = async (pageNum = page, isNewFetch = false) => {
+      if (!firebaseUser) {
+          setError('No user logged in');
+          setLoading(false);
+          return;
+      }
+
+      try {
           setLoading(true);
           const token = await firebaseUser.getIdToken();
           
-          const response = await fetch(`${API_BASE_URL}/api/history?page=${page}&limit=10`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+          const response = await fetch(`${API_BASE_URL}/api/history?page=${pageNum}&limit=10`, {
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
           });
           
           if (response.ok) {
-            const data = await response.json();
-            setHistory(prevHistory => [...prevHistory, ...data.history]);
-            setHasMore(data.hasMore);
-            setPage(prevPage => prevPage + 1);
+              const data = await response.json();
+              setHistory(prev => isNewFetch ? data.history : [...prev, ...data.history]);
+              setHasMore(data.hasMore);
+              setPage(pageNum + 1);
+              setIsFirstLoad(false);
           } else {
-            const errorText = await response.text();
-            setError(`Failed to fetch history: ${response.status} ${errorText}`);
+              const errorText = await response.text();
+              setError(`Failed to fetch history: ${response.status} ${errorText}`);
           }
-        } catch (error) {
+      } catch (error) {
           setError(`Error fetching history: ${error.message}`);
-        } finally {
+      } finally {
           setLoading(false);
-        }
-      } else {
-        setError('No user logged in');
-        setLoading(false);
       }
-    };
+  };
 
-    const clearHistory = async () => {
-      if (firebaseUser) {
-        try {
+  const clearHistory = async () => {
+      if (!firebaseUser) return;
+
+      try {
           const token = await firebaseUser.getIdToken();
           const response = await fetch(`${API_BASE_URL}/api/history/clear`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              method: 'DELETE',
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
           });
+          
           if (response.ok) {
-            setHistory([]);
-            setPage(1);
-            setHasMore(true);
+              setHistory([]);
+              setPage(1);
+              setHasMore(false);
           } else {
-            console.error('Failed to clear history');
+              console.error('Failed to clear history');
           }
-        } catch (error) {
+      } catch (error) {
           console.error('Error clearing history:', error);
-        }
       }
-    };
+  };
 
-    const removeFromHistory = async (historyId) => {
-      if (firebaseUser) {
-        try {
+  const removeFromHistory = async (historyId) => {
+      if (!firebaseUser) return;
+
+      try {
           const token = await firebaseUser.getIdToken();
           const response = await fetch(`${API_BASE_URL}/api/history/${historyId}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              method: 'DELETE',
+              headers: {
+                  'Authorization': `Bearer ${token}`
+              }
           });
+          
           if (response.ok) {
-            setHistory(history.filter(item => item._id !== historyId));
+              setHistory(prev => prev.filter(item => item._id !== historyId));
           } else {
-            console.error('Failed to remove item from history');
+              console.error('Failed to remove item from history');
           }
-        } catch (error) {
+      } catch (error) {
           console.error('Error removing item from history:', error);
-        }
       }
-    };
+  };
 
-    // Helper function to get the correct link path based on content type
-    const getContentLink = (item) => {
+  const getContentLink = (item) => {
       if (item.contentType === 'video' && item.video) {
-        return `/beyond_news/nestedvideo/${item.video._id}`;
+          return `/beyond_news/nestedvideo/${item.video._id}`;
       } else if (item.contentType === 'article' && item.article) {
-        return `/beyond_news/nestedarticle/${item.article._id}`;
+          return `/beyond_news/nestedarticle/${item.article._id}`;
       }
       return '#';
-    };
+  };
 
-    return (
-      <div className="container mx-auto px-4 tablet:px-6 desktop:px-8">
+  return (
+    <div className="container mx-auto px-4 tablet:px-6 desktop:px-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl tablet:text-2xl desktop:text-3xl font-bold dark:text-gray-200">Watch/Read History</h2>
-          <button onClick={clearHistory} className="bg-red-500 text-white px-3 py-1 tablet:px-4 tablet:py-2 rounded text-sm tablet:text-base">Clear History</button>
-        </div>
-        {loading && history.length === 0 ? (
-          <HistorySkeleton />
-        ) : error ? (
-          <div className="text-center">
-            <p className="text-red-500 mb-4">Error: {error}</p>
-            <button onClick={fetchHistory} className="bg-blue-500 text-white px-4 py-2 rounded text-sm tablet:text-base">
-              Retry
+            <h2 className="text-xl tablet:text-2xl desktop:text-3xl font-bold dark:text-gray-200">
+                Watch/Read History
+            </h2>
+            <button 
+                onClick={clearHistory} 
+                className="bg-red-500 text-white px-3 py-1 tablet:px-4 tablet:py-2 rounded text-sm tablet:text-base"
+                disabled={loading || history.length === 0}
+            >
+                Clear History
             </button>
-          </div>
+        </div>
+        
+        {loading && isFirstLoad ? (
+            <HistorySkeleton />
+        ) : error ? (
+            <div className="text-center">
+                <p className="text-red-500 mb-4">Error: {error}</p>
+                <button 
+                    onClick={() => fetchHistory(1, true)} 
+                    className="bg-blue-500 text-white px-4 py-2 rounded text-sm tablet:text-base"
+                >
+                    Retry
+                </button>
+            </div>
         ) : (
-          <InfiniteScroll
-            dataLength={history.length}
-            next={fetchHistory}
-            hasMore={hasMore}
-            loader={<HistorySkeleton />}
-            endMessage={
-              <p className="text-center py-4">
-                <b>You have seen it all!</b>
-              </p>
-            }
-          >
+            <InfiniteScroll
+                dataLength={history.length}
+                next={() => fetchHistory()}
+                hasMore={hasMore}
+                loader={<HistorySkeleton />}
+                endMessage={
+                    <p className="text-center py-4">
+                        <b>{history.length === 0 ? 'No history items' : 'You have seen it all!'}</b>
+                    </p>
+                }
+            >
             <div className="space-y-6">
               {history.map((item) => (
                 <div key={item._id} className="flex flex-col tablet:flex-row gap-4 items-start tablet:items-center bg-white p-4 rounded-lg shadow-sm dark:text-gray-200 dark:bg-gray-700">
