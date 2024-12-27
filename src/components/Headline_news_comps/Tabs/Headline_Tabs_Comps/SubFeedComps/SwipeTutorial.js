@@ -70,14 +70,14 @@ const SwipeTutorial = ({ onComplete }) => {
             </div>
           )}
 
-          {step === 3 && (
-            <div className="text-center text-white space-y-4 animate-fade-in">
-              <p className="text-2xl font-bold">You're Ready!</p>
-              <p className="text-sm max-w-xs">
-                Start exploring channels and their latest updates
-              </p>
-            </div>
-          )}
+              {step === 3 && (
+                <div className="text-center text-white space-y-4 animate-fade-in">
+                  <p className="text-2xl font-bold">You&apos;re Ready!</p>
+                  <p className="text-sm max-w-xs">
+                    Start exploring channels and their latest updates
+                  </p>
+                </div>
+              )}
         </div>
 
         {/* Progress Indicators */}
