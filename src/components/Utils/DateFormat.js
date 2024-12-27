@@ -21,8 +21,13 @@ export function formatDate(date) {
   if (diffInDays === 1) {
     return 'Yesterday';
   }
+  
+  // Show "X days ago" for dates between 2-7 days old
+  if (diffInDays <= 7) {
+    return `${diffInDays} days ago`;
+  }
 
-  // For dates older than yesterday, return the formatted date
+  // For dates older than 7 days, return the formatted date
   return inputDate.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',

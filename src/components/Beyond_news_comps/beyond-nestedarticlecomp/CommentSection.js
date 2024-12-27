@@ -6,6 +6,7 @@ import { auth } from '@/app/(auth)/firebase/ClientApp';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCommentCount } from '@/Redux/Slices/ArticleSlice/CommentCountSlice';
+import { formatDate } from '@/components/Utils/DateFormat';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -37,6 +38,9 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
          className="rounded-full mr-2" 
        />
        <p className="font-bold">{comment.username || 'Anonymous'}</p>
+       <span className="text-sm ml-3 text-gray-500 dark:text-gray-400">
+              {formatDate(comment.createdAt)}
+            </span>
      </div>
      <p>{comment.text}</p>
      <div className="flex items-center mt-1">

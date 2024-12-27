@@ -5,6 +5,7 @@ import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import { auth } from '@/app/(auth)/firebase/ClientApp';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { formatDate } from '@/components/Utils/DateFormat';
 
 const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2);
@@ -46,6 +47,9 @@ const CommentItem = ({ comment, onReply, onLike, currentUser, level = 0 }) => {
         <p className="font-bold">
           {comment.username || comment.displayName || 'Anonymous'}
         </p>
+        <span className="text-sm ml-3 text-gray-500 dark:text-gray-400">
+              {formatDate(comment.createdAt)}
+            </span>
       </div>
   <p>{comment.text}</p>
   <div className="flex items-center mt-1">
