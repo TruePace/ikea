@@ -150,9 +150,12 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
               
               <div className="absolute bottom-24 left-0 flex items-center space-x-2">
                 <CountdownTimer expirationTime={content.headlineExpiresAt} />
-                <span className="text-xs text-red-800">
+                {/* <span className="text-xs text-red-800">
                   Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-                </span>
+                </span> */}
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white bg-opacity-80 shadow-sm text-xs font-medium text-red-800 border border-red-200">
+               Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+              </span>
               </div>
             </div>
           </div>
@@ -206,8 +209,11 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
                 
                 <div className="absolute bottom-20 left-0 flex items-center space-x-2">
                   <JustInTimer expirationTime={content.justInExpiresAt} />
-                  <span className="text-xs text-red-800">
+                  {/* <span className="text-xs text-red-800">
                     Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+                  </span> */}
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white bg-opacity-80 shadow-sm text-xs font-medium text-red-800 border border-red-200">
+                  Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
                   </span>
                 </div>
               </div>

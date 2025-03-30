@@ -5,10 +5,10 @@ import SocketHandler from "@/components/Socket io/SocketHandler";
 
 
 // import Slide from "@/components/Headline_news_comps/Tabs/Slide";
-export const metadata = {
-    title: "Beyond Headline  title",
-    description: "Beyond Headline description",
-}
+// export const metadata = {
+//     title: "Beyond Headline  title",
+//     description: "Beyond Headline description",
+// }
 
 const page = () => {
     return (

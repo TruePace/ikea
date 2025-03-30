@@ -269,7 +269,7 @@ const handleUnsubscribe = async () => {
     };
 
     return (
-        <div>
+        <div >
         <div className="flex justify-between items-center mb-4 dark:text-gray-200">
             <div className="relative w-10 h-10 mr-2">
                 <div className="w-full h-full rounded-full overflow-hidden relative">

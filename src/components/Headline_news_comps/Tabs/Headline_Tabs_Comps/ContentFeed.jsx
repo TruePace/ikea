@@ -54,16 +54,17 @@ const ContentFeed = ({ content, onView, isViewed }) => {
       </>
     ) : (
       <>
-        <div className="h-96 tablet:h-108 desktop:h-120 text-gray-700 w-full flex flex-col capitalize dark:text-gray-200">
-          <p className="text-sm sm:text-[17px] xs:leading-5 leading-6 tablet:text-base desktop:text-lg">
-            {content.message}
-          </p>
-          {content.tags && content.tags.length > 0 && (
-            <div className="mt-4">
-              {renderTags(content.tags)}
-            </div>
-          )}
-        </div>
+       <div className="h-96 tablet:h-108 desktop:h-120 text-gray-700  w-full flex flex-col items-center justify-center capitalize dark:text-gray-200">
+  <p className="text-sm  text-center sm:text-[17px] xs:leading-5 leading-6 tablet:text-base desktop:text-lg">
+    {content.message}
+  </p>
+  {content.tags && content.tags.length > 0 && (
+    <div className="mt-4">
+      {renderTags(content.tags)}
+    </div>
+  )}
+</div>
+
       </>
     )}
   </div>

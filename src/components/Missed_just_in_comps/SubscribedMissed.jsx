@@ -2,16 +2,21 @@ import Image from "next/image";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { useSelector, useDispatch } from 'react-redux';
 import { setSubscription } from '@/Redux/Slices/SubscriptionSlice';
+import { useState } from "react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const SubscribeMissed = ({ channelId, channelName, channelPicture, subscriberCount }) => {
+  const [imageError,setImageError]= useState(false)
   const { user } = useAuth();
   const dispatch = useDispatch();
   const isSubscribed = useSelector(state => 
     state.subscriptions[user?.uid]?.[channelId] || false
   );
 
+  const handleImageError =() => {
+    setImageError(true)
+  }
   const handleSubscribe = async () => {
     if (!user) {
       // Handle not logged in state
@@ -78,7 +83,7 @@ const SubscribeMissed = ({ channelId, channelName, channelPicture, subscriberCou
     <div className="border-gray-200 w-full flex items-center gap-4">
       <div className="avatar">
         <div className="w-9 h-9 relative rounded-full overflow-hidden">
-          <Image src={channelPicture} alt={channelName} fill className="object-cover"/>
+          <Image src={imageError ? '/NopicAvatar.png': channelPicture  } alt={channelName} fill className="object-cover" onError={handleImageError}/>
         </div>
       </div>
       <p className="font-semibold text-sm capitalize text-gray-600">{channelName}</p>
