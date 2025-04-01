@@ -17,6 +17,7 @@ import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 import ShareVideoComp from './ShareVideoComp';
+import VideoStructuredData from '@/components/SearchEngineOpt/VideoStructuredData';
 
 
 
@@ -462,6 +463,8 @@ const handleLike = async () => {
 
 
     return (
+        <>
+        <VideoStructuredData video={video} />
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="relative w-full h-[480px] mb-4 bg-black">
                 <video 
@@ -556,6 +559,7 @@ const handleLike = async () => {
             onCommentAdded={handleCommentAdded}
         />
     </div>
+    </>
 );
 }
 

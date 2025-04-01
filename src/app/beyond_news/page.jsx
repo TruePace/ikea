@@ -10,7 +10,7 @@ import SocketHandler from "@/components/Socket io/SocketHandler";
 //     description: "Beyond Headline description",
 // }
 
-const page = () => {
+const Page = () => {
     return (
         <div className="flex flex-col h-screen  pb-16">
             <Header />
@@ -23,4 +23,4 @@ const page = () => {
     );
 }
 
-export default page;
+export default Page;

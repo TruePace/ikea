@@ -11,7 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 //     description: "History description",
 // }
 
-const page = () => {
+const Page = () => {
     return (
         <>
 <ProtectedRoute>
@@ -25,4 +25,4 @@ const page = () => {
     );
 }
 
-export default page;
+export default Page;
