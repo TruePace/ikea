@@ -8,11 +8,10 @@ import ArticleInteractions from './ArticleInteractions';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 import ShareArticleComp from './ShareArticleComp';
-import Head from 'next/head';
-import ArticleStructuredData from '@/components/SearchEngineOpt/ArticleStructuredData';
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://yoursite.com';
+
 
 const FullArticle = () => {
     const [article, setArticle] = useState(null);
@@ -40,46 +39,9 @@ const FullArticle = () => {
         return <NestedSkeletonLoader />
     }
     
-// the starting code for the SEO -- SEO
-
-    // Generate meta description from content
-    const getMetaDescription = () => {
-        // Strip HTML tags and limit to ~155 characters
-        const strippedContent = article.fullContent.replace(/<[^>]*>?/gm, '');
-        return strippedContent.substring(0, 155) + (strippedContent.length > 155 ? '...' : '');
-    };
-
     return (
         <>
-            <Head>
-                <title>{article.title} | TruePace News</title>
-                <meta name="description" content={getMetaDescription()} />
-                
-                {/* Open Graph tags for social sharing */}
-                <meta property="og:title" content={article.title} />
-                <meta property="og:description" content={getMetaDescription()} />
-                <meta property="og:image" content={article.previewImage} />
-                <meta property="og:url" content={`${SITE_URL}/article/${id}`} />
-                <meta property="og:type" content="article" />
-                
-                {/* Article specific metadata */}
-                <meta property="article:published_time" content={article.createdAt} />
-                {article.tags && article.tags.map((tag, index) => (
-                    <meta key={index} property="article:tag" content={tag} />
-                ))}
-                
-                {/* Twitter Card */}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={article.title} />
-                <meta name="twitter:description" content={getMetaDescription()} />
-                <meta name="twitter:image" content={article.previewImage} />
-                
-                {/* Canonical URL */}
-                <link rel="canonical" href={`${SITE_URL}/article/${id}`} />
-            </Head>
-
-            <ArticleStructuredData article={article} />
-            {/* the SEO ends here in the jsx  --SEO */}
+           
             
             <div className="max-w-3xl mx-auto p-4 pt-8 sm:pt-12 md:pt-20 desktop:max-w-4xl">
                 <h1 className="text-2xl sm:text-3xl desktop:text-4xl font-bold mb-4 dark:text-gray-200">{article.title}</h1>
