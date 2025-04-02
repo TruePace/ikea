@@ -21,17 +21,30 @@ const Page = () => {
   const { user } = useAuth();
   const dispatch = useDispatch()
 
-  const fetchMissedContent = async () => {
+  useEffect(() => {
+    // Reset content when user changes
+    setMissedContent([]);
+    setPage(1);
+    setHasMore(true);
+    fetchMissedContent(1, true); // Pass page 1 and reset flag
+  }, [user]);
+  
+  const fetchMissedContent = async (pageNum = page, reset = false) => {
     if (user) {
       setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/MissedJustIn/${user.uid}?page=${page}&limit=10`);
+        const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/MissedJustIn/${user.uid}?page=${pageNum}&limit=10`);
         const data = await response.json();
-        setMissedContent(prevContent => [...prevContent, ...data.content]);
+        
+        // If reset is true, replace content instead of appending
+        setMissedContent(prevContent => 
+          reset ? data.content : [...prevContent, ...data.content]
+        );
+        
         setHasMore(data.hasMore);
-        setPage(prevPage => prevPage + 1);
+        setPage(pageNum + 1);
         dispatch(setHasMissedContent(data.content.length > 0));
-        dispatch(setMissedContentCount(prevCount => prevCount + data.content.length));
+        dispatch(setMissedContentCount(data.content.length));
       } catch (error) {
         console.error('Error fetching missed content:', error);
       } finally {
@@ -39,10 +52,6 @@ const Page = () => {
       }
     }
   };
-
-  useEffect(() => {
-    fetchMissedContent();
-  }, [user]);
 
   return (
     <ProtectedRoute>
@@ -52,10 +61,10 @@ const Page = () => {
           <MissedJustInSkeleton/>
         ) : missedContent.length > 0 ? (
           <InfiniteScroll
-            dataLength={missedContent.length}
-            next={fetchMissedContent}
-            hasMore={hasMore}
-            loader={<MissedJustInSkeleton />}
+  dataLength={missedContent.length}
+  next={() => fetchMissedContent()}
+  hasMore={hasMore}
+  loader={<MissedJustInSkeleton />}
             endMessage={
               <p style={{ textAlign: 'center' }}>
                 <b>You&apos;re all caught up!</b>
