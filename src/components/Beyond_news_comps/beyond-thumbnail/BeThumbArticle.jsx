@@ -9,17 +9,22 @@ import { LuDot } from "react-icons/lu";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { formatDate } from '@/components/Utils/DateFormat';
 import TruncateText from './TruncateText';
+import { useScrollToItem } from './useScrollToItem';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 const BeThumbArticle = ({article}) => {
     const { user,firebaseUser } = useAuth();
     const router = useRouter();
- 
+    const { setLastClickedItem } = useScrollToItem();
     const [clickedId, setClickedId] = useState(null);
 
   
     const handleClick = async (articleId) => {
         setClickedId(articleId);
+          // Track which item was clicked for later scroll restoration
+    setLastClickedItem(`article-${articleId}`);
+    
         if (firebaseUser) {
           try {
             const token = await firebaseUser.getIdToken();

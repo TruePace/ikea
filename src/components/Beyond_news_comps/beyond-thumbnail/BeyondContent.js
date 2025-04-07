@@ -4,12 +4,19 @@ import BeThumbVideo from './BeThumbVideo';
 import BeThumbArticle from './BeThumbArticle';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThumbnailSkeletonLoader from '../beyond-header/ThumbnailSkeletonLoader';
+import { useScrollToItem } from './useScrollToItem';
+
+
+// Create a cache to store content between navigations
+let contentCache = [];
+let pageCache = 1;
+let hasMoreCache = true;
 
 const BeyondContent = () => {
-  const [combinedContent, setCombinedContent] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
+  const [combinedContent, setCombinedContent] = useState(contentCache);
+  const [isLoading, setIsLoading] = useState(contentCache.length === 0);
+  const [hasMore, setHasMore] = useState(hasMoreCache);
+  const [page, setPage] = useState(pageCache);
   const ITEMS_PER_PAGE = 10;
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -34,20 +41,26 @@ const BeyondContent = () => {
         // If it's the first page, set the content directly
         if (page === 1) {
           setCombinedContent(newContent);
+          contentCache = newContent;
         } else {
           // For subsequent pages, check for duplicates before adding
           setCombinedContent(prevContent => {
             const existingIds = new Set(prevContent.map(item => item.uniqueId));
             const uniqueNewContent = newContent.filter(item => !existingIds.has(item.uniqueId));
-            return [...prevContent, ...uniqueNewContent];
+            const updatedContent = [...prevContent, ...uniqueNewContent];
+            contentCache = updatedContent;
+            return updatedContent;
           });
         }
         
         // Update hasMore based on whether we received the full number of items
         const totalNewItems = videos.length + articles.length;
         setHasMore(totalNewItems >= ITEMS_PER_PAGE * 2);
+        hasMoreCache = totalNewItems >= ITEMS_PER_PAGE * 2;
         
-        setPage(prevPage => prevPage + 1);
+        const nextPage = page + 1;
+        setPage(nextPage);
+        pageCache = nextPage;
       }
     } catch (error) {
       console.error('Error fetching content:', error);
@@ -57,12 +70,11 @@ const BeyondContent = () => {
   };
   
   useEffect(() => {
-    // Reset state when component mounts
-    setCombinedContent([]);
-    setPage(1);
-    setHasMore(true);
-    fetchContent();
-  }, []); // Empty dependency array means this runs once on mount
+    // Only fetch if cache is empty
+    if (contentCache.length === 0) {
+      fetchContent();
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -76,22 +88,26 @@ const BeyondContent = () => {
 
   return (
     <InfiniteScroll
-      dataLength={combinedContent.length}
-      next={fetchContent}
-      hasMore={hasMore}
-      loader={<h4>Loading...</h4>}
-    >
-      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
-        {combinedContent.map(content => (
-          <div key={content.uniqueId} className="w-full">
-            {content.type === 'video' 
-              ? <BeThumbVideo video={content} />
-              : <BeThumbArticle article={content} />
-            }
-          </div>
-        ))}
-      </div>
-    </InfiniteScroll>
+    dataLength={combinedContent.length}
+    next={fetchContent}
+    hasMore={hasMore}
+    loader={<h4>Loading...</h4>}
+  >
+    <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
+      {combinedContent.map(content => (
+        <div 
+          key={content.uniqueId} 
+          id={content.uniqueId} // Add ID to each item container
+          className="w-full"
+        >
+          {content.type === 'video'
+            ? <BeThumbVideo video={content} />
+            : <BeThumbArticle article={content} />
+          }
+        </div>
+      ))}
+    </div>
+  </InfiniteScroll>
   );
 };
 

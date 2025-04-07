@@ -14,6 +14,7 @@ import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import socket from '@/components/Socket io/SocketClient';
 import { formatDate } from '@/components/Utils/DateFormat';
 import TruncateText from './TruncateText';
+import { useScrollToItem } from './useScrollToItem';
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -21,7 +22,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const BeThumbVideo = ({video}) => {
     const { user ,firebaseUser} = useAuth();
     const router = useRouter();
-   
+    const { setLastClickedItem } = useScrollToItem();
     const [clickedId, setClickedId] = useState(null);
     const dispatch = useDispatch();
     const commentCounts = useSelector(state => state.commentCount);
@@ -44,6 +45,8 @@ const BeThumbVideo = ({video}) => {
 
     const handleClick = async (videoId) => {
         setClickedId(videoId);
+           // Track which item was clicked for later scroll restoration
+    setLastClickedItem(`video-${videoId}`);
         if (firebaseUser) {
           try {
             const token = await firebaseUser.getIdToken();

@@ -2,6 +2,7 @@ import Header from "@/components/Beyond_news_comps/beyond-header/Header";
 import BeyondContent from "@/components/Beyond_news_comps/beyond-thumbnail/BeyondContent";
 import SecondSocketHandler from "@/components/Socket io/SecondSocketHandler";
 import SocketHandler from "@/components/Socket io/SocketHandler";
+import { useRememberPosition } from "@/components/Beyond_news_comps/beyond-thumbnail/useRememberPosition";
 
 
 // import Slide from "@/components/Headline_news_comps/Tabs/Slide";
@@ -11,6 +12,7 @@ import SocketHandler from "@/components/Socket io/SocketHandler";
 // }
 
 const Page = () => {
+    useRememberPosition
     return (
         <div className="flex flex-col h-screen  pb-16">
             <Header />
