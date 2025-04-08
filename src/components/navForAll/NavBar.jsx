@@ -10,6 +10,20 @@ import Image from "next/image";
 const NavBar = () => {
   const pathName = usePathname();
   const { user } = useAuth();
+  
+  // This function will handle preserving scroll position when navigating to beyond_news
+  const handleNavigate = (e, path) => {
+    // Only apply special handling for beyond_news navigation
+    if (path === '/beyond_news') {
+      // We want to keep the lastClickedItemId when navigating to beyond_news
+      // No need to do anything special here, just let it navigate normally
+      console.log('Navigating to beyond_news, preserving scroll position');
+    } else {
+      // For other paths, we can optionally clear the scroll position
+      // This is optional - if you want to always remember the position, remove this
+      // localStorage.removeItem('lastClickedItemId');
+    }
+  };
 
   const links = [
     {
@@ -39,17 +53,18 @@ const NavBar = () => {
   return (
     <nav className="bg-white fixed bottom-0 left-0 tablet:left-0 tablet:top-0 desktop:left-0 desktop:top-0 w-full h-14 tablet:h-full desktop:h-full tablet:w-16 desktop:w-64 py-1 tablet:py-4 desktop:py-6 flex flex-nowrap tablet:flex-col desktop:flex-col justify-evenly items-center z-10 dark:bg-gray-900 dark:text-gray-200">
       {links.map((link) => (
-        <div 
-          key={link.title} 
-          className={`w-1/4 tablet:w-full desktop:w-full flex flex-col justify-center items-center 
-            ${pathName === link.path ? 
+        <div
+          key={link.title}
+          className={`w-1/4 tablet:w-full desktop:w-full flex flex-col justify-center items-center
+            ${pathName === link.path ?
               'tablet:border-l-4 desktop:border-l-4 border-red-500 bg-opacity-65 rounded-lg shadow-lg shadow-red-700/50 tablet:py-1 desktop:py-1 font-semibold' : ''
             }`}
         >
           {!link.protected || user ? (
-            <Link 
-              href={link.path} 
+            <Link
+              href={link.path}
               className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+              onClick={(e) => handleNavigate(e, link.path)}
             >
               <div className="tablet:mr-2 desktop:mr-4 mb-0.5 tablet:mb-0">
                 {link.title}
@@ -59,9 +74,9 @@ const NavBar = () => {
               </span>
             </Link>
           ) : (
-            <Link 
-              href="/login" 
-              className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 w-full  dark:hover:bg-gray-700"
+            <Link
+              href="/login"
+              className="flex flex-col tablet:flex-row desktop:flex-row items-center px-1 py-1.5 tablet:p-2 desktop:p-2 hover:bg-gray-100 w-full dark:hover:bg-gray-700"
             >
               <div className="tablet:mr-2 desktop:mr-4 mb-0.5 tablet:mb-0">
                 {link.title}

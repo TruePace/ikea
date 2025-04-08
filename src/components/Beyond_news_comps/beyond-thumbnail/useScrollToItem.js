@@ -1,41 +1,78 @@
-// hooks/useScrollToItem.js
 'use client';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
-// Create a simple module-level variable to store the last clicked item ID
-let lastClickedItem = null;
+// Constants for localStorage keys
+const ITEM_KEY = 'lastClickedItemId';
+const PATH_KEY = 'lastVisitedPath';
 
 export function useScrollToItem() {
   const pathname = usePathname();
   
-  // This function will be called when navigating back to the main page
-  const scrollToLastItem = () => {
-    if (!lastClickedItem) return;
-    
-    setTimeout(() => {
-      const element = document.getElementById(lastClickedItem);
-      if (element) {
-        // Scroll the element into view with a small offset from the top
-        element.scrollIntoView({ behavior: 'instant', block: 'center' });
-        // Clear the reference after scrolling
-        lastClickedItem = null;
-      }
-    }, 100); // Small delay to ensure the page is fully rendered
-  };
-  
-  // Set up effect to scroll to last item when we return to the main page
+  // Track path changes to know when we're returning to the beyond_news page
   useEffect(() => {
-    // Only run on main page
+    if (typeof window === 'undefined') return;
+    
+    // Store the current path for navigation tracking
+    console.log(`Path changed to: ${pathname}, previous: ${localStorage.getItem(PATH_KEY)}`);
+    localStorage.setItem(PATH_KEY, pathname);
+  }, [pathname]);
+  
+  // Handle scrolling when returning to the main page
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // Only run on the main beyond_news page
     if (pathname === '/beyond_news') {
-      scrollToLastItem();
+      const storedItemId = localStorage.getItem(ITEM_KEY);
+      console.log('On beyond_news page, checking for stored item ID:', storedItemId);
+      
+      if (storedItemId) {
+        // Use multiple attempts with increasing delays to handle different loading scenarios
+        // This is crucial as content might load at different times
+        const scrollAttempts = [100, 300, 600, 1000, 1500, 2000];
+        
+        let successfulScroll = false;
+        
+        scrollAttempts.forEach((delay) => {
+          setTimeout(() => {
+            // Don't try again if we've already successfully scrolled
+            if (successfulScroll) return;
+            
+            const element = document.getElementById(storedItemId);
+            if (element) {
+              console.log(`Found element at ${delay}ms, scrolling to ${storedItemId}`);
+              
+              // Use smooth scrolling for better UX
+              element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+              });
+              
+              // Add a visual indicator to help debugging (optional)
+              element.style.transition = 'all 0.5s';
+              element.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.5)';
+              setTimeout(() => {
+                element.style.boxShadow = '';
+              }, 2000);
+              
+              successfulScroll = true;
+            } else {
+              console.log(`Element not found at ${delay}ms, will try again`);
+            }
+          }, delay);
+        });
+      }
     }
   }, [pathname]);
   
-  // Return a function that components can call to set the last clicked item
+  // Return the function to set the last clicked item
   return {
-    setLastClickedItem: (id) => { 
-      lastClickedItem = id;
+    setLastClickedItem: (id) => {
+      if (id && typeof window !== 'undefined') {
+        console.log('Setting last clicked item:', id);
+        localStorage.setItem(ITEM_KEY, id);
+      }
     }
   };
 }
