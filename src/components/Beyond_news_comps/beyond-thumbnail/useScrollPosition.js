@@ -10,6 +10,7 @@ const NAVIGATION_TYPE_KEY = 'beyondNewsNavigationType';
 const SESSION_ID_KEY = 'beyondNewsSessionId';
 const RELOAD_FLAG_KEY = 'beyondNewsReloadFlag';
 const FIRST_LOAD_PROCESSED_KEY = 'beyondNewsFirstLoadProcessed';
+const USER_SESSION_KEY = 'beyondNewsUserSession';
 
 export function useScrollPosition() {
   const pathname = usePathname();
@@ -61,6 +62,19 @@ export function useScrollPosition() {
   const isFreshLoad = () => {
     if (typeof window === 'undefined') return true;
     
+    // Check if this is a new browser session
+    const currentSessionId = window.sessionStorage.getItem('appSessionId');
+    const storedSessionId = localStorage.getItem(USER_SESSION_KEY);
+    
+    // If no session ID exists yet or they don't match, this is a fresh session
+    if (!currentSessionId || currentSessionId !== storedSessionId) {
+      // Generate new session ID if needed
+      const newSessionId = currentSessionId || Date.now().toString();
+      window.sessionStorage.setItem('appSessionId', newSessionId);
+      localStorage.setItem(USER_SESSION_KEY, newSessionId);
+      return true;
+    }
+    
     // Get navigation type from performance API
     const performanceEntries = performance.getEntriesByType('navigation');
     const navType = performanceEntries.length > 0 ? performanceEntries[0].type : null;
@@ -87,25 +101,6 @@ export function useScrollPosition() {
     // If we have no navigation record, treat as fresh load
     if (!storedNavType) {
       return true;
-    }
-    
-    // Check session state
-    const sessionId = localStorage.getItem(SESSION_ID_KEY);
-    const currentSessionId = window.sessionStorage.getItem('appSessionId');
-    
-    // If we don't have a current session ID, create one
-    if (!currentSessionId) {
-      const newSessionId = Date.now().toString();
-      window.sessionStorage.setItem('appSessionId', newSessionId);
-      localStorage.setItem(SESSION_ID_KEY, newSessionId);
-      return true; // This is a fresh load
-    }
-    
-    // If the stored sessionId doesn't match current session
-    if (sessionId !== currentSessionId) {
-      // Update the stored sessionId
-      localStorage.setItem(SESSION_ID_KEY, currentSessionId);
-      return true; // This is a fresh load
     }
     
     return false; // Default to not a fresh load
