@@ -106,18 +106,14 @@ export function useScrollPosition() {
     return false; // Default to not a fresh load
   };
 
-  // Restore scroll position with priority to clicked item
   const restoreScrollPosition = () => {
     if (typeof window === 'undefined' || pathname !== '/beyond_news') return;
     if (scrollRestored.current) return; // Prevent multiple restoration attempts
     
     // Check if this is a fresh load or reload
     const freshLoad = isFreshLoad();
-    // console.log(`Checking if fresh load: ${freshLoad}`);
     
     if (freshLoad) {
-      // console.log('Fresh load detected, scrolling to top');
-      
       // Clear scroll position data but keep navigation type
       localStorage.removeItem(SCROLL_POSITION_KEY);
       localStorage.removeItem(SCROLL_TIMESTAMP_KEY);
@@ -134,62 +130,8 @@ export function useScrollPosition() {
       return;
     }
     
-    const contentContainer = getScrollContainer();
-    if (!contentContainer) return;
-    
-    // Not a fresh load, so attempt to restore position
-    
-    // First try to scroll to last clicked item (higher priority)
-    const clickedItemId = localStorage.getItem(LAST_CLICKED_ITEM_KEY);
-    if (clickedItemId) {
-      // console.log(`Attempting to scroll to clicked item: ${clickedItemId}`);
-      
-      // Progressive attempts with increasing delays
-      const scrollAttempts = [100, 300, 600, 1000, 1500, 2000];
-      let attemptIndex = 0;
-      
-      const attemptScrollToItem = () => {
-        const element = document.getElementById(clickedItemId);
-        if (element) {
-          // console.log(`Found element, scrolling to ${clickedItemId}`);
-          
-          // Small delay to ensure rendering is complete
-          setTimeout(() => {
-            element.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center'
-            });
-            
-            // Visual indicator
-            element.style.transition = 'all 0.5s';
-            element.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.5)';
-            setTimeout(() => {
-              element.style.boxShadow = '';
-            }, 2000);
-            
-            scrollRestored.current = true;
-          }, 50);
-          
-          return true;
-        }
-        
-        // Try next delay if we have more attempts
-        if (attemptIndex < scrollAttempts.length - 1) {
-          attemptIndex++;
-          setTimeout(attemptScrollToItem, scrollAttempts[attemptIndex]);
-          return false;
-        }
-        
-        // Fall back to position-based scrolling if item not found
-        fallbackToPositionScroll();
-        return false;
-      };
-      
-      setTimeout(attemptScrollToItem, scrollAttempts[0]);
-    } else {
-      // No clicked item, use position-based scrolling
-      fallbackToPositionScroll();
-    }
+    // Skip clicked item logic and directly use position-based scrolling
+    fallbackToPositionScroll();
   };
   
   // Fall back to position-based scrolling
