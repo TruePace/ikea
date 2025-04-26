@@ -1,10 +1,10 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BeThumbVideo from './BeThumbVideo';
 import BeThumbArticle from './BeThumbArticle';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThumbnailSkeletonLoader from '../beyond-header/ThumbnailSkeletonLoader';
-import { useScrollToItem } from './useScrollToItem';
+import { useScrollPosition } from './useScrollPosition';
 
 // Function to safely interact with localStorage
 const getFromStorage = (key, defaultValue) => {
@@ -13,7 +13,7 @@ const getFromStorage = (key, defaultValue) => {
     const value = localStorage.getItem(key);
     return value ? JSON.parse(value) : defaultValue;
   } catch (e) {
-    console.error('Error getting from localStorage:', e);
+    // console.error('Error getting from localStorage:', e);
     return defaultValue;
   }
 };
@@ -23,7 +23,7 @@ const setToStorage = (key, value) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
-    console.error('Error setting to localStorage:', e);
+    // console.error('Error setting to localStorage:', e);
   }
 };
 
@@ -37,13 +37,53 @@ const BeyondContent = () => {
   const [isLoading, setIsLoading] = useState(initialContentCache.length === 0);
   const [hasMore, setHasMore] = useState(initialHasMoreCache);
   const [page, setPage] = useState(initialPageCache);
+  const didMount = useRef(false);
+  const { setLastClickedItem, scrollContainerRef, recordNavigation } = useScrollPosition();
   const ITEMS_PER_PAGE = 10;
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   
+  // Check if we should reset the content based on cache time
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // Record that we're on this page
+    recordNavigation();
+    
+    const cacheTimestamp = localStorage.getItem('contentCacheTimestamp');
+    const now = Date.now();
+    
+    // Reset content if cache is over 1 hour old or no timestamp exists
+    if (!cacheTimestamp || (now - parseInt(cacheTimestamp, 10)) > 60 * 60 * 1000) {
+      // console.log('Cache expired or missing timestamp, resetting content');
+      setCombinedContent([]);
+      setPage(1);
+      setHasMore(true);
+      setIsLoading(true);
+      localStorage.removeItem('contentCache');
+      localStorage.removeItem('pageCache');
+      localStorage.removeItem('hasMoreCache');
+      localStorage.removeItem('contentCacheTimestamp');
+    } else {
+      // console.log('Using cached content, cache age:', (now - parseInt(cacheTimestamp, 10)) / 1000, 'seconds');
+    }
+  }, [recordNavigation]);
+  
+  // Handle clicks on content items
+  const handleItemClick = (itemId) => {
+    // console.log(`Thumbnail clicked: ${itemId}`);
+    setLastClickedItem(itemId);
+  };
+  
+  // Record navigation event on click
+  const handleContentClick = () => {
+    recordNavigation();
+  };
+  
+  // Fetch content from API
   const fetchContent = async () => {
     try {
-      console.log(`Fetching content for page ${page}...`);
+      // console.log(`Fetching content for page ${page}...`);
       const [videosResponse, articlesResponse] = await Promise.all([
         fetch(`${API_BASE_URL}/api/BeyondVideo?page=${page}&limit=${ITEMS_PER_PAGE}`),
         fetch(`${API_BASE_URL}/api/BeyondArticle?page=${page}&limit=${ITEMS_PER_PAGE}`)
@@ -63,6 +103,8 @@ const BeyondContent = () => {
         if (page === 1) {
           setCombinedContent(newContent);
           setToStorage('contentCache', newContent);
+          // Set cache timestamp
+          localStorage.setItem('contentCacheTimestamp', Date.now().toString());
         } else {
           // For subsequent pages, check for duplicates before adding
           setCombinedContent(prevContent => {
@@ -70,6 +112,8 @@ const BeyondContent = () => {
             const uniqueNewContent = newContent.filter(item => !existingIds.has(item.uniqueId));
             const updatedContent = [...prevContent, ...uniqueNewContent];
             setToStorage('contentCache', updatedContent);
+            // Update cache timestamp
+            localStorage.setItem('contentCacheTimestamp', Date.now().toString());
             return updatedContent;
           });
         }
@@ -84,46 +128,39 @@ const BeyondContent = () => {
         setPage(nextPage);
         setToStorage('pageCache', nextPage);
 
-        console.log(`Fetched ${totalNewItems} items, updating page to ${nextPage}`);
+        // console.log(`Fetched ${totalNewItems} items, updating page to ${nextPage}`);
       }
     } catch (error) {
-      console.error('Error fetching content:', error);
+      // console.error('Error fetching content:', error);
     } finally {
       setIsLoading(false);
     }
   };
   
+  // Initialize content on component mount
   useEffect(() => {
+    // console.log('BeyondContent mounted');
+    
     const initializeContent = async () => {
-      console.log('BeyondContent mounted, initializing content...');
-      console.log('Initial cache state:', { 
-        contentLength: initialContentCache.length, 
-        page: initialPageCache,
-        hasMore: initialHasMoreCache
-      });
-      
-      // If we have cached content, use it but still fetch in the background
+      // Check for cached content
       if (initialContentCache.length > 0) {
-        console.log('Using cached content while fetching fresh data');
+        // console.log(`Using cached content (${initialContentCache.length} items)`);
         setCombinedContent(initialContentCache);
         setIsLoading(false);
-        
-        // Optional: Refresh data in background after a delay
-        // setTimeout(fetchContent, 2000);
       } else {
-        // No cached content, show loading state and fetch
-        console.log('No cached content, fetching fresh data');
+        // console.log('No cached content, fetching fresh data');
         setIsLoading(true);
         await fetchContent();
       }
     };
     
     initializeContent();
+    didMount.current = true;
     
-    // Cleanup function
     return () => {
-      console.log('BeyondContent unmounting, preserving state');
-      // We don't need to do anything here as state is already being saved to localStorage
+      if (didMount.current) {
+        // console.log('BeyondContent unmounting, state preserved');
+      }
     };
   }, []);
 
@@ -138,31 +175,33 @@ const BeyondContent = () => {
   }
 
   return (
-    <InfiniteScroll
-      dataLength={combinedContent.length}
-      next={fetchContent}
-      hasMore={hasMore}
-      loader={<h4>Loading...</h4>}
-      // Add a unique key to force remount when needed
-      key="beyond-content-infinite-scroll"
-    >
-      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
-        {combinedContent.map(content => (
-          <div 
-            key={content.uniqueId} 
-            id={content.uniqueId} 
-            className="w-full"
-            data-content-id={content._id}
-            data-content-type={content.type}
-          >
-            {content.type === 'video'
-              ? <BeThumbVideo video={content} />
-              : <BeThumbArticle article={content} />
-            }
-          </div>
-        ))}
-      </div>
-    </InfiniteScroll>
+    <div onClick={handleContentClick}>
+      <InfiniteScroll
+        dataLength={combinedContent.length}
+        next={fetchContent}
+        hasMore={hasMore}
+        loader={<h4>Loading...</h4>}
+        scrollableTarget="beyondNewsContent"
+      >
+        <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
+          {combinedContent.map(content => (
+            <div 
+              key={content.uniqueId} 
+              id={content.uniqueId} 
+              className="w-full"
+              data-content-id={content._id}
+              data-content-type={content.type}
+              onClick={() => handleItemClick(content.uniqueId)}
+            >
+              {content.type === 'video'
+                ? <BeThumbVideo video={content} />
+                : <BeThumbArticle article={content} />
+              }
+            </div>
+          ))}
+        </div>
+      </InfiniteScroll>
+    </div>
   );
 };
 

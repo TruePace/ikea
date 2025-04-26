@@ -12,7 +12,7 @@ export default function SocketHandler() {
 
   useEffect(() => {
     const handleVideoUpdate = (data) => {
-      console.log('Received videoUpdated event:', data);
+      // console.log('Received videoUpdated event:', data);
       if (data.commentCount !== undefined) {
         dispatch(setCommentCount({ contentId: data.videoId, count: data.commentCount ?? 0 }));
       }

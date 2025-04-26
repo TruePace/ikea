@@ -11,17 +11,12 @@ const NavBar = () => {
   const pathName = usePathname();
   const { user } = useAuth();
   
-  // This function will handle preserving scroll position when navigating to beyond_news
   const handleNavigate = (e, path) => {
     // Only apply special handling for beyond_news navigation
     if (path === '/beyond_news') {
-      // We want to keep the lastClickedItemId when navigating to beyond_news
-      // No need to do anything special here, just let it navigate normally
-      console.log('Navigating to beyond_news, preserving scroll position');
-    } else {
-      // For other paths, we can optionally clear the scroll position
-      // This is optional - if you want to always remember the position, remove this
-      // localStorage.removeItem('lastClickedItemId');
+      // Setting navigation type to internal-navigation
+      localStorage.setItem('beyondNewsNavigationType', 'internal-navigation');
+      // console.log('Navigating to beyond_news, preserving scroll position');
     }
   };
 
