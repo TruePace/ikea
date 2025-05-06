@@ -6,6 +6,8 @@ import React, { lazy, Suspense } from 'react';
 const NestedVidComps = lazy(() => import('@/components/Beyond_news_comps/beyond-nestedvideocomp/NestedVidComps'));
 
 
+
+
 // Your component
 const Page = () => {
   return (

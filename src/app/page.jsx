@@ -11,6 +11,10 @@ import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 // import InfiniteScroll from "react-infinite-scroll-component";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
+import SEO from "@/components/SEO/Seo";
+
+
+
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -129,8 +133,17 @@ const Page = () => {
     );
   }
 
+ 
+
   return (
     <>
+    <SEO 
+        title="TruePace News - Latest Headlines"
+        description="Breaking news headlines and the latest stories from TruePace News."
+        canonical="/"
+        tags={["news", "headlines", "breaking news", "just in"]}
+      />
+      
       <HeadlineSocket/>
       {showTutorial && <SwipeTutorial onComplete={handleTutorialComplete} />}
       <div className="flex justify-center">

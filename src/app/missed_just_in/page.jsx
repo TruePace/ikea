@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { setHasMissedContent, setMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
 import MissedJustInSkeleton from '@/components/Missed_just_in_comps/MissedJustInSkeleton';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import SEO from '@/components/SEO/Seo'
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -55,6 +56,12 @@ const Page = () => {
 
   return (
     <ProtectedRoute>
+      <SEO 
+        title="Missed Just In - Catch Up on Breaking News | TruePace"
+        description="Never miss a breaking story. Catch up on all the latest news updates you've missed with TruePace's Missed Just In feature."
+        canonical="/missed_just_in"
+        tags={["missed news", "breaking news", "news updates", "catch up"]}
+      />
       <Header/>
       <div className="py-8 w-full">
         {isLoading && missedContent.length === 0 ? (

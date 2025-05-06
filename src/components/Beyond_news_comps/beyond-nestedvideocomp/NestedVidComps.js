@@ -17,6 +17,7 @@ import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 import ShareVideoComp from './ShareVideoComp';
+import SEO from '@/components/SEO/Seo';
 
 
 
@@ -461,9 +462,22 @@ const handleLike = async () => {
         return <NestedSkeletonLoader  type="video"/>
     }
 
+    const videoSeoData = {
+        title: `${video.title} | TruePace News`,
+        description: video.title || 'Watch this exclusive video on TruePace News',
+        ogImage: video.thumbnailUrl || '/TruePace.svg',
+        canonical: `/beyond_news/nestedvideo/${id}`,
+        article: true,
+        tags: video.tags || [],
+        publishedTime: video.createdAt,
+        modifiedTime: video.updatedAt || video.createdAt,
+        author: video.channelId?.name || 'TruePace News',
+        videoUrl: video.videoUrl
+    };
 
     return (
         <>
+        <SEO {...videoSeoData}/>
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="relative w-full h-[480px] mb-4 bg-black">
                 <video 

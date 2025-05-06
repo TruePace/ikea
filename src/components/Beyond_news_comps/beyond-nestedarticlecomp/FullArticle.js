@@ -1,4 +1,3 @@
-
 'use client'
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -8,15 +7,14 @@ import ArticleInteractions from './ArticleInteractions';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 import ShareArticleComp from './ShareArticleComp';
-
+import SEO from '@/components/SEO/Seo'; // Import SEO component
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 
 const FullArticle = () => {
     const [article, setArticle] = useState(null);
     const { id } = useParams();
-
+    
     useEffect(() => {
         const fetchArticle = async () => {
             try {
@@ -31,17 +29,30 @@ const FullArticle = () => {
                 console.error('Error fetching article:', error);
             }
         };
-
+        
         fetchArticle();
     }, [id]);
-
+    
     if (!article) {
         return <NestedSkeletonLoader />
     }
     
+    // Create SEO-friendly description from the article content
+    const seoDescription = article.previewContent 
+        ? article.previewContent.substring(0, 160) 
+        : `Read "${article.title}" and more in-depth news on TruePace News`;
+        
     return (
         <>
-           
+            {/* SEO Component with dynamic content */}
+            <SEO
+                title={`${article.title} | TruePace News`}
+                description={seoDescription}
+                ogImage={article.previewImage}
+                canonical={`/beyond_news/nestedarticle/${id}`}
+                article={true}
+                tags={article.tags || []}
+            />
             
             <div className="max-w-3xl mx-auto p-4 pt-8 sm:pt-12 md:pt-20 desktop:max-w-4xl">
                 <h1 className="text-2xl sm:text-3xl desktop:text-4xl font-bold mb-4 dark:text-gray-200">{article.title}</h1>
