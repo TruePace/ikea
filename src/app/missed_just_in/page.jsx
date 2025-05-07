@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux';
 import { setHasMissedContent, setMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
 import MissedJustInSkeleton from '@/components/Missed_just_in_comps/MissedJustInSkeleton';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import SEO from '@/components/SEO/Seo'
+import SEO from '@/components/Seo/Seo'
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;

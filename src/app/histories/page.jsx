@@ -3,7 +3,7 @@
 import HistoryHeader from "@/components/history_comps/HistoryHeader";
 import HistoryContent from "@/components/history_comps/HistoryContent";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
-import SEO from "@/components/SEO/Seo";
+import SEO from "@/components/Seo/Seo";
 
 
 

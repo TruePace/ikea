@@ -11,7 +11,7 @@ import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 // import InfiniteScroll from "react-infinite-scroll-component";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
-import SEO from "@/components/SEO/Seo";
+import SEO from "@/components/Seo/Seo";
 
 
 

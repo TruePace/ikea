@@ -17,7 +17,7 @@ import { setLikes } from '@/Redux/Slices/VideoSlice/LikesSlice';
 import { setViews } from '@/Redux/Slices/VideoSlice/ViewsSlice';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 import ShareVideoComp from './ShareVideoComp';
-import SEO from '@/components/SEO/Seo';
+import SEO from '@/components/Seo/Seo';
 
 
 
