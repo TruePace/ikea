@@ -5,7 +5,7 @@ import BeyondContent from "@/components/Beyond_news_comps/beyond-thumbnail/Beyon
 import SecondSocketHandler from "@/components/Socket io/SecondSocketHandler";
 import SocketHandler from "@/components/Socket io/SocketHandler";
 import { useScrollPosition } from '@/components/Beyond_news_comps/beyond-thumbnail/useScrollPosition';
-import SEO from '@/components/Seo/Seo';
+import SEO from '@/components/SeoDir/Seo';
 
 
 

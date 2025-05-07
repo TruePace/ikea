@@ -7,7 +7,7 @@ import ArticleInteractions from './ArticleInteractions';
 import { useAuth } from '@/app/(auth)/AuthContext';
 import NestedSkeletonLoader from '../beyond-header/NestedSkeletonLoader';
 import ShareArticleComp from './ShareArticleComp';
-import SEO from '@/components/Seo/Seo'; // Import SEO component
+import SEO from '@/components/SeoDir/Seo'; // Import SEO component
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
