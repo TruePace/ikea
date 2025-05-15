@@ -37,21 +37,21 @@ const HistoryHeader = () => {
                 </div>
                 <div className="flex-none gap-7 w-2/6">
                     <ToggleSearchBar />
-                    {user ? (
-                        <div className="dropdown dropdown-end">
-                            <div tabIndex={0} role="button" className="avatar placeholder">
-                                <div className="bg-red-600 text-neutral-content rounded-full w-9">
-                                    <span className="text-sm">{getInitial(user.username )}</span>
-                                </div>
-                            </div>
-                            <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 dark:text-gray-200 dark:bg-gray-700">
-                                <li><a>{user.username || 'My Profile'}</a></li>
-                                <li><a>Settings</a></li>
-                                <li><a onClick={handleLogout}>Logout</a></li>
-                                <ThemeToggle/>
-                            </ul>
-                        </div>
-                    ) : (
+                     {user ? (
+                                            <div className="dropdown dropdown-end">
+                                                <div tabIndex={0} role="button" className="avatar placeholder ">
+                                                    <div className="bg-red-600 text-neutral-content rounded-full w-7 h-7 flex items-center justify-center">
+                                                        <span className="text-xs">{getInitial(user.username)}</span>
+                                                    </div>
+                                                </div>
+                                                <ul tabIndex={0} className="mt-2 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 dark:text-gray-200 dark:bg-gray-700 ">
+                                                    <li><Link href="/profile">{user.username || 'My Profile'}</Link></li>
+                                                    <li><Link href="/settings">Settings</Link></li>
+                                                    <li><button onClick={handleLogout} className="w-full text-left">Logout</button></li>
+                                                    <li><ThemeToggle/></li>
+                                                </ul>
+                                            </div>
+                                        ) : (
                         <Link href="/login" className="btn btn-primary">Login</Link>
                     )}
                 </div>

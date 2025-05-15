@@ -9,6 +9,7 @@ import HeadlineNewsContent from "./HeadlineNewsContent";
 import { fetchContents } from "@/components/Utils/HeadlineNewsFetch";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -158,7 +159,7 @@ const ProfileContent = ({profile}) => {
                                     <LuChevronDown size="1.2em" />
                                 </label>
                                 <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                    <li><a onClick={handleUnsubscribe}>Unsubscribe</a></li>
+                                    <li><button onClick={handleUnsubscribe} className="w-full text-left">Unsubscribe</button></li>
                                 </ul>
                             </div>
                         )}
@@ -177,22 +178,24 @@ const ProfileContent = ({profile}) => {
             width: isSticky ? '100%' : 'auto'
         }}
     >
-        <a 
+        <button 
             className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
                 activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"
             }`}
             onClick={() => setActiveTab("Beyond Headline")}
+            aria-label="Show Beyond Headline content"
         >
             Beyond Headline
-        </a>
-        <a 
+        </button>
+        <button 
             className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
                 activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"
             }`}
             onClick={() => setActiveTab("Headline News")}
+            aria-label="Show Headline News content"
         >
             Headline News
-        </a>
+        </button>
     </div>
 
     {/* This div maintains spacing when tabs become fixed */}

@@ -33,7 +33,7 @@ const Header = () => {
     return (
         <header className="bg-base-100 shadow-md py-2 dark:bg-gray-900 dark:text-gray-200">
             <div className="container mx-auto flex items-center justify-between px-4">
-                <Link href='' className="flex items-center space-x-2">
+                <Link href="/" className="flex items-center space-x-2">
                     <Image src='/TruePace.svg' height={20} width={20} alt="TruePace Logo" />
                     <span className="text-base font-semibold">TruePace</span>
                 </Link>
@@ -49,10 +49,10 @@ const Header = () => {
                                 </div>
                             </div>
                             <ul tabIndex={0} className="mt-2 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 dark:text-gray-200 dark:bg-gray-700 ">
-                                <li><a>{user.username || 'My Profile'}</a></li>
-                                <li><a>Settings</a></li>
-                                <li><a onClick={handleLogout}>Logout</a></li>
-                                <ThemeToggle/>
+                                <li><Link href="/profile">{user.username || 'My Profile'}</Link></li>
+                                <li><Link href="/settings">Settings</Link></li>
+                                <li><button onClick={handleLogout} className="w-full text-left">Logout</button></li>
+                                <li><ThemeToggle/></li>
                             </ul>
                         </div>
                     ) : (

@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
                 "@type": "SearchAction",
                 "target": {
                   "@type": "EntryPoint",
-                  "urlTemplate": `${process.env.NEXT_PUBLIC_SITE_URL || "https://truepace.com"}/search?q={search_term_string}`
+                 "urlTemplate": `${process.env.NEXT_PUBLIC_SITE_URL || "https://truepace.com"}/search?q={search_term_string}`
                 },
                 "query-input": "required name=search_term_string"
               }
