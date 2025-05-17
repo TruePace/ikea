@@ -5,6 +5,7 @@ import BeThumbArticle from './BeThumbArticle';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import ThumbnailSkeletonLoader from '../beyond-header/ThumbnailSkeletonLoader';
 import { useScrollPosition } from './useScrollPosition';
+import { usePathname } from 'next/navigation';
 
 // Function to safely interact with localStorage
 const getFromStorage = (key, defaultValue) => {
@@ -27,66 +28,27 @@ const setToStorage = (key, value) => {
   }
 };
 
-// Initialize content from localStorage if available
-const initialContentCache = getFromStorage('contentCache', []);
-const initialPageCache = getFromStorage('pageCache', 1);
-const initialHasMoreCache = getFromStorage('hasMoreCache', true);
-
 const BeyondContent = () => {
-  const [combinedContent, setCombinedContent] = useState(initialContentCache);
-  const [isLoading, setIsLoading] = useState(initialContentCache.length === 0);
-  const [hasMore, setHasMore] = useState(initialHasMoreCache);
-  const [page, setPage] = useState(initialPageCache);
+  const [combinedContent, setCombinedContent] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const didMount = useRef(false);
   const { setLastClickedItem, scrollContainerRef, recordNavigation } = useScrollPosition();
+  const pathname = usePathname();
   const ITEMS_PER_PAGE = 10;
   
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   
-  // Check if we should reset the content based on cache time
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    // Record that we're on this page
-    recordNavigation();
-    
-    const cacheTimestamp = localStorage.getItem('contentCacheTimestamp');
-    const now = Date.now();
-    
-    // Reset content if cache is over 1 hour old or no timestamp exists
-    if (!cacheTimestamp || (now - parseInt(cacheTimestamp, 10)) > 60 * 60 * 1000) {
-      // console.log('Cache expired or missing timestamp, resetting content');
-      setCombinedContent([]);
-      setPage(1);
-      setHasMore(true);
-      setIsLoading(true);
-      localStorage.removeItem('contentCache');
-      localStorage.removeItem('pageCache');
-      localStorage.removeItem('hasMoreCache');
-      localStorage.removeItem('contentCacheTimestamp');
-    } else {
-      // console.log('Using cached content, cache age:', (now - parseInt(cacheTimestamp, 10)) / 1000, 'seconds');
-    }
-  }, [recordNavigation]);
-  
-  // Handle clicks on content items
-  const handleItemClick = (itemId) => {
-    // console.log(`Thumbnail clicked: ${itemId}`);
-    setLastClickedItem(itemId);
-  };
-  
-  // Record navigation event on click
-  const handleContentClick = () => {
-    recordNavigation();
-  };
-  
   // Fetch content from API
-  const fetchContent = async () => {
+  const fetchContent = async (pageNum = page) => {
     try {
-      // console.log(`Fetching content for page ${page}...`);
+      // console.log(`Fetching content for page ${pageNum}...`);
+      setIsLoading(true);
+      
       const [videosResponse, articlesResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/BeyondVideo?page=${page}&limit=${ITEMS_PER_PAGE}`),
-        fetch(`${API_BASE_URL}/api/BeyondArticle?page=${page}&limit=${ITEMS_PER_PAGE}`)
+        fetch(`${API_BASE_URL}/api/BeyondVideo?page=${pageNum}&limit=${ITEMS_PER_PAGE}`),
+        fetch(`${API_BASE_URL}/api/BeyondArticle?page=${pageNum}&limit=${ITEMS_PER_PAGE}`)
       ]);
       
       if (videosResponse.ok && articlesResponse.ok) {
@@ -100,7 +62,7 @@ const BeyondContent = () => {
         ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         
         // If it's the first page, set the content directly
-        if (page === 1) {
+        if (pageNum === 1) {
           setCombinedContent(newContent);
           setToStorage('contentCache', newContent);
           // Set cache timestamp
@@ -124,11 +86,9 @@ const BeyondContent = () => {
         setHasMore(nextHasMore);
         setToStorage('hasMoreCache', nextHasMore);
         
-        const nextPage = page + 1;
+        const nextPage = pageNum + 1;
         setPage(nextPage);
         setToStorage('pageCache', nextPage);
-
-        // console.log(`Fetched ${totalNewItems} items, updating page to ${nextPage}`);
       }
     } catch (error) {
       // console.error('Error fetching content:', error);
@@ -137,68 +97,70 @@ const BeyondContent = () => {
     }
   };
   
-  // Initialize content on component mount
+  // Initialize content on component mount and on pathname change
   useEffect(() => {
-    // console.log('BeyondContent mounted');
+    // console.log('BeyondContent pathname changed or mounted');
     
-    const initializeContent = async () => {
-      // Check for cached content
-      if (initialContentCache.length > 0) {
-        // console.log(`Using cached content (${initialContentCache.length} items)`);
-        setCombinedContent(initialContentCache);
-        setIsLoading(false);
-      } else {
-        // console.log('No cached content, fetching fresh data');
-        setIsLoading(true);
-        await fetchContent();
-      }
-    };
+    // Record that we're on this page
+    recordNavigation();
     
-    initializeContent();
+    // Force a fresh fetch on mount or navigation
+    setPage(1);
+    fetchContent(1);
+    
     didMount.current = true;
     
     return () => {
       if (didMount.current) {
-        // console.log('BeyondContent unmounting, state preserved');
+        // console.log('BeyondContent unmounting');
       }
     };
-  }, []);
+  }, [pathname]);
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
-        {[...Array(6)].map((_, index) => (
-          <ThumbnailSkeletonLoader key={index} type={index % 2 === 0 ? 'video' : 'article'} />
-        ))}
-      </div>
-    );
-  }
+  // Handle clicks on content items
+  const handleItemClick = (itemId) => {
+    // console.log(`Thumbnail clicked: ${itemId}`);
+    setLastClickedItem(itemId);
+  };
+  
+  // Record navigation event on click
+  const handleContentClick = () => {
+    recordNavigation();
+  };
 
   return (
     <div onClick={handleContentClick}>
       <InfiniteScroll
         dataLength={combinedContent.length}
-        next={fetchContent}
+        next={() => fetchContent()}
         hasMore={hasMore}
         loader={<h4>Loading...</h4>}
         scrollableTarget="beyondNewsContent"
       >
         <div className="grid grid-cols-1 tablet:grid-cols-2 desktop:grid-cols-3 gap-4">
-          {combinedContent.map(content => (
-            <div 
-              key={content.uniqueId} 
-              id={content.uniqueId} 
-              className="w-full"
-              data-content-id={content._id}
-              data-content-type={content.type}
-              onClick={() => handleItemClick(content.uniqueId)}
-            >
-              {content.type === 'video'
-                ? <BeThumbVideo video={content} />
-                : <BeThumbArticle article={content} />
-              }
-            </div>
-          ))}
+          {isLoading && combinedContent.length === 0 ? (
+            // Show skeleton loaders during initial load
+            [...Array(6)].map((_, index) => (
+              <ThumbnailSkeletonLoader key={index} type={index % 2 === 0 ? 'video' : 'article'} />
+            ))
+          ) : (
+            // Show content once loaded
+            combinedContent.map(content => (
+              <div 
+                key={content.uniqueId} 
+                id={content.uniqueId} 
+                className="w-full"
+                data-content-id={content._id}
+                data-content-type={content.type}
+                onClick={() => handleItemClick(content.uniqueId)}
+              >
+                {content.type === 'video'
+                  ? <BeThumbVideo video={content} />
+                  : <BeThumbArticle article={content} />
+                }
+              </div>
+            ))
+          )}
         </div>
       </InfiniteScroll>
     </div>
