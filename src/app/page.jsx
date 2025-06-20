@@ -168,16 +168,17 @@
 
 // export default Page;
 
+// Updated Page component - Simplified external news handling
 "use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./(auth)/AuthContext";
 import AuthModal from "@/components/Headline_news_comps/AuthModal";  
 import { useDispatch } from "react-redux";
 import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 import useLocationTracker from "@/components/External_News/IpAddressTracker";
-import { fetchExternalNews, createOrGetChannelForExternalSource } from "@/components/External_News/ExternalNewsService"
+import { fetchExternalNews, clearFetchedNewsCache } from "@/components/External_News/ExternalNewsService"
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
@@ -195,11 +196,10 @@ const Page = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   
   // Get user's location
-  const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000); // Refresh every 5 minutes
-  const [externalNewsChannels, setExternalNewsChannels] = useState({});
+  const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
+  const [lastExternalFetch, setLastExternalFetch] = useState(null);
 
   useEffect(() => {
-    // Only show tutorial for new users who haven't seen it
     if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
       setShowTutorial(true);
     }
@@ -210,15 +210,22 @@ const Page = () => {
     setShowTutorial(false);
   };
 
-  // Fetch internal data first
+  // Fetch all data (internal + external from database)
   useEffect(() => {
     fetchInitialData();
   }, [dispatch]);
 
-  // Fetch external news when location is available
+  // Fetch external news periodically and save to database
   useEffect(() => {
     if (ipInfo && !isLocationLoading) {
-      fetchExternalNewsData();
+      fetchAndSaveExternalNews();
+      
+      // Set up periodic fetching every 30 minutes
+      const intervalId = setInterval(() => {
+        fetchAndSaveExternalNews();
+      }, 30 * 60 * 1000); // 30 minutes
+      
+      return () => clearInterval(intervalId);
     }
   }, [ipInfo, isLocationLoading]);
 
@@ -226,7 +233,7 @@ const Page = () => {
     try {
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
         fetchChannels(),
-        fetchHeadlineContents(1), // Fetch first page
+        fetchHeadlineContents(1),
         fetchJustInContents()
       ]);
       setChannels(channelsData);
@@ -240,87 +247,49 @@ const Page = () => {
     }
   };
 
-  const fetchExternalNewsData = async () => {
+  const fetchAndSaveExternalNews = useCallback(async () => {
     try {
-      // Fetch news based on user's location
-      const externalNews = await fetchExternalNews(ipInfo);
-      
-      if (externalNews.length === 0) return;
-      
-      // Create a map to store source channels
-      const sourceChannelsMap = {...externalNewsChannels};
-      
-      // Process each news item to ensure we have channels for them
-      const newsWithChannels = await Promise.all(
-        externalNews.map(async (newsItem) => {
-          if (!sourceChannelsMap[newsItem.originalSource]) {
-            // Create or get channel for this source
-            const channel = await createOrGetChannelForExternalSource(newsItem.originalSource);
-            sourceChannelsMap[newsItem.originalSource] = channel;
-            // Add to channels list if not already there
-            if (!channels.some(c => c._id === channel._id)) {
-              setChannels(prev => [...prev, channel]);
-            }
-          }
-          
-          // Update the channelId to the actual channel id
-          return {
-            ...newsItem,
-            channelId: sourceChannelsMap[newsItem.originalSource]._id
-          };
-        })
-      );
-      
-      // Save the source channel map for future use
-      setExternalNewsChannels(sourceChannelsMap);
-      
-      // Split news into just-in and headline
-      const justInNews = newsWithChannels.filter(news => news.isJustIn);
-      const headlineNews = newsWithChannels.filter(news => !news.isJustIn);
-      
-      // Add external news to our content arrays, avoiding duplicates
-      if (justInNews.length > 0) {
-        setJustInContents(prev => {
-          const existingIds = new Set(prev.map(item => item._id));
-          const newItems = justInNews.filter(item => !existingIds.has(item._id));
-          return [...prev, ...newItems];
-        });
+      // Prevent too frequent fetching
+      const now = Date.now();
+      if (lastExternalFetch && (now - lastExternalFetch) < 10 * 60 * 1000) { // 10 minutes minimum
+        return;
       }
       
-      if (headlineNews.length > 0) {
-        setHeadlineContents(prev => {
-          const existingIds = new Set(prev.map(item => item._id));
-          const newItems = headlineNews.filter(item => !existingIds.has(item._id));
-          return [...prev, ...newItems];
-        });
+      console.log('Fetching and saving external news...');
+      
+      // This now saves to database and returns saved items
+      const savedExternalNews = await fetchExternalNews(ipInfo);
+      
+      if (savedExternalNews.length === 0) {
+        console.log('No new external news saved');
+        return;
       }
+      
+      setLastExternalFetch(now);
+      console.log(`Saved ${savedExternalNews.length} new external news items to database`);
+      
+      // Refresh the data from database to include new external news
+      await fetchInitialData();
+      
     } catch (error) {
-      console.error("Error fetching external news:", error);
-      // Don't set error state to avoid blocking the whole page if external news fails
+      console.error("Error fetching and saving external news:", error);
     }
-  };
+  }, [ipInfo, lastExternalFetch, dispatch]);
 
+  // Clear external news cache periodically to allow fresh content
   useEffect(() => {
-    const moveExpiredContent = () => {
-      const now = new Date();
-      const expiredContent = justInContents.filter(content => new Date(content.justInExpiresAt) <= now);
-      
-      if (expiredContent.length > 0) {
-        setJustInContents(prev => prev.filter(content => new Date(content.justInExpiresAt) > now));
-        setHeadlineContents(prev => [...expiredContent, ...prev]);
-      }
-    };
+    const clearCacheInterval = setInterval(() => {
+      clearFetchedNewsCache();
+    }, 60 * 60 * 1000); // Clear every hour
 
-    const expirationInterval = setInterval(moveExpiredContent, 60000);
-
-    return () => clearInterval(expirationInterval);
-  }, [justInContents]);
+    return () => clearInterval(clearCacheInterval);
+  }, []);
 
   useEffect(() => {
     if (!user) {
       const timer = setTimeout(() => {
         setShowAuthModal(true);
-      }, 10000); // Show modal after 10 seconds
+      }, 10000);
 
       return () => clearTimeout(timer);
     }
