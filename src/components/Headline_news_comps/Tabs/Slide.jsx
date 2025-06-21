@@ -114,124 +114,145 @@ const Slide = ({ channel, headlineContents, justInContents }) => {
   };
 
 
-  const renderHeadlineContent = () => {
-    if (headlineContents.length === 0) {
-      return (
-        <div className="flex items-center justify-center h-[calc(100vh-8rem)] ">
-          <div className="text-center dark:text-gray-200 ">
-            <div className="text-4xl mb-4 flex items-center justify-center">
-              <FaNewspaper className="mr-2" />
-              <FaArrowLeft className="mx-2" />
-              <FaCalendarAlt className="ml-2" />
+ // Update the Slide component to show different timers and indicators for external vs internal content
+
+const renderHeadlineContent = () => {
+  if (headlineContents.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-8rem)] ">
+        <div className="text-center dark:text-gray-200 ">
+          <div className="text-4xl mb-4 flex items-center justify-center">
+            <FaNewspaper className="mr-2" />
+            <FaArrowLeft className="mx-2" />
+            <FaCalendarAlt className="ml-2" />
+          </div>
+          <p className="text-xl text-gray-500 mb-4 capitalize dark:text-gray-200">
+            News Only available on the Just In tab.
+          </p>
+          <p className="text-lg text-gray-400 capitalize dark:text-gray-200">
+            Check back later!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className='h-screen overflow-y-scroll snap-y snap-mandatory'>
+      {headlineContents.map((content) => (
+        <div key={content._id} className='h-screen snap-start'>
+          <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
+            <SubscribeFeed channel={channel} />
+            <ContentFeed 
+              content={content} 
+              onView={() => handleJustInView(content._id)} 
+              isViewed={viewedIds.includes(content._id)} 
+            />
+            <EngagementFeed content={content} channel={channel}/>
+            
+            <div className="absolute bottom-20 left-0 flex items-center space-x-2">
+              <CountdownTimer expirationTime={content.headlineExpiresAt} />
+              
+              {/* Content source indicator */}
+              <span className={`inline-flex items-center px-1.5 py-0.5 rounded shadow-sm text-xs font-medium border ${
+                content.source === 'external'
+                  ? 'bg-blue-50 text-blue-800 border-blue-200'
+                  : 'bg-green-50 text-green-800 border-green-200'
+              }`}>
+                {content.source === 'external' ? '🌐 External' : '📰 Internal'}
+                {content.source === 'external' && ' (48hr)'}
+              </span>
+              
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white bg-opacity-80 shadow-sm text-xs font-medium text-red-800 border border-red-200">
+                Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+              </span>
             </div>
-            <p className="text-xl text-gray-500 mb-4 capitalize dark:text-gray-200">
-              News Only available on the Just In tab.
-            </p>
-            <p className="text-lg text-gray-400 capitalize dark:text-gray-200">
-              Check back later!
-            </p>
           </div>
         </div>
-      );
-    }
+      ))}
+    </div>
+  );
+};
 
+const renderJustInContent = () => {
+  if (currentJustInContent.length === 0) {
     return (
-      <div className='h-screen overflow-y-scroll snap-y snap-mandatory'>
-        {headlineContents.map((content) => (
-          <div key={content._id} className='h-screen snap-start'>
-            <div className="relative border-blue-400 rounded-lg px-4 py-2 break-words">
-              <SubscribeFeed channel={channel} />
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white dark:text-gray-200 dark:bg-gray-900">
+        <div className="text-4xl mb-4 flex items-center">
+          <FaNewspaper className="mr-2" />
+          <FaArrowLeft className="mx-2" />
+          <FaCalendarAlt className="ml-2" />
+        </div>
+        <p className="text-center text-md mb-4 capitalize dark:text-gray-200">
+          No breaking news right now.
+          <br/>
+          Recent updates moved to Headline News
+        </p>
+        <p className="text-center text-md capitalize dark:text-gray-200">
+          Visit <b>Missed Just In</b> to catch up
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <div 
+        ref={justInContainerRef}
+        className="h-full flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        onScroll={handleJustInScroll}
+      >
+        {currentJustInContent.map((content) => (
+          <div 
+            key={content._id} 
+            className="w-full flex-shrink-0 snap-start overflow-y-auto"
+          >
+            <div className="relative px-4 py-2">
+              <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
               <ContentFeed 
                 content={content} 
                 onView={() => handleJustInView(content._id)} 
                 isViewed={viewedIds.includes(content._id)} 
               />
-              <EngagementFeed content={content} channel={channel}/>
+              <EngagementFeed content={content} channel={channel} />
               
               <div className="absolute bottom-20 left-0 flex items-center space-x-2">
-                <CountdownTimer expirationTime={content.headlineExpiresAt} />
-                {/* <span className="text-xs text-red-800">
-                  Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-                </span> */}
+                <JustInTimer expirationTime={content.justInExpiresAt} />
+                
+                {/* Content source indicator for Just In */}
+                <span className={`inline-flex items-center px-1.5 py-0.5 rounded shadow-sm text-xs font-medium border ${
+                  content.source === 'external'
+                    ? 'bg-blue-50 text-blue-800 border-blue-200'
+                    : 'bg-green-50 text-green-800 border-green-200'
+                }`}>
+                  {content.source === 'external' ? '🌐 Ext' : '📰 Int'}
+                </span>
+                
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white bg-opacity-80 shadow-sm text-xs font-medium text-red-800 border border-red-200">
-               Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-              </span>
+                  Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
+                </span>
+                
+                {/* Show next destination */}
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-800 shadow-sm text-xs font-medium border border-yellow-200">
+                  Next: Headlines ({content.source === 'external' ? '48hr' : '24hr'})
+                </span>
               </div>
             </div>
           </div>
         ))}
       </div>
-    );
-  };
-
-
-  const renderJustInContent = () => {
-    if (currentJustInContent.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] bg-white dark:text-gray-200 dark:bg-gray-900">
-          <div className="text-4xl mb-4 flex items-center">
-            <FaNewspaper className="mr-2" />
-            <FaArrowLeft className="mx-2" />
-            <FaCalendarAlt className="ml-2" />
-          </div>
-          <p className="text-center text-md mb-4 capitalize dark:text-gray-200">
-            No breaking news right now.
-            <br/>
-            Recent updates moved to Headline News
-          </p>
-          <p className="text-center text-md capitalize dark:text-gray-200">
-            Visit <b>Missed Just In</b> to catch up
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="relative ">{/*h-[calc(100vh-8rem)] */}
-        <div 
-          ref={justInContainerRef}
-          className="h-full flex overflow-x-scroll snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          onScroll={handleJustInScroll}
-        >
-          {currentJustInContent.map((content) => (
-            <div 
-              key={content._id} 
-              className="w-full flex-shrink-0 snap-start overflow-y-auto"
-            >
-              <div className="relative px-4 py-2">
-                <SubscribeFeed channel={channelsMap[content.channelId] || {}} />
-                <ContentFeed 
-                  content={content} 
-                  onView={() => handleJustInView(content._id)} 
-                  isViewed={viewedIds.includes(content._id)} 
-                />
-                <EngagementFeed content={content} channel={channel} />
-                
-                <div className="absolute bottom-20 left-0 flex items-center space-x-2">
-                  <JustInTimer expirationTime={content.justInExpiresAt} />
-                  {/* <span className="text-xs text-red-800">
-                    Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-                  </span> */}
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-white bg-opacity-80 shadow-sm text-xs font-medium text-red-800 border border-red-200">
-                  Uploaded: {new Date(content.uploadedAt).toLocaleTimeString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {currentJustInContent.length > 1 && (
-          <JustInPagination 
-            currentIndex={currentJustInIndex}
-            totalPages={currentJustInContent.length}
-            onPageChange={handlePageChange}
-            containerRef={justInContainerRef}
-          />
-        )}
-      </div>
-    );
-  };
+      
+      {currentJustInContent.length > 1 && (
+        <JustInPagination 
+          currentIndex={currentJustInIndex}
+          totalPages={currentJustInContent.length}
+          onPageChange={handlePageChange}
+          containerRef={justInContainerRef}
+        />
+      )}
+    </div>
+  );
+};
 
 
   const items = [

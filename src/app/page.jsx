@@ -168,7 +168,7 @@
 
 // export default Page;
 
-// Updated Page component - Simplified external news handling
+// Updated Page component - Enhanced external news handling
 "use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
@@ -178,7 +178,11 @@ import AuthModal from "@/components/Headline_news_comps/AuthModal";
 import { useDispatch } from "react-redux";
 import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 import useLocationTracker from "@/components/External_News/IpAddressTracker";
-import { fetchExternalNews, clearFetchedNewsCache } from "@/components/External_News/ExternalNewsService"
+import { 
+  fetchExternalNews, 
+  clearFetchedNewsCache, 
+  refreshExternalChannels 
+} from "@/components/External_News/ExternalNewsService"
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
@@ -198,6 +202,7 @@ const Page = () => {
   // Get user's location
   const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
   const [lastExternalFetch, setLastExternalFetch] = useState(null);
+  const [hasRefreshedChannels, setHasRefreshedChannels] = useState(false);
 
   useEffect(() => {
     if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
@@ -210,20 +215,39 @@ const Page = () => {
     setShowTutorial(false);
   };
 
-  // Fetch all data (internal + external from database)
+  // Initial data fetch
   useEffect(() => {
     fetchInitialData();
   }, [dispatch]);
 
-  // Fetch external news periodically and save to database
+  // Refresh external channels if needed (one time on app load)
+  useEffect(() => {
+    const refreshChannelsIfNeeded = async () => {
+      if (!hasRefreshedChannels) {
+        try {
+          await refreshExternalChannels();
+          setHasRefreshedChannels(true);
+          // Refetch data after channel refresh
+          await fetchInitialData();
+        } catch (error) {
+          console.error('Error refreshing external channels:', error);
+        }
+      }
+    };
+
+    refreshChannelsIfNeeded();
+  }, [hasRefreshedChannels]);
+
+  // Fetch external news periodically
   useEffect(() => {
     if (ipInfo && !isLocationLoading) {
+      // Initial fetch
       fetchAndSaveExternalNews();
       
       // Set up periodic fetching every 30 minutes
       const intervalId = setInterval(() => {
         fetchAndSaveExternalNews();
-      }, 30 * 60 * 1000); // 30 minutes
+      }, 30 * 60 * 1000);
       
       return () => clearInterval(intervalId);
     }
@@ -231,17 +255,44 @@ const Page = () => {
 
   const fetchInitialData = async () => {
     try {
+      console.log('🔄 Fetching initial data...');
+      
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
         fetchChannels(),
-        fetchHeadlineContents(1),
+        fetchHeadlineContents(1, 20), // Increase limit to show more content
         fetchJustInContents()
       ]);
+      
+      console.log('📊 Initial data fetched:');
+      console.log('- Channels:', channelsData?.length || 0);
+      console.log('- Headline contents:', headlineContentsData?.length || 0);
+      console.log('- Just In contents:', justInContentsData?.length || 0);
+      
+      // Debug external content specifically
+      const externalHeadlines = headlineContentsData?.filter(content => content.source === 'external') || [];
+      const externalJustIn = justInContentsData?.filter(content => content.source === 'external') || [];
+      
+      console.log('🌐 External content breakdown:');
+      console.log('- External headlines:', externalHeadlines.length);
+      console.log('- External Just In:', externalJustIn.length);
+      
+      if (externalHeadlines.length > 0) {
+        console.log('📰 External headline samples:', externalHeadlines.slice(0, 2).map(c => ({
+          id: c._id,
+          message: c.message?.substring(0, 50) + '...',
+          source: c.source,
+          originalSource: c.originalSource,
+          channelId: c.channelId
+        })));
+      }
+      
       setChannels(channelsData);
       setHeadlineContents(headlineContentsData);
       setJustInContents(justInContentsData);
       dispatch(setJustInContent(justInContentsData));
       setIsLoading(false);
     } catch (error) {
+      console.error('❌ Error fetching initial data:', error);
       setError(error.message);
       setIsLoading(false);
     }
@@ -251,40 +302,37 @@ const Page = () => {
     try {
       // Prevent too frequent fetching
       const now = Date.now();
-      if (lastExternalFetch && (now - lastExternalFetch) < 10 * 60 * 1000) { // 10 minutes minimum
+      if (lastExternalFetch && (now - lastExternalFetch) < 10 * 60 * 1000) {
+        console.log('⏰ Skipping external news fetch (too soon)');
         return;
       }
       
-      console.log('Fetching and saving external news...');
+      console.log('🔄 Fetching and saving external news...');
       
-      // This now saves to database and returns saved items
+      // Clear cache before fetching to allow new content
+      clearFetchedNewsCache();
+      
+      // Fetch and save external news
       const savedExternalNews = await fetchExternalNews(ipInfo);
       
       if (savedExternalNews.length === 0) {
-        console.log('No new external news saved');
+        console.log('ℹ️ No new external news saved');
         return;
       }
       
       setLastExternalFetch(now);
-      console.log(`Saved ${savedExternalNews.length} new external news items to database`);
+      console.log(`✅ Saved ${savedExternalNews.length} new external news items to database`);
       
-      // Refresh the data from database to include new external news
+      // Refresh the data to include new external news
+      console.log('🔄 Refreshing data after external news save...');
       await fetchInitialData();
       
     } catch (error) {
-      console.error("Error fetching and saving external news:", error);
+      console.error("❌ Error fetching and saving external news:", error);
     }
-  }, [ipInfo, lastExternalFetch, dispatch]);
+  }, [ipInfo, lastExternalFetch]);
 
-  // Clear external news cache periodically to allow fresh content
-  useEffect(() => {
-    const clearCacheInterval = setInterval(() => {
-      clearFetchedNewsCache();
-    }, 60 * 60 * 1000); // Clear every hour
-
-    return () => clearInterval(clearCacheInterval);
-  }, []);
-
+  // Auth modal logic
   useEffect(() => {
     if (!user) {
       const timer = setTimeout(() => {
@@ -294,6 +342,13 @@ const Page = () => {
       return () => clearTimeout(timer);
     }
   }, [user]);
+
+  // Manual refresh function (you can call this from UI if needed)
+  const handleManualRefresh = useCallback(async () => {
+    console.log('🔄 Manual refresh triggered...');
+    clearFetchedNewsCache();
+    await fetchAndSaveExternalNews();
+  }, [fetchAndSaveExternalNews]);
 
   if (isLoading) {
     return (
@@ -322,9 +377,15 @@ const Page = () => {
       <div className="h-screen flex items-center justify-center bg-red-50 dark:bg-gray-900">
         <div className="text-center p-8 bg-white dark:bg-gray-700 rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
           <h2 className="text-2xl font-bold mb-4 dark:text-gray-200">No Content Available</h2>
-          <p className="text-gray-600 dark:text-gray-200">
+          <p className="text-gray-600 dark:text-gray-200 mb-4">
             Headline News content is not available at the moment. Please check back later.
           </p>
+          <button 
+            onClick={handleManualRefresh}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          >
+            Refresh Content
+          </button>
         </div>
       </div>
     );
@@ -345,6 +406,19 @@ const Page = () => {
       
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
+          {/* Debug info (remove in production) */}
+          {/* {process.env.NODE_ENV === 'development' && (
+            <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50">
+              <div>Channels: {channels.length}</div>
+              <div>Headlines: {headlineContents.length}</div>
+              <div>External: {headlineContents.filter(c => c.source === 'external').length}</div>
+              <div>Just In: {justInContents.length}</div>
+              <button onClick={handleManualRefresh} className="mt-1 px-2 py-1 bg-blue-500 rounded text-xs">
+                Refresh
+              </button>
+            </div>
+          )} */}
+          
           <div className="h-full overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {channelsWithContent.map((channel) => (
               <div key={channel._id} className="h-screen snap-start">
