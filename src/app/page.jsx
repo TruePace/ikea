@@ -180,7 +180,7 @@ import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 import useLocationTracker from "@/components/External_News/IpAddressTracker";
 import { 
   fetchExternalNews, 
-  clearFetchedNewsCache, 
+  clearFetchedNewsCache,
   refreshExternalChannels 
 } from "@/components/External_News/ExternalNewsService"
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
@@ -310,7 +310,7 @@ const Page = () => {
       console.log('🔄 Fetching and saving external news...');
       
       // Clear cache before fetching to allow new content
-      clearFetchedNewsCache();
+       clearFetchedNewsCache();
       
       // Fetch and save external news
       const savedExternalNews = await fetchExternalNews(ipInfo);
@@ -346,7 +346,7 @@ const Page = () => {
   // Manual refresh function (you can call this from UI if needed)
   const handleManualRefresh = useCallback(async () => {
     console.log('🔄 Manual refresh triggered...');
-    clearFetchedNewsCache();
+   clearFetchedNewsCache();
     await fetchAndSaveExternalNews();
   }, [fetchAndSaveExternalNews]);
 
