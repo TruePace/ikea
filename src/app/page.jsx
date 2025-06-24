@@ -168,7 +168,7 @@
 
 // export default Page;
 
-// Updated Page component - Enhanced external news handling
+// Updated Page component - Fixed external news handling
 "use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { fetchChannels, fetchContents, fetchJustInContents, fetchHeadlineContents } from "@/components/Utils/HeadlineNewsFetch";
@@ -225,10 +225,15 @@ const Page = () => {
     const refreshChannelsIfNeeded = async () => {
       if (!hasRefreshedChannels) {
         try {
-          await refreshExternalChannels();
+          console.log('🔄 Refreshing external channels...');
+          const success = await refreshExternalChannels();
           setHasRefreshedChannels(true);
-          // Refetch data after channel refresh
-          await fetchInitialData();
+          
+          if (success) {
+            console.log('✅ Channels refreshed, fetching data...');
+            // Small delay before refetching to allow server to process
+            setTimeout(fetchInitialData, 2000);
+          }
         } catch (error) {
           console.error('Error refreshing external channels:', error);
         }
@@ -241,15 +246,20 @@ const Page = () => {
   // Fetch external news periodically
   useEffect(() => {
     if (ipInfo && !isLocationLoading) {
-      // Initial fetch
-      fetchAndSaveExternalNews();
+      // Initial fetch after a short delay
+      const initialTimer = setTimeout(() => {
+        fetchAndSaveExternalNews();
+      }, 3000);
       
       // Set up periodic fetching every 30 minutes
       const intervalId = setInterval(() => {
         fetchAndSaveExternalNews();
       }, 30 * 60 * 1000);
       
-      return () => clearInterval(intervalId);
+      return () => {
+        clearTimeout(initialTimer);
+        clearInterval(intervalId);
+      };
     }
   }, [ipInfo, isLocationLoading]);
 
@@ -259,7 +269,7 @@ const Page = () => {
       
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
         fetchChannels(),
-        fetchHeadlineContents(1, 20), // Increase limit to show more content
+        fetchHeadlineContents(1, 20),
         fetchJustInContents()
       ]);
       
@@ -310,22 +320,24 @@ const Page = () => {
       console.log('🔄 Fetching and saving external news...');
       
       // Clear cache before fetching to allow new content
-       clearFetchedNewsCache();
+      clearFetchedNewsCache();
       
-      // Fetch and save external news
-      const savedExternalNews = await fetchExternalNews(ipInfo);
+      // Fetch and save external news using the updated service
+      const articlesProcessed = await fetchExternalNews(ipInfo);
       
-      if (savedExternalNews.length === 0) {
-        console.log('ℹ️ No new external news saved');
+      if (articlesProcessed === 0) {
+        console.log('ℹ️ No new external news processed');
         return;
       }
       
       setLastExternalFetch(now);
-      console.log(`✅ Saved ${savedExternalNews.length} new external news items to database`);
+      console.log(`✅ Processed ${articlesProcessed} new external news items`);
       
-      // Refresh the data to include new external news
-      console.log('🔄 Refreshing data after external news save...');
-      await fetchInitialData();
+      // Refresh the data to include new external news after a short delay
+      setTimeout(() => {
+        console.log('🔄 Refreshing data after external news processing...');
+        fetchInitialData();
+      }, 2000);
       
     } catch (error) {
       console.error("❌ Error fetching and saving external news:", error);
@@ -343,11 +355,26 @@ const Page = () => {
     }
   }, [user]);
 
-  // Manual refresh function (you can call this from UI if needed)
+  // Manual refresh function
   const handleManualRefresh = useCallback(async () => {
     console.log('🔄 Manual refresh triggered...');
-   clearFetchedNewsCache();
-    await fetchAndSaveExternalNews();
+    setIsLoading(true);
+    clearFetchedNewsCache();
+    
+    try {
+      // First refresh channels
+      await refreshExternalChannels();
+      
+      // Then fetch external news
+      await fetchAndSaveExternalNews();
+      
+      // Finally refresh the data
+      await fetchInitialData();
+    } catch (error) {
+      console.error('❌ Manual refresh failed:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [fetchAndSaveExternalNews]);
 
   if (isLoading) {
@@ -383,8 +410,9 @@ const Page = () => {
           <button 
             onClick={handleManualRefresh}
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+            disabled={isLoading}
           >
-            Refresh Content
+            {isLoading ? 'Refreshing...' : 'Refresh Content'}
           </button>
         </div>
       </div>
@@ -406,7 +434,7 @@ const Page = () => {
       
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
-          {/* Debug info (remove in production) */}
+          {/* Debug info (uncomment for debugging) */}
           {/* {process.env.NODE_ENV === 'development' && (
             <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50">
               <div>Channels: {channels.length}</div>
