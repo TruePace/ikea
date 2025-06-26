@@ -110,7 +110,7 @@ const Page = () => {
   useEffect(() => {
     console.log('🌅 App starting - initializing with fresh news...');
     fetchInitialData(true); // Force refresh on first load
-  }, []);
+  }, [fetchInitialData]); // Fixed: Added fetchInitialData to dependency array
 
   // Set up periodic refresh when user is active
   useEffect(() => {
@@ -205,7 +205,7 @@ const Page = () => {
         <div className="text-center p-8 bg-white dark:bg-gray-700 rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
           <h2 className="text-2xl font-bold mb-4 dark:text-gray-200">Loading News Content</h2>
           <p className="text-gray-600 dark:text-gray-200 mb-4">
-            We're fetching the latest news for you. Please wait a moment...
+            We&apos;re fetching the latest news for you. Please wait a moment...
           </p>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
           <button 
