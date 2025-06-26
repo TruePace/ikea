@@ -1,52 +1,80 @@
+// ExternalNewsService.js - Fixed client version
 import { useState } from "react";
-
-// Update your ExternalNewsService.js frontend file
-
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
-/**
- * Check if server needs fresh news and trigger if needed
- */
-export const ensureServerHasFreshNews = async () => {
+// FIXED: Better localStorage handling
+export const shouldFetchExternalNews = () => {
   try {
-    console.log('🔍 Checking if server needs fresh news...');
+    const lastFetch = localStorage.getItem('lastExternalNewsFetch');
+    const now = Date.now();
+    const fetchInterval = 15 * 60 * 1000; // 15 minutes (reduced from 30)
     
-    // First, check server status
-    const statusResponse = await fetch(`${API_BASE_URL}/api/health/keep-alive`);
-    
-    if (!statusResponse.ok) {
-      console.log('⚠️ Server not responding, it might be waking up...');
-      return false;
+    if (!lastFetch) {
+      return true;
     }
     
-    const status = await statusResponse.json();
+    return (now - parseInt(lastFetch)) > fetchInterval;
+  } catch (error) {
+    console.log('localStorage not available, assuming fresh fetch needed');
+    return true;
+  }
+};
+
+export const markExternalNewsFetchTriggered = () => {
+  try {
+    localStorage.setItem('lastExternalNewsFetch', Date.now().toString());
+  } catch (error) {
+    console.log('localStorage not available for marking fetch');
+  }
+};
+
+// FIXED: Better server wake-up
+export const ensureServerHasFreshNews = async () => {
+  try {
+    console.log('🔍 Checking server status and triggering fresh news...');
+    
+    // Step 1: Wake up the server with keep-alive
+    const statusResponse = await fetch(`${API_BASE_URL}/api/health/keep-alive`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (!statusResponse.ok) {
+      console.log('⚠️ Server not responding, might be waking up...');
+      
+      // Wait a bit for server to wake up
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Try again
+      const retryResponse = await fetch(`${API_BASE_URL}/api/health/keep-alive`);
+      if (!retryResponse.ok) {
+        return false;
+      }
+    }
+    
+    const status = await (statusResponse.ok ? statusResponse : retryResponse).json();
     console.log('📊 Server status:', status);
     
-    // If server needs fresh news, force fetch it
-    if (status.needsFreshNews) {
-      console.log('🚀 Server needs fresh news - triggering force fetch...');
+    // Step 2: If server needs fresh news, force it
+    if (status.needsFreshNews && !status.isFetching) {
+      console.log('🚀 Forcing fresh news fetch...');
       
       const forceResponse = await fetch(`${API_BASE_URL}/api/health/force-fresh-news`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ip: 'auto' })
       });
       
       if (forceResponse.ok) {
         const result = await forceResponse.json();
-        console.log('✅ Fresh news fetched:', result);
+        console.log('✅ Fresh news triggered:', result);
+        markExternalNewsFetchTriggered();
         return true;
-      } else {
-        console.log('❌ Failed to force fetch fresh news');
-        return false;
       }
-    } else {
-      console.log('✅ Server already has fresh news');
-      return true;
     }
+    
+    return true;
     
   } catch (error) {
     console.error('❌ Error ensuring fresh news:', error);
@@ -54,21 +82,24 @@ export const ensureServerHasFreshNews = async () => {
   }
 };
 
-/**
- * Enhanced function to get fresh news with fallback
- */
+// FIXED: Better content fetching with retry
 export const getContentWithFreshNews = async (endpoint, options = {}) => {
   try {
-    // First try to get content normally
+    console.log(`🔄 Fetching content from ${endpoint}...`);
+    
+    // First, ensure server has fresh news
+    await ensureServerHasFreshNews();
+    
+    // Small delay to let server process
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Try to get content
     let response = await fetch(`${API_BASE_URL}${endpoint}`, options);
     
     if (!response.ok) {
-      console.log('⚠️ First request failed, server might be sleeping...');
+      console.log('⚠️ First request failed, retrying...');
       
-      // Wake up server and ensure fresh news
-      await ensureServerHasFreshNews();
-      
-      // Wait a moment for the server to process
+      // Wait a bit more
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       // Try again
@@ -79,17 +110,18 @@ export const getContentWithFreshNews = async (endpoint, options = {}) => {
       throw new Error(`Request failed: ${response.statusText}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`✅ Content fetched from ${endpoint}:`, Array.isArray(data) ? data.length : 'object');
+    
+    return data;
     
   } catch (error) {
-    console.error('❌ Error getting content with fresh news:', error);
+    console.error(`❌ Error getting content from ${endpoint}:`, error);
     throw error;
   }
 };
 
-/**
- * Use this in your React components instead of direct fetch calls
- */
+// Rest of your functions remain the same...
 export const useFreshNewsContent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -110,79 +142,4 @@ export const useFreshNewsContent = () => {
   };
   
   return { fetchWithFreshNews, loading, error };
-};
-
-// Original functions updated to work with the new system
-export const fetchExternalNews = async (ipInfo) => {
-  try {
-    console.log('🔄 Triggering server-side external news fetch...');
-    
-    const response = await fetch(`${API_BASE_URL}/api/external-news/fetch-external-news`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ipInfo })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Server request failed: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    console.log('✅ External news fetch completed:', result);
-    
-    return result.articlesProcessed || 0;
-    
-  } catch (error) {
-    console.error('❌ Error triggering external news fetch:', error);
-    throw error;
-  }
-};
-
-/**
- * Force fresh news fetch - use this when you really need fresh content
- */
-export const forceFreshNews = async () => {
-  try {
-    console.log('🚀 Forcing fresh news fetch...');
-    
-    const response = await fetch(`${API_BASE_URL}/api/health/force-fresh-news`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ip: 'auto' })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Force fetch failed: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    console.log('✅ Force fetch completed:', result);
-    
-    return result.articlesProcessed || 0;
-    
-  } catch (error) {
-    console.error('❌ Error forcing fresh news:', error);
-    throw error;
-  }
-};
-
-// Updated utility functions
-export const shouldFetchExternalNews = () => {
-  const lastFetch = localStorage.getItem('lastExternalNewsFetch');
-  const now = Date.now();
-  const fetchInterval = 30 * 60 * 1000; // 30 minutes
-  
-  if (!lastFetch) {
-    return true;
-  }
-  
-  return (now - parseInt(lastFetch)) > fetchInterval;
-};
-
-export const markExternalNewsFetchTriggered = () => {
-  localStorage.setItem('lastExternalNewsFetch', Date.now().toString());
 };
