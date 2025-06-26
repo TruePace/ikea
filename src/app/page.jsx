@@ -179,13 +179,10 @@ import { useDispatch } from "react-redux";
 import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
 import useLocationTracker from "@/components/External_News/IpAddressTracker";
 import { 
-  fetchExternalNews, 
-  clearFetchedNewsCache,
-  refreshExternalChannels,
   ensureServerHasFreshNews,
   getContentWithFreshNews,
-  forceFreshNews,
   useFreshNewsContent,
+  forceFreshNews,
   shouldFetchExternalNews,
   markExternalNewsFetchTriggered
 } from "@/components/External_News/ExternalNewsService"
@@ -207,11 +204,12 @@ const Page = () => {
   
   // Get user's location
   const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
-  const [hasRefreshedChannels, setHasRefreshedChannels] = useState(false);
-  const [serverFreshNewsStatus, setServerFreshNewsStatus] = useState(null);
-
-  // Use the enhanced fresh news content hook
-  const { fetchWithFreshNews, loading: freshNewsLoading } = useFreshNewsContent();
+  
+  // Use the enhanced external news service hook
+  const { fetchWithFreshNews, loading: freshNewsLoading, error: freshNewsError } = useFreshNewsContent();
+  
+  // Track server readiness
+  const [serverReady, setServerReady] = useState(false);
 
   useEffect(() => {
     if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
@@ -224,97 +222,20 @@ const Page = () => {
     setShowTutorial(false);
   };
 
-  // Initial server check and data fetch
-  useEffect(() => {
-    initializeApp();
-  }, [dispatch]);
-
-  const initializeApp = async () => {
+  // Enhanced data fetching with fresh news service
+  const fetchInitialData = useCallback(async () => {
     try {
-      console.log('🚀 Initializing app...');
-      
-      // First, ensure server has fresh news
-      const hasFreshNews = await ensureServerHasFreshNews();
-      setServerFreshNewsStatus(hasFreshNews);
-      
-      if (hasFreshNews) {
-        console.log('✅ Server has fresh news, proceeding with data fetch...');
-        await fetchInitialData();
-      } else {
-        console.log('⚠️ Server doesn\'t have fresh news, will retry...');
-        // Wait a bit and try again
-        setTimeout(async () => {
-          await fetchInitialData();
-        }, 5000);
-      }
-      
-    } catch (error) {
-      console.error('❌ Error initializing app:', error);
-      // Fallback to normal data fetch
-      await fetchInitialData();
-    }
-  };
-
-  // Refresh external channels if needed (one time on app load)
-  useEffect(() => {
-    const refreshChannelsIfNeeded = async () => {
-      if (!hasRefreshedChannels) {
-        try {
-          console.log('🔄 Refreshing external channels...');
-          const success = await refreshExternalChannels();
-          setHasRefreshedChannels(true);
-          
-          if (success) {
-            console.log('✅ Channels refreshed, fetching data...');
-            // Small delay before refetching to allow server to process
-            setTimeout(fetchInitialData, 2000);
-          }
-        } catch (error) {
-          console.error('Error refreshing external channels:', error);
-        }
-      }
-    };
-
-    refreshChannelsIfNeeded();
-  }, [hasRefreshedChannels]);
-
-  // Enhanced external news fetching with fresh news check
-  useEffect(() => {
-    if (ipInfo && !isLocationLoading) {
-      // Check if we should fetch external news
-      if (shouldFetchExternalNews()) {
-        // Initial fetch after a short delay
-        const initialTimer = setTimeout(() => {
-          fetchAndSaveExternalNewsEnhanced();
-        }, 3000);
-        
-        return () => clearTimeout(initialTimer);
-      }
-      
-      // Set up periodic checking every 15 minutes
-      const intervalId = setInterval(() => {
-        if (shouldFetchExternalNews()) {
-          fetchAndSaveExternalNewsEnhanced();
-        }
-      }, 15 * 60 * 1000);
-      
-      return () => clearInterval(intervalId);
-    }
-  }, [ipInfo, isLocationLoading]);
-
-  const fetchInitialData = async () => {
-    try {
-      console.log('🔄 Fetching initial data...');
+      console.log('🔄 Fetching initial data with fresh news service...');
       setIsLoading(true);
       
-      // Use the enhanced fetch function for data that might include external news
+      // Use the enhanced service to ensure fresh news
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-        getContentWithFreshNews('/api/channels'),
-        getContentWithFreshNews('/api/headline-contents?page=1&limit=20'),
-        getContentWithFreshNews('/api/just-in-contents')
+        getContentWithFreshNews('/api/HeadlineNews/Channel'),
+        getContentWithFreshNews('/api/HeadlineNews/GetJustIn/headline?page=1&limit=20'),
+        getContentWithFreshNews('/api/HeadlineNews/GetJustIn/just-in')
       ]);
       
-      console.log('📊 Initial data fetched:');
+      console.log('📊 Fresh data fetched:');
       console.log('- Channels:', channelsData?.length || 0);
       console.log('- Headline contents:', headlineContentsData?.length || 0);
       console.log('- Just In contents:', justInContentsData?.length || 0);
@@ -341,67 +262,121 @@ const Page = () => {
       setHeadlineContents(headlineContentsData);
       setJustInContents(justInContentsData);
       dispatch(setJustInContent(justInContentsData));
-      setIsLoading(false);
+      setServerReady(true);
+      
     } catch (error) {
       console.error('❌ Error fetching initial data:', error);
-      // Fallback to original fetch methods
-      try {
-        const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-          fetchChannels(),
-          fetchHeadlineContents(1, 20),
-          fetchJustInContents()
-        ]);
-        
-        setChannels(channelsData);
-        setHeadlineContents(headlineContentsData);
-        setJustInContents(justInContentsData);
-        dispatch(setJustInContent(justInContentsData));
-      } catch (fallbackError) {
-        console.error('❌ Fallback fetch also failed:', fallbackError);
-        setError(fallbackError.message);
-      }
+      setError(error.message);
+    } finally {
       setIsLoading(false);
     }
-  };
+  }, [dispatch]);
 
-  const fetchAndSaveExternalNewsEnhanced = useCallback(async () => {
-    try {
-      console.log('🔄 Enhanced external news fetching...');
-      
-      // First ensure server has fresh news
-      const hasFreshNews = await ensureServerHasFreshNews();
-      
-      if (!hasFreshNews) {
-        console.log('⚠️ Server doesn\'t have fresh news, forcing fresh fetch...');
-        await forceFreshNews();
+  // Initialize data on component mount
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Enhanced server warmup and fresh news check
+  useEffect(() => {
+    const initializeServer = async () => {
+      try {
+        console.log('🔄 Initializing server and checking for fresh news...');
+        
+        // Ensure server has fresh news
+        const serverReady = await ensureServerHasFreshNews();
+        
+        if (serverReady) {
+          console.log('✅ Server is ready with fresh news');
+          // Small delay before fetching data to allow server processing
+          setTimeout(() => {
+            fetchInitialData();
+          }, 1000);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error initializing server:', error);
+      }
+    };
+
+    initializeServer();
+  }, [fetchInitialData]);
+
+  // Periodic fresh news check based on user activity and location
+  useEffect(() => {
+    if (ipInfo && !isLocationLoading && serverReady) {
+      // Check if we should fetch external news
+      if (shouldFetchExternalNews()) {
+        console.log('⏰ Time to fetch fresh external news...');
+        
+        const fetchFreshNews = async () => {
+          try {
+            const articlesProcessed = await forceFreshNews();
+            
+            if (articlesProcessed > 0) {
+              console.log(`✅ Fresh news processed: ${articlesProcessed} articles`);
+              markExternalNewsFetchTriggered();
+              
+              // Refresh data after a short delay
+              setTimeout(() => {
+                fetchInitialData();
+              }, 2000);
+            }
+          } catch (error) {
+            console.error('❌ Error fetching fresh news:', error);
+          }
+        };
+        
+        fetchFreshNews();
       }
       
-      // Mark that we've triggered external news fetch
+      // Set up periodic checking every 15 minutes for active users
+      const intervalId = setInterval(() => {
+        if (shouldFetchExternalNews()) {
+          console.log('⏰ Periodic fresh news check...');
+          forceFreshNews()
+            .then(articlesProcessed => {
+              if (articlesProcessed > 0) {
+                markExternalNewsFetchTriggered();
+                setTimeout(fetchInitialData, 2000);
+              }
+            })
+            .catch(error => console.error('❌ Periodic fetch error:', error));
+        }
+      }, 15 * 60 * 1000); // 15 minutes
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [ipInfo, isLocationLoading, serverReady, fetchInitialData]);
+
+  // Enhanced manual refresh function
+  const handleManualRefresh = useCallback(async () => {
+    console.log('🔄 Manual refresh triggered...');
+    setIsLoading(true);
+    
+    try {
+      // Force fresh news fetch
+      console.log('🚀 Forcing fresh news fetch...');
+      const articlesProcessed = await forceFreshNews();
+      
+      console.log(`✅ Manual refresh processed ${articlesProcessed} articles`);
+      
+      // Mark as fetched and refresh data
       markExternalNewsFetchTriggered();
       
-      console.log('✅ External news process completed');
+      // Wait a moment for server processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Refresh the data to include new external news after a short delay
-      setTimeout(() => {
-        console.log('🔄 Refreshing data after external news processing...');
-        fetchInitialData();
-      }, 3000);
+      // Refresh the data
+      await fetchInitialData();
       
     } catch (error) {
-      console.error("❌ Error in enhanced external news fetch:", error);
-      // Fallback to original method
-      try {
-        const articlesProcessed = await fetchExternalNews(ipInfo);
-        console.log(`✅ Fallback: Processed ${articlesProcessed} articles`);
-        
-        if (articlesProcessed > 0) {
-          setTimeout(fetchInitialData, 2000);
-        }
-      } catch (fallbackError) {
-        console.error("❌ Fallback external news fetch failed:", fallbackError);
-      }
+      console.error('❌ Manual refresh failed:', error);
+      setError('Failed to refresh content. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  }, [ipInfo]);
+  }, [fetchInitialData]);
 
   // Auth modal logic
   useEffect(() => {
@@ -414,67 +389,7 @@ const Page = () => {
     }
   }, [user]);
 
-  // Enhanced manual refresh function
-  const handleManualRefresh = useCallback(async () => {
-    console.log('🔄 Enhanced manual refresh triggered...');
-    setIsLoading(true);
-    
-    try {
-      // Force fresh news
-      console.log('🚀 Forcing fresh news...');
-      await forceFreshNews();
-      
-      // Clear cache
-      clearFetchedNewsCache();
-      
-      // Refresh channels
-      console.log('🔄 Refreshing channels...');
-      await refreshExternalChannels();
-      
-      // Wait a moment for processing
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Refresh data
-      console.log('🔄 Refreshing data...');
-      await fetchInitialData();
-      
-      console.log('✅ Manual refresh completed');
-    } catch (error) {
-      console.error('❌ Enhanced manual refresh failed:', error);
-      // Fallback to original refresh
-      try {
-        await refreshExternalChannels();
-        await fetchAndSaveExternalNewsEnhanced();
-        await fetchInitialData();
-      } catch (fallbackError) {
-        console.error('❌ Fallback refresh failed:', fallbackError);
-      }
-    }
-  }, [fetchAndSaveExternalNewsEnhanced]);
-
-  // Force refresh function for when content is completely missing
-  const handleForceRefresh = useCallback(async () => {
-    console.log('🚀 Force refresh with fresh news...');
-    setIsLoading(true);
-    
-    try {
-      // Force fresh news from server
-      await forceFreshNews();
-      
-      // Wait for processing
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      // Refresh everything
-      await fetchInitialData();
-      
-    } catch (error) {
-      console.error('❌ Force refresh failed:', error);
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
+  // Loading state
   if (isLoading || freshNewsLoading) {
     return (
       <div className="h-screen overflow-y-scroll bg-red-50 dark:bg-gray-900 snap-y snap-mandatory">
@@ -489,7 +404,26 @@ const Page = () => {
     );
   }
 
-  if (error) return <div>Error: {error}</div>;
+  // Error state
+  if (error || freshNewsError) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-red-50 dark:bg-gray-900">
+        <div className="text-center p-8 bg-white dark:bg-gray-700 rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
+          <h2 className="text-2xl font-bold mb-4 dark:text-gray-200">Content Unavailable</h2>
+          <p className="text-gray-600 dark:text-gray-200 mb-4">
+            {error || freshNewsError || 'Unable to load content at the moment.'}
+          </p>
+          <button 
+            onClick={handleManualRefresh}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Refreshing...' : 'Retry'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Filter channels that have content
   const channelsWithContent = channels.filter(channel => 
@@ -497,35 +431,22 @@ const Page = () => {
     justInContents.some(content => content.channelId === channel._id)
   );
 
+  // No content state
   if (channelsWithContent.length === 0) {
     return (
       <div className="h-screen flex items-center justify-center bg-red-50 dark:bg-gray-900">
         <div className="text-center p-8 bg-white dark:bg-gray-700 rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
           <h2 className="text-2xl font-bold mb-4 dark:text-gray-200">No Content Available</h2>
           <p className="text-gray-600 dark:text-gray-200 mb-4">
-            Headline News content is not available at the moment. Please check back later.
+            Headline News content is not available at the moment. We're fetching fresh news for you.
           </p>
-          <div className="flex gap-2 justify-center">
-            <button 
-              onClick={handleManualRefresh}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Refreshing...' : 'Refresh Content'}
-            </button>
-            <button 
-              onClick={handleForceRefresh}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Forcing...' : 'Force Fresh News'}
-            </button>
-          </div>
-          {serverFreshNewsStatus !== null && (
-            <p className="text-sm text-gray-500 mt-2">
-              Server Fresh News: {serverFreshNewsStatus ? '✅ Available' : '⚠️ Needs Update'}
-            </p>
-          )}
+          <button 
+            onClick={handleManualRefresh}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Loading Fresh Content...' : 'Load Fresh Content'}
+          </button>
         </div>
       </div>
     );
@@ -546,22 +467,22 @@ const Page = () => {
       
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
-          {/* Enhanced debug info */}
+          {/* Debug info for development */}
           {process.env.NODE_ENV === 'development' && (
             <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50 max-w-xs">
               <div>Channels: {channels.length}</div>
               <div>Headlines: {headlineContents.length}</div>
-              <div>External: {headlineContents.filter(c => c.source === 'external').length}</div>
+              <div>External Headlines: {headlineContents.filter(c => c.source === 'external').length}</div>
               <div>Just In: {justInContents.length}</div>
-              <div>Fresh News: {serverFreshNewsStatus ? '✅' : '⚠️'}</div>
-              <div className="flex gap-1 mt-1">
-                <button onClick={handleManualRefresh} className="px-2 py-1 bg-blue-500 rounded text-xs">
-                  Refresh
-                </button>
-                <button onClick={handleForceRefresh} className="px-2 py-1 bg-green-500 rounded text-xs">
-                  Force
-                </button>
-              </div>
+              <div>External Just In: {justInContents.filter(c => c.source === 'external').length}</div>
+              <div className="text-green-400">Server Ready: {serverReady ? '✅' : '⏳'}</div>
+              <button 
+                onClick={handleManualRefresh} 
+                className="mt-1 px-2 py-1 bg-blue-500 rounded text-xs hover:bg-blue-600 disabled:opacity-50"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Refreshing...' : 'Force Refresh'}
+              </button>
             </div>
           )}
           

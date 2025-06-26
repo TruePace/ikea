@@ -1,5 +1,7 @@
-// Update your ExternalNewsService.js frontend file
 import { useState } from "react";
+
+// Update your ExternalNewsService.js frontend file
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
