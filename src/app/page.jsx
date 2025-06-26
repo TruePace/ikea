@@ -181,7 +181,13 @@ import useLocationTracker from "@/components/External_News/IpAddressTracker";
 import { 
   fetchExternalNews, 
   clearFetchedNewsCache,
-  refreshExternalChannels 
+  refreshExternalChannels,
+  ensureServerHasFreshNews,
+  getContentWithFreshNews,
+  forceFreshNews,
+  useFreshNewsContent,
+  shouldFetchExternalNews,
+  markExternalNewsFetchTriggered
 } from "@/components/External_News/ExternalNewsService"
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
@@ -201,8 +207,11 @@ const Page = () => {
   
   // Get user's location
   const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
-  const [lastExternalFetch, setLastExternalFetch] = useState(null);
   const [hasRefreshedChannels, setHasRefreshedChannels] = useState(false);
+  const [serverFreshNewsStatus, setServerFreshNewsStatus] = useState(null);
+
+  // Use the enhanced fresh news content hook
+  const { fetchWithFreshNews, loading: freshNewsLoading } = useFreshNewsContent();
 
   useEffect(() => {
     if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
@@ -215,10 +224,36 @@ const Page = () => {
     setShowTutorial(false);
   };
 
-  // Initial data fetch
+  // Initial server check and data fetch
   useEffect(() => {
-    fetchInitialData();
+    initializeApp();
   }, [dispatch]);
+
+  const initializeApp = async () => {
+    try {
+      console.log('🚀 Initializing app...');
+      
+      // First, ensure server has fresh news
+      const hasFreshNews = await ensureServerHasFreshNews();
+      setServerFreshNewsStatus(hasFreshNews);
+      
+      if (hasFreshNews) {
+        console.log('✅ Server has fresh news, proceeding with data fetch...');
+        await fetchInitialData();
+      } else {
+        console.log('⚠️ Server doesn\'t have fresh news, will retry...');
+        // Wait a bit and try again
+        setTimeout(async () => {
+          await fetchInitialData();
+        }, 5000);
+      }
+      
+    } catch (error) {
+      console.error('❌ Error initializing app:', error);
+      // Fallback to normal data fetch
+      await fetchInitialData();
+    }
+  };
 
   // Refresh external channels if needed (one time on app load)
   useEffect(() => {
@@ -243,34 +278,40 @@ const Page = () => {
     refreshChannelsIfNeeded();
   }, [hasRefreshedChannels]);
 
-  // Fetch external news periodically
+  // Enhanced external news fetching with fresh news check
   useEffect(() => {
     if (ipInfo && !isLocationLoading) {
-      // Initial fetch after a short delay
-      const initialTimer = setTimeout(() => {
-        fetchAndSaveExternalNews();
-      }, 3000);
+      // Check if we should fetch external news
+      if (shouldFetchExternalNews()) {
+        // Initial fetch after a short delay
+        const initialTimer = setTimeout(() => {
+          fetchAndSaveExternalNewsEnhanced();
+        }, 3000);
+        
+        return () => clearTimeout(initialTimer);
+      }
       
-      // Set up periodic fetching every 30 minutes
+      // Set up periodic checking every 15 minutes
       const intervalId = setInterval(() => {
-        fetchAndSaveExternalNews();
-      }, 30 * 60 * 1000);
+        if (shouldFetchExternalNews()) {
+          fetchAndSaveExternalNewsEnhanced();
+        }
+      }, 15 * 60 * 1000);
       
-      return () => {
-        clearTimeout(initialTimer);
-        clearInterval(intervalId);
-      };
+      return () => clearInterval(intervalId);
     }
   }, [ipInfo, isLocationLoading]);
 
   const fetchInitialData = async () => {
     try {
       console.log('🔄 Fetching initial data...');
+      setIsLoading(true);
       
+      // Use the enhanced fetch function for data that might include external news
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-        fetchChannels(),
-        fetchHeadlineContents(1, 20),
-        fetchJustInContents()
+        getContentWithFreshNews('/api/channels'),
+        getContentWithFreshNews('/api/headline-contents?page=1&limit=20'),
+        getContentWithFreshNews('/api/just-in-contents')
       ]);
       
       console.log('📊 Initial data fetched:');
@@ -303,46 +344,64 @@ const Page = () => {
       setIsLoading(false);
     } catch (error) {
       console.error('❌ Error fetching initial data:', error);
-      setError(error.message);
+      // Fallback to original fetch methods
+      try {
+        const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
+          fetchChannels(),
+          fetchHeadlineContents(1, 20),
+          fetchJustInContents()
+        ]);
+        
+        setChannels(channelsData);
+        setHeadlineContents(headlineContentsData);
+        setJustInContents(justInContentsData);
+        dispatch(setJustInContent(justInContentsData));
+      } catch (fallbackError) {
+        console.error('❌ Fallback fetch also failed:', fallbackError);
+        setError(fallbackError.message);
+      }
       setIsLoading(false);
     }
   };
 
-  const fetchAndSaveExternalNews = useCallback(async () => {
+  const fetchAndSaveExternalNewsEnhanced = useCallback(async () => {
     try {
-      // Prevent too frequent fetching
-      const now = Date.now();
-      if (lastExternalFetch && (now - lastExternalFetch) < 10 * 60 * 1000) {
-        console.log('⏰ Skipping external news fetch (too soon)');
-        return;
+      console.log('🔄 Enhanced external news fetching...');
+      
+      // First ensure server has fresh news
+      const hasFreshNews = await ensureServerHasFreshNews();
+      
+      if (!hasFreshNews) {
+        console.log('⚠️ Server doesn\'t have fresh news, forcing fresh fetch...');
+        await forceFreshNews();
       }
       
-      console.log('🔄 Fetching and saving external news...');
+      // Mark that we've triggered external news fetch
+      markExternalNewsFetchTriggered();
       
-      // Clear cache before fetching to allow new content
-      clearFetchedNewsCache();
-      
-      // Fetch and save external news using the updated service
-      const articlesProcessed = await fetchExternalNews(ipInfo);
-      
-      if (articlesProcessed === 0) {
-        console.log('ℹ️ No new external news processed');
-        return;
-      }
-      
-      setLastExternalFetch(now);
-      console.log(`✅ Processed ${articlesProcessed} new external news items`);
+      console.log('✅ External news process completed');
       
       // Refresh the data to include new external news after a short delay
       setTimeout(() => {
         console.log('🔄 Refreshing data after external news processing...');
         fetchInitialData();
-      }, 2000);
+      }, 3000);
       
     } catch (error) {
-      console.error("❌ Error fetching and saving external news:", error);
+      console.error("❌ Error in enhanced external news fetch:", error);
+      // Fallback to original method
+      try {
+        const articlesProcessed = await fetchExternalNews(ipInfo);
+        console.log(`✅ Fallback: Processed ${articlesProcessed} articles`);
+        
+        if (articlesProcessed > 0) {
+          setTimeout(fetchInitialData, 2000);
+        }
+      } catch (fallbackError) {
+        console.error("❌ Fallback external news fetch failed:", fallbackError);
+      }
     }
-  }, [ipInfo, lastExternalFetch]);
+  }, [ipInfo]);
 
   // Auth modal logic
   useEffect(() => {
@@ -355,29 +414,68 @@ const Page = () => {
     }
   }, [user]);
 
-  // Manual refresh function
+  // Enhanced manual refresh function
   const handleManualRefresh = useCallback(async () => {
-    console.log('🔄 Manual refresh triggered...');
+    console.log('🔄 Enhanced manual refresh triggered...');
     setIsLoading(true);
-    clearFetchedNewsCache();
     
     try {
-      // First refresh channels
+      // Force fresh news
+      console.log('🚀 Forcing fresh news...');
+      await forceFreshNews();
+      
+      // Clear cache
+      clearFetchedNewsCache();
+      
+      // Refresh channels
+      console.log('🔄 Refreshing channels...');
       await refreshExternalChannels();
       
-      // Then fetch external news
-      await fetchAndSaveExternalNews();
+      // Wait a moment for processing
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Finally refresh the data
+      // Refresh data
+      console.log('🔄 Refreshing data...');
       await fetchInitialData();
+      
+      console.log('✅ Manual refresh completed');
     } catch (error) {
-      console.error('❌ Manual refresh failed:', error);
+      console.error('❌ Enhanced manual refresh failed:', error);
+      // Fallback to original refresh
+      try {
+        await refreshExternalChannels();
+        await fetchAndSaveExternalNewsEnhanced();
+        await fetchInitialData();
+      } catch (fallbackError) {
+        console.error('❌ Fallback refresh failed:', fallbackError);
+      }
+    }
+  }, [fetchAndSaveExternalNewsEnhanced]);
+
+  // Force refresh function for when content is completely missing
+  const handleForceRefresh = useCallback(async () => {
+    console.log('🚀 Force refresh with fresh news...');
+    setIsLoading(true);
+    
+    try {
+      // Force fresh news from server
+      await forceFreshNews();
+      
+      // Wait for processing
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Refresh everything
+      await fetchInitialData();
+      
+    } catch (error) {
+      console.error('❌ Force refresh failed:', error);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchAndSaveExternalNews]);
+  }, []);
 
-  if (isLoading) {
+  if (isLoading || freshNewsLoading) {
     return (
       <div className="h-screen overflow-y-scroll bg-red-50 dark:bg-gray-900 snap-y snap-mandatory">
         {[...Array(3)].map((_, index) => (
@@ -407,13 +505,27 @@ const Page = () => {
           <p className="text-gray-600 dark:text-gray-200 mb-4">
             Headline News content is not available at the moment. Please check back later.
           </p>
-          <button 
-            onClick={handleManualRefresh}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Refreshing...' : 'Refresh Content'}
-          </button>
+          <div className="flex gap-2 justify-center">
+            <button 
+              onClick={handleManualRefresh}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Refreshing...' : 'Refresh Content'}
+            </button>
+            <button 
+              onClick={handleForceRefresh}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Forcing...' : 'Force Fresh News'}
+            </button>
+          </div>
+          {serverFreshNewsStatus !== null && (
+            <p className="text-sm text-gray-500 mt-2">
+              Server Fresh News: {serverFreshNewsStatus ? '✅ Available' : '⚠️ Needs Update'}
+            </p>
+          )}
         </div>
       </div>
     );
@@ -434,18 +546,24 @@ const Page = () => {
       
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
-          {/* Debug info (uncomment for debugging) */}
-          {/* {process.env.NODE_ENV === 'development' && (
-            <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50">
+          {/* Enhanced debug info */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50 max-w-xs">
               <div>Channels: {channels.length}</div>
               <div>Headlines: {headlineContents.length}</div>
               <div>External: {headlineContents.filter(c => c.source === 'external').length}</div>
               <div>Just In: {justInContents.length}</div>
-              <button onClick={handleManualRefresh} className="mt-1 px-2 py-1 bg-blue-500 rounded text-xs">
-                Refresh
-              </button>
+              <div>Fresh News: {serverFreshNewsStatus ? '✅' : '⚠️'}</div>
+              <div className="flex gap-1 mt-1">
+                <button onClick={handleManualRefresh} className="px-2 py-1 bg-blue-500 rounded text-xs">
+                  Refresh
+                </button>
+                <button onClick={handleForceRefresh} className="px-2 py-1 bg-green-500 rounded text-xs">
+                  Force
+                </button>
+              </div>
             </div>
-          )} */}
+          )}
           
           <div className="h-full overflow-y-scroll snap-y snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {channelsWithContent.map((channel) => (
