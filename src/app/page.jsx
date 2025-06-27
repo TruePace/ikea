@@ -68,7 +68,7 @@ const Page = () => {
       // Fetch all data with fresh news service
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
         getContentWithFreshNews('/api/HeadlineNews/Channel'),
-        getContentWithFreshNews('/api/HeadlineNews/GetJustIn/headline?page=1&limit=20'),
+        getContentWithFreshNews('/api/HeadlineNews/GetJustIn/headline?page=1&limit=100'),
         getContentWithFreshNews('/api/HeadlineNews/GetJustIn/just-in')
       ]);
       
