@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback ,useRef} from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { BiLike, BiDislike } from "react-icons/bi";
 import { FaRegComment } from "react-icons/fa";
@@ -18,13 +18,8 @@ import LikeDislikeButtons from "./SubFeedComps/LikeDislikeButtons";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EngagementFeed = ({ content, channel }) => {
-  // ✅ ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL LOGIC
-  
-  // Redux and Auth hooks first
   const dispatch = useDispatch();
   const { user } = useAuth();
-  
-  // All useSelector hooks
   const interactions = useSelector(state => state.contentInteractions[content._id] || {
     likeCount: content.likeCount,
     dislikeCount: content.dislikeCount,
@@ -33,22 +28,106 @@ const EngagementFeed = ({ content, channel }) => {
     viewCount: content.viewCount,
     userInteractions: {}
   });
-  
-  const commentCount = useSelector(state => state.commentCount[content._id] || 0);
-  
-  // All useState hooks
   const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const commentCount = useSelector(state => state.commentCount[content._id] || 0);
   const [userLocation, setUserLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
-  
-  // All useRef hooks
   const timerRef = useRef(null);
   const observerRef = useRef(null);
   const viewedRef = useRef(false);
+  // Use optional chaining to avoid the TypeError
+  const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
+  const activeButton = userInteraction.activeButton;
+
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation(`${latitude},${longitude}`);
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+        }
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    socket.on('updateContentInteractions', (data) => {
+      if (user) {
+        dispatch(setContentInteractions({
+          ...data,
+          userId: user.uid
+        }));
+      }
+    });
   
-  // All useCallback hooks
-  const fetchUserInteraction = useCallback(async () => {
+    return () => {
+      socket.off('updateContentInteractions');
+    };
+  }, [dispatch, user]);
+
+
+
+
+  const handleView = useCallback(() => {
+    if (user && !viewedRef.current) {
+      recordAction('view');
+      viewedRef.current = true;
+    }
+  }, [user]);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.5 } // At least 50% of the component is visible
+    );
+
+    const currentElement = observerRef.current;
+
+    if (currentElement) {
+      currentElement.observe(document.getElementById(`engagement-feed-${content._id}`));
+    }
+
+    return () => {
+      if (currentElement) {
+        currentElement.disconnect();
+      }
+    };
+  }, [content._id]);
+
+  useEffect(() => {
+    if (isVisible && !viewedRef.current) {
+      timerRef.current = setTimeout(() => {
+        handleView();
+      }, 20000); // 20 seconds
+    } else {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [isVisible, handleView]);
+
+
+
+  useEffect(() => {
+    if (user && content._id) {
+      fetchUserInteraction();
+    }
+  }, [user, content._id]);
+
+  const fetchUserInteraction = async () => {
     if (!user) return;
 
     try {
@@ -72,9 +151,11 @@ const EngagementFeed = ({ content, channel }) => {
     } catch (error) {
       console.error('Error fetching user interaction:', error);
     }
-  }, [user, content._id, dispatch]);
+  };
 
-  const recordAction = useCallback(async (action) => {
+
+
+  const recordAction = async (action) => {
     if (!user) {
       setError("You must be logged in to perform this action.");
       return;
@@ -111,14 +192,23 @@ const EngagementFeed = ({ content, channel }) => {
       console.error('Error recording action:', error);
       setError(`Failed to record ${action}. Please try again later.`);
     }
-  }, [user, content._id, userLocation, dispatch, setError]);
+  };
 
-  const handleView = useCallback(() => {
-    if (user && !viewedRef.current) {
-      recordAction('view');
-      viewedRef.current = true;
+
+
+
+
+  
+  const handleShare = async (platform) => {
+    if (user) {
+      try {
+        await recordAction('share', { platform });
+      } catch (error) {
+        console.error('Error recording share action:', error);
+      }
     }
-  }, [user, recordAction]);
+  };
+  
 
   const fetchCommentCount = useCallback(async () => {
     try {
@@ -137,108 +227,9 @@ const EngagementFeed = ({ content, channel }) => {
     }
   }, [content._id, dispatch, user]);
 
-  // All useEffect hooks
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation(`${latitude},${longitude}`);
-        },
-        (error) => {
-          console.error("Error getting user location:", error);
-        }
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    socket.on('updateContentInteractions', (data) => {
-      if (user) {
-        dispatch(setContentInteractions({
-          ...data,
-          userId: user.uid
-        }));
-      }
-    });
-  
-    return () => {
-      socket.off('updateContentInteractions');
-    };
-  }, [dispatch, user]);
-
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.5 } // At least 50% of the component is visible
-    );
-
-    const observer = observerRef.current;
-    const element = document.getElementById(`engagement-feed-${content._id}`);
-
-    if (observer && element) {
-      observer.observe(element);
-    }
-
-    return () => {
-      if (observer) {
-        observer.disconnect();
-      }
-    };
-  }, [content._id]);
-
-  useEffect(() => {
-    if (isVisible && !viewedRef.current) {
-      timerRef.current = setTimeout(() => {
-        handleView();
-      }, 20000); // 20 seconds
-    } else {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [isVisible, handleView]);
-
-  useEffect(() => {
-    if (user && content._id) {
-      fetchUserInteraction();
-    }
-  }, [user, content._id, fetchUserInteraction]);
-
   useEffect(() => {
     fetchCommentCount();
   }, [fetchCommentCount, user]);
-
-  // ✅ NOW ALL COMPUTED VALUES AND CONDITIONAL LOGIC
-  
-  // Use optional chaining to avoid the TypeError
-  const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
-  const activeButton = userInteraction.activeButton;
-
-  // ✅ EARLY RETURNS AFTER ALL HOOKS
-  // Don't render engagement feed for external content
-  if (content.source === 'external') {
-    return null;
-  }
-
-  // Helper functions that don't use hooks
-  const handleShare = async (platform) => {
-    if (user) {
-      try {
-        await recordAction('share', { platform });
-      } catch (error) {
-        console.error('Error recording share action:', error);
-      }
-    }
-  };
 
   const handleCommentClick = (e) => {
     e.preventDefault();
@@ -251,42 +242,46 @@ const EngagementFeed = ({ content, channel }) => {
 
   return (
     <>
-      <div id={`engagement-feed-${content._id}`}>
-        <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
-          <div className="flex justify-between w-1/4">
-            <LikeDislikeButtons 
-              contentId={content._id}
-              initialLikes={interactions.likeCount}
-              initialDislikes={interactions.dislikeCount}
-              initialUserInteraction={activeButton}
-              onInteraction={async (action) => {
-                await recordAction(action);
-              }}
-            />
-          </div>
-          <button onClick={handleCommentClick} className="h-12">
-            <FaRegComment size='1.6em' className="m-auto" />
-            <p className="text-xs">({commentCount}) </p>
-          </button>
-          <ShareComponent 
+    <div id={`engagement-feed-${content._id}`}>
+      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
+        <div className="flex justify-between w-1/4 ">
+        <LikeDislikeButtons 
+  contentId={content._id}
+  initialLikes={interactions.likeCount}
+  initialDislikes={interactions.dislikeCount}
+  initialUserInteraction={activeButton}
+  onInteraction={async (action) => {
+    await recordAction(action);
+  }}
+/>
+        </div>
+        <button onClick={handleCommentClick} className="h-12">
+          <FaRegComment size='1.6em' className="m-auto" />
+          <p className="text-xs">({commentCount}) </p>
+        </button>
+        <ShareComponent 
             contentId={content._id} 
             onShare={handleShare} 
             shareCount={interactions.shareCount}
           />
 
-          <ScreenshotButton content={content} channel={channel} />
+<ScreenshotButton content={content} channel={channel} />
 
-          <button className="h-12">
-            <IoEyeOutline size='1.6em' className="m-auto" />
-            <p className="text-xs">({interactions.viewCount})</p>
+        <button className="h-12">
+          <IoEyeOutline size='1.6em' className="m-auto" />
+          <p className="text-xs">({interactions.viewCount})</p>
           </button>
-        </div>
-        <CommentSection
-          isOpen={isCommentOpen}
-          onClose={() => setIsCommentOpen(false)}
-          contentId={content._id}
-          onCommentAdded={handleCommentAdded}
-        />
+      </div>
+      <CommentSection
+        isOpen={isCommentOpen}
+        onClose={() => setIsCommentOpen(false)}
+        contentId={content._id}
+        onCommentAdded={handleCommentAdded}
+      />
+      <div>
+       
+      </div>
+
       </div>
     </>
   );
