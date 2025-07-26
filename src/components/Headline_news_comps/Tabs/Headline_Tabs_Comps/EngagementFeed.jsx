@@ -48,12 +48,77 @@ const EngagementFeed = ({ content, channel }) => {
   const viewedRef = useRef(false);
   
   // All useCallback hooks
+  const fetchUserInteraction = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${content._id}/userInteraction`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user interaction');
+      }
+
+      const data = await response.json();
+      dispatch(setContentInteractions({
+        contentId: content._id,
+        userId: user.uid,
+        userInteractions: { [user.uid]: data }
+      }));
+    } catch (error) {
+      console.error('Error fetching user interaction:', error);
+    }
+  }, [user, content._id, dispatch]);
+
+  const recordAction = useCallback(async (action) => {
+    if (!user) {
+      setError("You must be logged in to perform this action.");
+      return;
+    }
+  
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          contentId: content._id,
+          userId: user.uid,
+          action,
+          location: userLocation
+        })
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to record action');
+      }
+  
+      const data = await response.json();
+      dispatch(setContentInteractions({
+        contentId: content._id,
+        userId: user.uid,
+        ...data
+      }));
+    } catch (error) {
+      console.error('Error recording action:', error);
+      setError(`Failed to record ${action}. Please try again later.`);
+    }
+  }, [user, content._id, userLocation, dispatch, setError]);
+
   const handleView = useCallback(() => {
     if (user && !viewedRef.current) {
       recordAction('view');
       viewedRef.current = true;
     }
-  }, [user]);
+  }, [user, recordAction]);
 
   const fetchCommentCount = useCallback(async () => {
     try {
@@ -110,15 +175,16 @@ const EngagementFeed = ({ content, channel }) => {
       { threshold: 0.5 } // At least 50% of the component is visible
     );
 
-    const currentElement = observerRef.current;
+    const observer = observerRef.current;
+    const element = document.getElementById(`engagement-feed-${content._id}`);
 
-    if (currentElement) {
-      currentElement.observe(document.getElementById(`engagement-feed-${content._id}`));
+    if (observer && element) {
+      observer.observe(element);
     }
 
     return () => {
-      if (currentElement) {
-        currentElement.disconnect();
+      if (observer) {
+        observer.disconnect();
       }
     };
   }, [content._id]);
@@ -145,7 +211,7 @@ const EngagementFeed = ({ content, channel }) => {
     if (user && content._id) {
       fetchUserInteraction();
     }
-  }, [user, content._id]);
+  }, [user, content._id, fetchUserInteraction]);
 
   useEffect(() => {
     fetchCommentCount();
@@ -164,71 +230,6 @@ const EngagementFeed = ({ content, channel }) => {
   }
 
   // Helper functions that don't use hooks
-  const fetchUserInteraction = async () => {
-    if (!user) return;
-
-    try {
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/${content._id}/userInteraction`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user interaction');
-      }
-
-      const data = await response.json();
-      dispatch(setContentInteractions({
-        contentId: content._id,
-        userId: user.uid,
-        userInteractions: { [user.uid]: data }
-      }));
-    } catch (error) {
-      console.error('Error fetching user interaction:', error);
-    }
-  };
-
-  const recordAction = async (action) => {
-    if (!user) {
-      setError("You must be logged in to perform this action.");
-      return;
-    }
-  
-    try {
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/action`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          contentId: content._id,
-          userId: user.uid,
-          action,
-          location: userLocation
-        })
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to record action');
-      }
-  
-      const data = await response.json();
-      dispatch(setContentInteractions({
-        contentId: content._id,
-        userId: user.uid,
-        ...data
-      }));
-    } catch (error) {
-      console.error('Error recording action:', error);
-      setError(`Failed to record ${action}. Please try again later.`);
-    }
-  };
-
   const handleShare = async (platform) => {
     if (user) {
       try {
