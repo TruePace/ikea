@@ -18,24 +18,13 @@ import LikeDislikeButtons from "./SubFeedComps/LikeDislikeButtons";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EngagementFeed = ({ content, channel }) => {
+  // ✅ ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL LOGIC
+  
+  // Redux and Auth hooks first
   const dispatch = useDispatch();
   const { user } = useAuth();
   
-  // Don't render engagement feed for external content
-  if (content.source === 'external') {
-    return (
-      // <div className="w-full flex mt-7 justify-center text-gray-500 text-sm text-center dark:text-gray-200">
-      //   <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-      //     <span className="text-blue-600 dark:text-blue-400">🌐</span>
-      //     <span className="text-blue-800 dark:text-blue-300 text-xs">
-      //       External content - Engagement disabled
-      //     </span>
-      //   </div>
-      // </div>
-      null
-    );
-  }
-
+  // All useSelector hooks
   const interactions = useSelector(state => state.contentInteractions[content._id] || {
     likeCount: content.likeCount,
     dislikeCount: content.dislikeCount,
@@ -45,19 +34,45 @@ const EngagementFeed = ({ content, channel }) => {
     userInteractions: {}
   });
   
-  const [isCommentOpen, setIsCommentOpen] = useState(false);
   const commentCount = useSelector(state => state.commentCount[content._id] || 0);
+  
+  // All useState hooks
+  const [isCommentOpen, setIsCommentOpen] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+  
+  // All useRef hooks
   const timerRef = useRef(null);
   const observerRef = useRef(null);
   const viewedRef = useRef(false);
   
-  // Use optional chaining to avoid the TypeError
-  const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
-  const activeButton = userInteraction.activeButton;
+  // All useCallback hooks
+  const handleView = useCallback(() => {
+    if (user && !viewedRef.current) {
+      recordAction('view');
+      viewedRef.current = true;
+    }
+  }, [user]);
 
+  const fetchCommentCount = useCallback(async () => {
+    try {
+      let token = null;
+      if (user) {
+        token = await auth.currentUser.getIdToken();
+      }
+      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}/count`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      });
+      if (!response.ok) throw new Error('Failed to fetch comment count');
+      const data = await response.json();
+      dispatch(setCommentCount({ contentId: content._id, count: data.commentCount }));
+    } catch (error) {
+      console.error("Error fetching comment count:", error);
+    }
+  }, [content._id, dispatch, user]);
+
+  // All useEffect hooks
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -86,13 +101,6 @@ const EngagementFeed = ({ content, channel }) => {
       socket.off('updateContentInteractions');
     };
   }, [dispatch, user]);
-
-  const handleView = useCallback(() => {
-    if (user && !viewedRef.current) {
-      recordAction('view');
-      viewedRef.current = true;
-    }
-  }, [user]);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -139,6 +147,23 @@ const EngagementFeed = ({ content, channel }) => {
     }
   }, [user, content._id]);
 
+  useEffect(() => {
+    fetchCommentCount();
+  }, [fetchCommentCount, user]);
+
+  // ✅ NOW ALL COMPUTED VALUES AND CONDITIONAL LOGIC
+  
+  // Use optional chaining to avoid the TypeError
+  const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
+  const activeButton = userInteraction.activeButton;
+
+  // ✅ EARLY RETURNS AFTER ALL HOOKS
+  // Don't render engagement feed for external content
+  if (content.source === 'external') {
+    return null;
+  }
+
+  // Helper functions that don't use hooks
   const fetchUserInteraction = async () => {
     if (!user) return;
 
@@ -213,27 +238,6 @@ const EngagementFeed = ({ content, channel }) => {
       }
     }
   };
-  
-  const fetchCommentCount = useCallback(async () => {
-    try {
-      let token = null;
-      if (user) {
-        token = await auth.currentUser.getIdToken();
-      }
-      const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}/count`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      if (!response.ok) throw new Error('Failed to fetch comment count');
-      const data = await response.json();
-      dispatch(setCommentCount({ contentId: content._id, count: data.commentCount }));
-    } catch (error) {
-      console.error("Error fetching comment count:", error);
-    }
-  }, [content._id, dispatch, user]);
-
-  useEffect(() => {
-    fetchCommentCount();
-  }, [fetchCommentCount, user]);
 
   const handleCommentClick = (e) => {
     e.preventDefault();
