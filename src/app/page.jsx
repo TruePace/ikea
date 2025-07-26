@@ -1,4 +1,4 @@
-// Updated main page component - Frontend-only approach
+// Updated main page component - Fixed hooks order
 "use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { useState, useEffect, useCallback } from "react";
@@ -16,24 +16,14 @@ import SEO from "@/components/SeoDir/Seo";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
 const Page = () => {
-  // Backend content state (user-generated content)
-  const [backendChannels, setBackendChannels] = useState([]);
-  const [backendHeadlineContents, setBackendHeadlineContents] = useState([]);
-  const [backendJustInContents, setBackendJustInContents] = useState([]);
+  // ✅ ALL HOOKS MUST BE AT THE TOP - BEFORE ANY CONDITIONAL LOGIC
   
-  // UI state
-  const [isLoadingBackend, setIsLoadingBackend] = useState(true);
-  const [backendError, setBackendError] = useState(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
-  
+  // Redux and Auth hooks first
   const { user } = useAuth();
   const dispatch = useDispatch();
   
-  // Get user's location (optional for external news)
+  // Custom hooks
   const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
-  
-  // Use the new direct news service for external content
   const {
     channels: externalChannels,
     headlineContent: externalHeadlines,
@@ -45,19 +35,16 @@ const Page = () => {
     clearCache
   } = useDirectNewsService();
 
-  // Tutorial logic
-  useEffect(() => {
-    if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
-      setShowTutorial(true);
-    }
-  }, [user]);
-  
-  const handleTutorialComplete = () => {
-    localStorage.setItem('hasSeenHeadlineNewsTutorial', 'true');
-    setShowTutorial(false);
-  };
+  // All useState hooks
+  const [backendChannels, setBackendChannels] = useState([]);
+  const [backendHeadlineContents, setBackendHeadlineContents] = useState([]);
+  const [backendJustInContents, setBackendJustInContents] = useState([]);
+  const [isLoadingBackend, setIsLoadingBackend] = useState(true);
+  const [backendError, setBackendError] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
-  // Fetch backend content (user-generated content only)
+  // All useCallback hooks
   const fetchBackendContent = useCallback(async () => {
     try {
       console.log('🔄 Fetching backend content...');
@@ -94,23 +81,6 @@ const Page = () => {
     }
   }, [dispatch]);
 
-  // Initialize backend content on mount
-  useEffect(() => {
-    fetchBackendContent();
-  }, [fetchBackendContent]);
-
-  // Merge external and internal content
-  const allChannels = [...backendChannels, ...externalChannels];
-  const allHeadlineContents = [...backendHeadlineContents, ...externalHeadlines];
-  const allJustInContents = [...backendJustInContents, ...externalJustIn];
-
-  // Filter channels that have content
-  const channelsWithContent = allChannels.filter(channel => 
-    allHeadlineContents.some(content => content.channelId === channel._id) || 
-    allJustInContents.some(content => content.channelId === channel._id)
-  );
-
-  // Manual refresh function
   const handleManualRefresh = useCallback(async () => {
     console.log('🔄 Manual refresh triggered');
     await Promise.all([
@@ -119,7 +89,32 @@ const Page = () => {
     ]);
   }, [refreshNews, fetchBackendContent]);
 
-  // Auto-refresh when user returns to tab
+  const handleTutorialComplete = useCallback(() => {
+    localStorage.setItem('hasSeenHeadlineNewsTutorial', 'true');
+    setShowTutorial(false);
+  }, []);
+
+  // All useEffect hooks
+  useEffect(() => {
+    fetchBackendContent();
+  }, [fetchBackendContent]);
+
+  useEffect(() => {
+    if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
+      setShowTutorial(true);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      const timer = setTimeout(() => {
+        setShowAuthModal(true);
+      }, 10000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -132,19 +127,24 @@ const Page = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [handleManualRefresh]);
 
-  // Auth modal logic
-  useEffect(() => {
-    if (!user) {
-      const timer = setTimeout(() => {
-        setShowAuthModal(true);
-      }, 10000);
+  // ✅ NOW ALL COMPUTED VALUES AND CONDITIONAL LOGIC
+  
+  // Merge external and internal content
+  const allChannels = [...backendChannels, ...externalChannels];
+  const allHeadlineContents = [...backendHeadlineContents, ...externalHeadlines];
+  const allJustInContents = [...backendJustInContents, ...externalJustIn];
 
-      return () => clearTimeout(timer);
-    }
-  }, [user]);
+  // Filter channels that have content
+  const channelsWithContent = allChannels.filter(channel => 
+    allHeadlineContents.some(content => content.channelId === channel._id) || 
+    allJustInContents.some(content => content.channelId === channel._id)
+  );
 
   // Loading state
   const isLoading = isLoadingBackend || externalLoading;
+  const hasError = backendError || externalError;
+
+  // ✅ EARLY RETURNS AFTER ALL HOOKS
   if (isLoading) {
     return (
       <div className="h-screen overflow-y-scroll bg-red-50 dark:bg-gray-900 snap-y snap-mandatory">
@@ -160,7 +160,6 @@ const Page = () => {
   }
 
   // Error state with better retry options
-  const hasError = backendError || externalError;
   if (hasError && channelsWithContent.length === 0) {
     return (
       <div className="h-screen flex items-center justify-center bg-red-50 dark:bg-gray-900">
