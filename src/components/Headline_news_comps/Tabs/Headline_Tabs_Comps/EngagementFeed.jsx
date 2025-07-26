@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback ,useRef} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { BiLike, BiDislike } from "react-icons/bi";
 import { FaRegComment } from "react-icons/fa";
@@ -20,6 +20,22 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const EngagementFeed = ({ content, channel }) => {
   const dispatch = useDispatch();
   const { user } = useAuth();
+  
+  // Don't render engagement feed for external content
+  if (content.source === 'external') {
+    return (
+      // <div className="w-full flex mt-7 justify-center text-gray-500 text-sm text-center dark:text-gray-200">
+      //   <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+      //     <span className="text-blue-600 dark:text-blue-400">🌐</span>
+      //     <span className="text-blue-800 dark:text-blue-300 text-xs">
+      //       External content - Engagement disabled
+      //     </span>
+      //   </div>
+      // </div>
+      null
+    );
+  }
+
   const interactions = useSelector(state => state.contentInteractions[content._id] || {
     likeCount: content.likeCount,
     dislikeCount: content.dislikeCount,
@@ -28,6 +44,7 @@ const EngagementFeed = ({ content, channel }) => {
     viewCount: content.viewCount,
     userInteractions: {}
   });
+  
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const commentCount = useSelector(state => state.commentCount[content._id] || 0);
   const [userLocation, setUserLocation] = useState(null);
@@ -36,10 +53,10 @@ const EngagementFeed = ({ content, channel }) => {
   const timerRef = useRef(null);
   const observerRef = useRef(null);
   const viewedRef = useRef(false);
+  
   // Use optional chaining to avoid the TypeError
   const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
   const activeButton = userInteraction.activeButton;
-
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -69,9 +86,6 @@ const EngagementFeed = ({ content, channel }) => {
       socket.off('updateContentInteractions');
     };
   }, [dispatch, user]);
-
-
-
 
   const handleView = useCallback(() => {
     if (user && !viewedRef.current) {
@@ -119,8 +133,6 @@ const EngagementFeed = ({ content, channel }) => {
     };
   }, [isVisible, handleView]);
 
-
-
   useEffect(() => {
     if (user && content._id) {
       fetchUserInteraction();
@@ -152,8 +164,6 @@ const EngagementFeed = ({ content, channel }) => {
       console.error('Error fetching user interaction:', error);
     }
   };
-
-
 
   const recordAction = async (action) => {
     if (!user) {
@@ -194,11 +204,6 @@ const EngagementFeed = ({ content, channel }) => {
     }
   };
 
-
-
-
-
-  
   const handleShare = async (platform) => {
     if (user) {
       try {
@@ -209,7 +214,6 @@ const EngagementFeed = ({ content, channel }) => {
     }
   };
   
-
   const fetchCommentCount = useCallback(async () => {
     try {
       let token = null;
@@ -242,46 +246,42 @@ const EngagementFeed = ({ content, channel }) => {
 
   return (
     <>
-    <div id={`engagement-feed-${content._id}`}>
-      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
-        <div className="flex justify-between w-1/4 ">
-        <LikeDislikeButtons 
-  contentId={content._id}
-  initialLikes={interactions.likeCount}
-  initialDislikes={interactions.dislikeCount}
-  initialUserInteraction={activeButton}
-  onInteraction={async (action) => {
-    await recordAction(action);
-  }}
-/>
-        </div>
-        <button onClick={handleCommentClick} className="h-12">
-          <FaRegComment size='1.6em' className="m-auto" />
-          <p className="text-xs">({commentCount}) </p>
-        </button>
-        <ShareComponent 
+      <div id={`engagement-feed-${content._id}`}>
+        <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
+          <div className="flex justify-between w-1/4">
+            <LikeDislikeButtons 
+              contentId={content._id}
+              initialLikes={interactions.likeCount}
+              initialDislikes={interactions.dislikeCount}
+              initialUserInteraction={activeButton}
+              onInteraction={async (action) => {
+                await recordAction(action);
+              }}
+            />
+          </div>
+          <button onClick={handleCommentClick} className="h-12">
+            <FaRegComment size='1.6em' className="m-auto" />
+            <p className="text-xs">({commentCount}) </p>
+          </button>
+          <ShareComponent 
             contentId={content._id} 
             onShare={handleShare} 
             shareCount={interactions.shareCount}
           />
 
-<ScreenshotButton content={content} channel={channel} />
+          <ScreenshotButton content={content} channel={channel} />
 
-        <button className="h-12">
-          <IoEyeOutline size='1.6em' className="m-auto" />
-          <p className="text-xs">({interactions.viewCount})</p>
+          <button className="h-12">
+            <IoEyeOutline size='1.6em' className="m-auto" />
+            <p className="text-xs">({interactions.viewCount})</p>
           </button>
-      </div>
-      <CommentSection
-        isOpen={isCommentOpen}
-        onClose={() => setIsCommentOpen(false)}
-        contentId={content._id}
-        onCommentAdded={handleCommentAdded}
-      />
-      <div>
-       
-      </div>
-
+        </div>
+        <CommentSection
+          isOpen={isCommentOpen}
+          onClose={() => setIsCommentOpen(false)}
+          contentId={content._id}
+          onCommentAdded={handleCommentAdded}
+        />
       </div>
     </>
   );
