@@ -14,12 +14,13 @@ import {
   shouldFetchExternalNews,
   markExternalNewsFetchTriggered
 } from "@/components/External_News/ExternalNewsService"
-// import wakeServerService from "@/components/External_News/WakeServerService";
+
 import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
 import SEO from "@/components/SeoDir/Seo";
 import wakeServerService from "@/components/External_News/WakeUpServiceServer";
+import { aggressiveStartup } from "@/components/External_News/WakeUpServiceServer";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -34,6 +35,59 @@ const Page = () => {
   const [freshNewsTriggered, setFreshNewsTriggered] = useState(false);
   const [serverWakeAttempts, setServerWakeAttempts] = useState(0);
   
+
+
+// Initialize on mount - AGGRESSIVE approach for Render
+useEffect(() => {
+  console.log('🌅 App starting - aggressive wake-up sequence for Render...');
+  
+  const initializeApp = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Step 1: Aggressive server startup
+      console.log('🚀 Starting aggressive server wake-up...');
+      const startupSuccess = await aggressiveStartup(ipInfo);
+      
+      if (startupSuccess) {
+        console.log('✅ Aggressive startup completed');
+        
+        // Step 2: Wait a bit more for Render cold start
+        console.log('⏳ Waiting for server to fully initialize...');
+        await new Promise(resolve => setTimeout(resolve, 10000)); // 10 seconds
+        
+        // Step 3: Fetch data
+        await fetchInitialData(true);
+      } else {
+        console.warn('⚠️ Aggressive startup had issues, trying normal fetch...');
+        
+        // Fallback - still try to fetch data
+        await new Promise(resolve => setTimeout(resolve, 15000)); // Wait longer
+        await fetchInitialData(true);
+      }
+      
+    } catch (error) {
+      console.error('❌ App initialization failed:', error);
+      setError('Failed to initialize app. Retrying...');
+      
+      // Retry after 20 seconds
+      setTimeout(() => {
+        initializeApp();
+      }, 20000);
+    }
+  };
+  
+  initializeApp();
+  
+  // Clean up on unmount
+  return () => {
+    console.log('🛑 Stopping wake service on unmount');
+    wakeServerService.stopPeriodicWakeUp();
+  };
+}, []); // Empty dependency array for mount only
+
+
   // Get user's location
   const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
   
@@ -159,15 +213,28 @@ const Page = () => {
     }
   }, [freshNewsTriggered, isLocationLoading, fetchInitialData]);
 
-  // Manual refresh function with wake service
-  const handleManualRefresh = useCallback(async () => {
-    console.log('🔄 Manual refresh triggered with wake service');
-    setServerWakeAttempts(0); // Reset attempts for manual refresh
+const handleManualRefresh = useCallback(async () => {
+  console.log('🔄 Manual refresh with aggressive wake-up');
+  setServerWakeAttempts(0);
+  
+  try {
+    setIsLoading(true);
+    setError(null);
     
-    // Wake server before refresh
-    await wakeServerService.wakeServer(1);
+    // Aggressive startup before refresh
+    await aggressiveStartup(ipInfo);
+    
+    // Wait for server to be ready
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    // Fetch data
     await fetchInitialData(true);
-  }, [fetchInitialData]);
+    
+  } catch (error) {
+    console.error('❌ Manual refresh failed:', error);
+    setError('Manual refresh failed. Please try again.');
+  }
+}, [fetchInitialData, ipInfo]);
 
   // Visibility change handler - refresh when user comes back to tab
   useEffect(() => {
