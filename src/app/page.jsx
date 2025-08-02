@@ -1,7 +1,7 @@
-// Enhanced main page component with Wake Service
+// Enhanced main page component with fixed reload issues
 "use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./(auth)/AuthContext";
 import AuthModal from "@/components/Headline_news_comps/AuthModal";  
 import { useDispatch } from "react-redux";
@@ -20,7 +20,7 @@ import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
 import SEO from "@/components/SeoDir/Seo";
 import wakeServerService from "@/components/External_News/WakeUpServiceServer";
-import { aggressiveStartup } from "@/components/External_News/WakeUpServiceServer";
+// import { aggressiveStartup } from "@/components/External_News/WakeUpServiceServer";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -32,62 +32,15 @@ const Page = () => {
   const { user } = useAuth();
   const dispatch = useDispatch();
   const [showTutorial, setShowTutorial] = useState(false);
-  const [freshNewsTriggered, setFreshNewsTriggered] = useState(false);
-  const [serverWakeAttempts, setServerWakeAttempts] = useState(0);
   
-
-
-// Initialize on mount - AGGRESSIVE approach for Render
-useEffect(() => {
-  console.log('🌅 App starting - aggressive wake-up sequence for Render...');
+  // FIXED: Use refs to prevent unnecessary re-renders and state loops
+  const initializationRef = useRef({
+    hasInitialized: false,
+    freshNewsTriggered: false,
+    serverWakeAttempts: 0,
+    isInitializing: false
+  });
   
-  const initializeApp = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Step 1: Aggressive server startup
-      console.log('🚀 Starting aggressive server wake-up...');
-      const startupSuccess = await aggressiveStartup(ipInfo);
-      
-      if (startupSuccess) {
-        console.log('✅ Aggressive startup completed');
-        
-        // Step 2: Wait a bit more for Render cold start
-        console.log('⏳ Waiting for server to fully initialize...');
-        await new Promise(resolve => setTimeout(resolve, 10000)); // 10 seconds
-        
-        // Step 3: Fetch data
-        await fetchInitialData(true);
-      } else {
-        console.warn('⚠️ Aggressive startup had issues, trying normal fetch...');
-        
-        // Fallback - still try to fetch data
-        await new Promise(resolve => setTimeout(resolve, 15000)); // Wait longer
-        await fetchInitialData(true);
-      }
-      
-    } catch (error) {
-      console.error('❌ App initialization failed:', error);
-      setError('Failed to initialize app. Retrying...');
-      
-      // Retry after 20 seconds
-      setTimeout(() => {
-        initializeApp();
-      }, 20000);
-    }
-  };
-  
-  initializeApp();
-  
-  // Clean up on unmount
-  return () => {
-    console.log('🛑 Stopping wake service on unmount');
-    wakeServerService.stopPeriodicWakeUp();
-  };
-}, []); // Empty dependency array for mount only
-
-
   // Get user's location
   const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
   
@@ -105,34 +58,41 @@ useEffect(() => {
     setShowTutorial(false);
   };
 
-  // CRITICAL: Aggressive fresh news fetching with wake service
+  // FIXED: Simplified and more reliable data fetching function
   const fetchInitialData = useCallback(async (forceRefresh = false) => {
+    // Prevent multiple simultaneous fetches
+    if (initializationRef.current.isInitializing && !forceRefresh) {
+      console.log('🔄 Data fetch already in progress, skipping...');
+      return;
+    }
+
     try {
-      console.log('🔄 Fetching initial data with wake service...');
+      console.log('🔄 Fetching initial data...');
       setIsLoading(true);
       setError(null);
-      setServerWakeAttempts(prev => prev + 1);
+      initializationRef.current.isInitializing = true;
       
-      // Check if we should force fresh news fetch
-      const shouldForceFresh = forceRefresh || shouldFetchExternalNews() || !freshNewsTriggered;
+      // Only trigger fresh news if really needed
+      const shouldForceFresh = forceRefresh || 
+        (!initializationRef.current.freshNewsTriggered && shouldFetchExternalNews());
       
       if (shouldForceFresh) {
-        console.log('🚀 Triggering fresh news with location:', ipInfo?.city || 'Unknown');
+        console.log('🚀 Triggering fresh news...');
         const freshNewsSuccess = await ensureServerHasFreshNews(ipInfo);
         
         if (freshNewsSuccess) {
-          setFreshNewsTriggered(true);
+          initializationRef.current.freshNewsTriggered = true;
           markExternalNewsFetchTriggered();
-        } else {
-          console.warn('⚠️ Fresh news trigger may have failed, continuing anyway...');
         }
       }
       
-      // Fetch all data with enhanced service (includes wake functionality)
+      // FIXED: Simple direct fetch without excessive wake calls
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
+      
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
-        getContentWithFreshNews('/api/HeadlineNews/Channel'),
-        getContentWithFreshNews('/api/HeadlineNews/GetJustIn/headline?page=1&limit=100'),
-        getContentWithFreshNews('/api/HeadlineNews/GetJustIn/just-in')
+        fetch(`${baseUrl}/api/HeadlineNews/Channel`).then(res => res.ok ? res.json() : []),
+        fetch(`${baseUrl}/api/HeadlineNews/GetJustIn/headline?page=1&limit=100`).then(res => res.ok ? res.json() : []),
+        fetch(`${baseUrl}/api/HeadlineNews/GetJustIn/just-in`).then(res => res.ok ? res.json() : [])
       ]);
       
       console.log('📊 Data fetched successfully:');
@@ -140,111 +100,105 @@ useEffect(() => {
       console.log('- Headlines:', headlineContentsData?.length || 0);
       console.log('- Just In:', justInContentsData?.length || 0);
       
-      // Log external content for debugging
-      const externalHeadlines = headlineContentsData?.filter(c => c.source === 'external') || [];
-      const externalJustIn = justInContentsData?.filter(c => c.source === 'external') || [];
-      
-      console.log('🌐 External content:');
-      console.log('- External headlines:', externalHeadlines.length);
-      console.log('- External Just In:', externalJustIn.length);
-      
-      if (externalHeadlines.length > 0) {
-        console.log('📰 Latest external headline:', {
-          title: externalHeadlines[0].message?.substring(0, 60) + '...',
-          source: externalHeadlines[0].originalSource,
-          time: externalHeadlines[0].createdAt
-        });
-      }
-      
       setChannels(channelsData || []);
       setHeadlineContents(headlineContentsData || []);
       setJustInContents(justInContentsData || []);
       dispatch(setJustInContent(justInContentsData || []));
       
-      // Reset error on successful fetch
+      initializationRef.current.hasInitialized = true;
       setError(null);
       
     } catch (error) {
       console.error('❌ Error fetching initial data:', error);
       setError(error.message);
       
-      // If this is the first attempt, try waking the server directly
-      if (serverWakeAttempts === 1) {
-        console.log('🔄 First attempt failed, trying direct server wake...');
-        const wakeSuccess = await wakeServerService.wakeServer(2);
-        if (wakeSuccess) {
-          console.log('✅ Server awakened, retrying data fetch...');
-          // Retry the fetch
-          return fetchInitialData(forceRefresh);
-        }
+      // Only retry on first failure
+      if (initializationRef.current.serverWakeAttempts === 0) {
+        initializationRef.current.serverWakeAttempts++;
+        console.log('🔄 First attempt failed, waking server and retrying...');
+        
+        await wakeServerService.wakeServer(1);
+        // Wait a bit and retry
+        setTimeout(() => fetchInitialData(forceRefresh), 3000);
       }
     } finally {
       setIsLoading(false);
+      initializationRef.current.isInitializing = false;
     }
-  }, [dispatch, freshNewsTriggered, ipInfo, serverWakeAttempts]);
+  }, [dispatch, ipInfo]);
 
-  // Initialize on mount - ALWAYS try fresh news first
+  // FIXED: Single initialization effect that runs only once
   useEffect(() => {
-    console.log('🌅 App starting - initializing with wake service and fresh news...');
-    
-    // Wake server immediately on app start
-    wakeServerService.wakeServer(1).then(() => {
-      fetchInitialData(true); // Force refresh on first load
-    });
-    
-    // Clean up on unmount
-    return () => {
-      console.log('🛑 Stopping wake service on unmount');
-      wakeServerService.stopPeriodicWakeUp();
-    };
-  }, []); // Empty dependency array for mount only
+    if (initializationRef.current.hasInitialized) {
+      return; // Already initialized, don't run again
+    }
 
-  // Set up periodic refresh when user is active
-  useEffect(() => {
-    if (freshNewsTriggered && !isLocationLoading) {
-      const intervalId = setInterval(() => {
-        if (shouldFetchExternalNews()) {
-          console.log('⏰ Periodic refresh triggered');
-          fetchInitialData(true);
+    console.log('🌅 App starting - single initialization...');
+    
+    const initializeApp = async () => {
+      try {
+        // Only wake server if it's the very first load
+        if (initializationRef.current.serverWakeAttempts === 0) {
+          console.log('🚀 First time wake-up...');
+          await wakeServerService.wakeServer(1);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Brief wait
         }
-      }, 20 * 60 * 1000); // Every 20 minutes
-      
-      return () => clearInterval(intervalId);
+        
+        await fetchInitialData(true);
+        
+      } catch (error) {
+        console.error('❌ App initialization failed:', error);
+        setError('Failed to initialize app. Please refresh the page.');
+      }
+    };
+    
+    initializeApp();
+    
+    // Cleanup function
+    return () => {
+      console.log('🛑 Component unmounting');
+    };
+  }, []); // FIXED: Empty dependency array, runs only once
+
+  // FIXED: Simplified periodic refresh (less aggressive)
+  useEffect(() => {
+    if (!initializationRef.current.hasInitialized) {
+      return; // Don't start periodic refresh until initialized
     }
-  }, [freshNewsTriggered, isLocationLoading, fetchInitialData]);
 
-const handleManualRefresh = useCallback(async () => {
-  console.log('🔄 Manual refresh with aggressive wake-up');
-  setServerWakeAttempts(0);
-  
-  try {
-    setIsLoading(true);
-    setError(null);
+    const intervalId = setInterval(() => {
+      if (shouldFetchExternalNews() && !initializationRef.current.isInitializing) {
+        console.log('⏰ Periodic refresh triggered');
+        fetchInitialData(false); // Don't force, just check if needed
+      }
+    }, 30 * 60 * 1000); // Every 30 minutes (increased from 20)
     
-    // Aggressive startup before refresh
-    await aggressiveStartup(ipInfo);
-    
-    // Wait for server to be ready
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    
-    // Fetch data
-    await fetchInitialData(true);
-    
-  } catch (error) {
-    console.error('❌ Manual refresh failed:', error);
-    setError('Manual refresh failed. Please try again.');
-  }
-}, [fetchInitialData, ipInfo]);
+    return () => clearInterval(intervalId);
+  }, [fetchInitialData]); // Only depend on fetchInitialData
 
-  // Visibility change handler - refresh when user comes back to tab
+  // FIXED: Less aggressive manual refresh
+  const handleManualRefresh = useCallback(async () => {
+    console.log('🔄 Manual refresh requested');
+    
+    try {
+      setError(null);
+      await fetchInitialData(true);
+    } catch (error) {
+      console.error('❌ Manual refresh failed:', error);
+      setError('Manual refresh failed. Please try again.');
+    }
+  }, [fetchInitialData]);
+
+  // FIXED: Less aggressive visibility change handler
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (!document.hidden && shouldFetchExternalNews()) {
-        console.log('👀 User returned to tab - waking server and checking for fresh news');
+      if (!document.hidden && 
+          initializationRef.current.hasInitialized && 
+          !initializationRef.current.isInitializing &&
+          shouldFetchExternalNews()) {
         
-        // Wake server when tab becomes active
-        await wakeServerService.wakeServer(1);
-        fetchInitialData(true);
+        console.log('👀 User returned to tab - checking for fresh news');
+        fetchInitialData(false); // Don't force, just check
       }
     };
     
@@ -252,19 +206,20 @@ const handleManualRefresh = useCallback(async () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [fetchInitialData]);
 
-  // Network status change handler
+  // FIXED: Simplified network status handler
   useEffect(() => {
     const handleOnline = async () => {
-      console.log('🌐 Network restored - waking server and fetching data');
-      await wakeServerService.wakeServer(1);
-      fetchInitialData(true);
+      if (initializationRef.current.hasInitialized && !initializationRef.current.isInitializing) {
+        console.log('🌐 Network restored - fetching data');
+        fetchInitialData(false);
+      }
     };
     
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
   }, [fetchInitialData]);
 
-  // Auth modal logic
+  // Auth modal logic (unchanged)
   useEffect(() => {
     if (!user) {
       const timer = setTimeout(() => {
@@ -275,8 +230,10 @@ const handleManualRefresh = useCallback(async () => {
     }
   }, [user]);
 
-  // Loading state
-  if (isLoading || freshNewsLoading) {
+  // FIXED: Simplified loading state check
+  const isActuallyLoading = isLoading || (freshNewsLoading && !initializationRef.current.hasInitialized);
+
+  if (isActuallyLoading) {
     return (
       <div className="h-screen overflow-y-scroll bg-red-50 dark:bg-gray-900 snap-y snap-mandatory">
         {[...Array(3)].map((_, index) => (
@@ -286,42 +243,36 @@ const handleManualRefresh = useCallback(async () => {
             </div>
           </div>
         ))}
-        {/* Show wake status during loading */}
-        {serverWakeAttempts > 0 && (
+        {initializationRef.current.serverWakeAttempts > 0 && (
           <div className="fixed bottom-4 left-4 bg-black bg-opacity-75 text-white p-2 rounded text-sm">
-            🔄 Waking server... (Attempt {serverWakeAttempts})
+            🔄 Starting server... (Attempt {initializationRef.current.serverWakeAttempts})
           </div>
         )}
       </div>
     );
   }
 
-  // Error state with better retry options
+  // Error state
   if (error || freshNewsError) {
     return (
       <div className="h-screen flex items-center justify-center bg-red-50 dark:bg-gray-900">
         <div className="text-center p-8 bg-white dark:bg-gray-700 rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
           <h2 className="text-2xl font-bold mb-4 dark:text-gray-200">
-            {serverWakeAttempts > 1 ? 'Server Starting Up...' : 'Loading Fresh News...'}
+            {initializationRef.current.serverWakeAttempts > 0 ? 'Server Starting Up...' : 'Loading Fresh News...'}
           </h2>
           <p className="text-gray-600 dark:text-gray-200 mb-4">
-            {serverWakeAttempts > 1 
+            {initializationRef.current.serverWakeAttempts > 0 
               ? 'The server is waking up from sleep mode. This may take a moment on Render free tier.'
-              : (error || freshNewsError || 'Fetching the latest news for you. This may take a moment on first load.')
+              : (error || freshNewsError || 'Fetching the latest news for you.')
             }
           </p>
           <button 
             onClick={handleManualRefresh}
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
-            disabled={isLoading}
+            disabled={isActuallyLoading}
           >
-            {isLoading ? 'Loading...' : 'Try Again'}
+            {isActuallyLoading ? 'Loading...' : 'Try Again'}
           </button>
-          {serverWakeAttempts > 2 && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-              Tip: Render free tier servers sleep after 15 minutes of inactivity. First load may take up to 30 seconds.
-            </p>
-          )}
         </div>
       </div>
     );
@@ -346,9 +297,9 @@ const handleManualRefresh = useCallback(async () => {
           <button 
             onClick={handleManualRefresh}
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
-            disabled={isLoading}
+            disabled={isActuallyLoading}
           >
-            {isLoading ? 'Loading...' : 'Refresh'}
+            {isActuallyLoading ? 'Loading...' : 'Refresh'}
           </button>
         </div>
       </div>
@@ -370,7 +321,7 @@ const handleManualRefresh = useCallback(async () => {
       
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
-          {/* Debug info - now shows wake service status */}
+          {/* Simplified debug info */}
           {process.env.NODE_ENV === 'development' && (
             <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50 max-w-xs">
               <div>📺 Channels: {channels.length}</div>
@@ -378,15 +329,14 @@ const handleManualRefresh = useCallback(async () => {
               <div className="text-green-400">🌐 External Headlines: {headlineContents.filter(c => c.source === 'external').length}</div>
               <div>📋 Just In: {justInContents.length}</div>
               <div className="text-green-400">🌐 External Just In: {justInContents.filter(c => c.source === 'external').length}</div>
-              <div className="text-blue-400">🚀 Fresh News: {freshNewsTriggered ? '✅' : '⏳'}</div>
-              <div className="text-yellow-400">🔔 Wake Attempts: {serverWakeAttempts}</div>
+              <div className="text-blue-400">🚀 Initialized: {initializationRef.current.hasInitialized ? '✅' : '⏳'}</div>
               <div className="text-purple-400">📍 Location: {ipInfo?.city || 'Loading...'}</div>
               <button 
                 onClick={handleManualRefresh} 
                 className="mt-1 px-2 py-1 bg-blue-500 rounded text-xs hover:bg-blue-600 disabled:opacity-50"
-                disabled={isLoading}
+                disabled={isActuallyLoading}
               >
-                {isLoading ? 'Refreshing...' : 'Force Refresh'}
+                {isActuallyLoading ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
           )}

@@ -1,21 +1,24 @@
-// ExternalNewsService.js - Enhanced with Wake Service Integration
+// ExternalNewsService.js - Fixed to prevent unnecessary refetches
 import { useState } from "react";
 import wakeServerService, { ensureServerAwake, forceFreshNews as forceServerFreshNews } from "./WakeUpServiceServer";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 
-// FIXED: Better localStorage handling
+// FIXED: More conservative localStorage handling with longer intervals
 export const shouldFetchExternalNews = () => {
   try {
     const lastFetch = localStorage.getItem('lastExternalNewsFetch');
     const now = Date.now();
-    const fetchInterval = 15 * 60 * 1000; // 15 minutes (reduced from 30)
+    const fetchInterval = 30 * 60 * 1000; // INCREASED: 30 minutes instead of 15
     
     if (!lastFetch) {
       return true;
     }
     
-    return (now - parseInt(lastFetch)) > fetchInterval;
+    const timeSinceLastFetch = now - parseInt(lastFetch);
+    console.log(`⏰ Time since last fetch: ${Math.round(timeSinceLastFetch / 60000)} minutes`);
+    
+    return timeSinceLastFetch > fetchInterval;
   } catch (error) {
     console.log('localStorage not available, assuming fresh fetch needed');
     return true;
@@ -24,59 +27,100 @@ export const shouldFetchExternalNews = () => {
 
 export const markExternalNewsFetchTriggered = () => {
   try {
-    localStorage.setItem('lastExternalNewsFetch', Date.now().toString());
+    const timestamp = Date.now().toString();
+    localStorage.setItem('lastExternalNewsFetch', timestamp);
+    console.log('📝 Marked external news fetch at:', new Date(parseInt(timestamp)).toLocaleTimeString());
   } catch (error) {
     console.log('localStorage not available for marking fetch');
   }
 };
 
-// ENHANCED: Server wake-up and fresh news fetch
-export const ensureServerHasFreshNews = async (ipInfo = null) => {
+// FIXED: Less aggressive approach with better error handling
+export const ensureServerHasFreshNews = async (ipInfo = null, options = {}) => {
+  const { skipIfRecent = true, timeoutMs = 15000 } = options;
+  
   try {
-    console.log('🔍 Ensuring server is awake and has fresh news...');
+    console.log('🔍 Checking if server needs fresh news...');
     
-    // Step 1: Wake up the server first using the wake service
-    const serverReady = await ensureServerAwake();
-    
-    if (!serverReady) {
-      console.error('⚠️ Failed to wake server');
-      // Still try to proceed - server might be partially responsive
+    // FIXED: Don't always wake server - check if we really need fresh news first
+    if (skipIfRecent && !shouldFetchExternalNews()) {
+      console.log('ℹ️ Recent fetch detected, skipping fresh news check');
+      return true;
     }
     
-    // Step 2: Check server status
-    const statusResponse = await fetch(`${API_BASE_URL}/api/health/keep-alive`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(20000) // 20 second timeout
-    });
-    
-    if (!statusResponse.ok) {
-      console.log('⚠️ Server status check failed');
-      return false;
-    }
-    
-    const status = await statusResponse.json();
-    console.log('📊 Server status after wake:', status);
-    
-    // Step 3: If server needs fresh news, force it
-    if (status.needsFreshNews && !status.isFetching) {
-      console.log('🚀 Server needs fresh news, forcing fetch...');
+    // Step 1: Quick server status check (lighter than full wake)
+    try {
+      const statusResponse = await fetch(`${API_BASE_URL}/api/health/keep-alive`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(timeoutMs)
+      });
       
-      // Use the wake service's force fresh news method
+      if (statusResponse.ok) {
+        const status = await statusResponse.json();
+        console.log('📊 Server status:', {
+          needsFresh: status.needsFreshNews,
+          isFetching: status.isFetching,
+          uptime: status.uptime
+        });
+        
+        // If server is already fetching or doesn't need fresh news, we're good
+        if (status.isFetching || !status.needsFreshNews) {
+          console.log('ℹ️ Server already has fresh news or is currently fetching');
+          markExternalNewsFetchTriggered(); // Mark as handled
+          return true;
+        }
+        
+        // Only now try to force fresh news if server actually needs it
+        if (status.needsFreshNews) {
+          console.log('🚀 Server needs fresh news, forcing fetch...');
+          
+          const freshNewsResponse = await fetch(`${API_BASE_URL}/api/health/force-fresh-news`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              ip: ipInfo?.ip || '8.8.8.8',
+              urgent: false
+            }),
+            signal: AbortSignal.timeout(timeoutMs + 5000) // Longer timeout for force fetch
+          });
+          
+          if (freshNewsResponse.ok) {
+            const result = await freshNewsResponse.json();
+            console.log('✅ Fresh news result:', result);
+            markExternalNewsFetchTriggered();
+            return result.success;
+          } else {
+            console.warn('⚠️ Force fresh news request failed');
+            return false;
+          }
+        }
+      } else {
+        console.warn('⚠️ Server status check failed, may need wake-up');
+      }
+    } catch (statusError) {
+      console.warn('⚠️ Server status check failed:', statusError.message);
+      
+      // Only now try to wake server if status check completely failed
+      console.log('🔄 Attempting to wake server...');
+      const serverReady = await ensureServerAwake();
+      
+      if (!serverReady) {
+        console.error('❌ Failed to wake server');
+        return false;
+      }
+      
+      // Wait a bit after waking and try force fresh news
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
       const freshNewsResult = await forceServerFreshNews(ipInfo);
-      
       if (freshNewsResult) {
-        console.log('✅ Fresh news triggered successfully:', freshNewsResult);
         markExternalNewsFetchTriggered();
         return true;
-      } else {
-        console.error('❌ Failed to force fresh news');
-        return false;
       }
     }
     
-    console.log('ℹ️ Server already has fresh news or is currently fetching');
-    return true;
+    return false;
     
   } catch (error) {
     console.error('❌ Error ensuring fresh news:', error);
@@ -84,27 +128,21 @@ export const ensureServerHasFreshNews = async (ipInfo = null) => {
   }
 };
 
-// ENHANCED: Content fetching with wake service
+// FIXED: Simpler content fetching with less retries
 export const getContentWithFreshNews = async (endpoint, options = {}) => {
   try {
     console.log(`🔄 Fetching content from ${endpoint}...`);
     
-    // First, ensure server is awake
-    const serverReady = await ensureServerAwake();
-    
-    if (!serverReady) {
-      console.warn('⚠️ Server may not be fully ready, proceeding anyway...');
+    // FIXED: Don't always ensure fresh news - only if really needed
+    const needsFresh = shouldFetchExternalNews();
+    if (needsFresh) {
+      console.log('📰 Triggering fresh news check...');
+      await ensureServerHasFreshNews(null, { skipIfRecent: false });
     }
     
-    // Then ensure it has fresh news
-    await ensureServerHasFreshNews();
-    
-    // Small delay to let server process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Try to get content with retries
+    // FIXED: Simpler fetch with fewer retries
     let attempts = 0;
-    const maxAttempts = 3;
+    const maxAttempts = 2; // Reduced from 3
     let lastError;
     
     while (attempts < maxAttempts) {
@@ -114,7 +152,7 @@ export const getContentWithFreshNews = async (endpoint, options = {}) => {
         
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
           ...options,
-          signal: AbortSignal.timeout(30000) // 30 second timeout
+          signal: AbortSignal.timeout(20000) // Reduced timeout
         });
         
         if (!response.ok) {
@@ -131,21 +169,13 @@ export const getContentWithFreshNews = async (endpoint, options = {}) => {
         console.error(`❌ Attempt ${attempts} failed:`, error.message);
         
         if (attempts < maxAttempts) {
-          // Wake server again before retry
-          if (attempts === 2) {
-            console.log('🔄 Re-waking server before final attempt...');
-            await wakeServerService.wakeServer(1);
-          }
-          
-          // Exponential backoff
-          const waitTime = attempts * 2000;
-          console.log(`⏳ Waiting ${waitTime}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
+          // Only wake server on final retry
+          console.log('⏳ Brief wait before retry...');
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
     }
     
-    // All attempts failed
     throw lastError || new Error('Failed to fetch content after all attempts');
     
   } catch (error) {
@@ -154,12 +184,18 @@ export const getContentWithFreshNews = async (endpoint, options = {}) => {
   }
 };
 
-// Hook with wake service integration
+// FIXED: Hook with better state management
 export const useFreshNewsContent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
   const fetchWithFreshNews = async (endpoint, options = {}) => {
+    // Prevent multiple simultaneous fetches
+    if (loading) {
+      console.log('⏭️ Fetch already in progress, skipping...');
+      return null;
+    }
+    
     setLoading(true);
     setError(null);
     
@@ -177,8 +213,15 @@ export const useFreshNewsContent = () => {
   return { fetchWithFreshNews, loading, error };
 };
 
-// Initialize wake service when module loads
+// FIXED: More conservative wake service initialization
 if (typeof window !== 'undefined') {
-  console.log('🚀 Starting periodic server wake-up service');
-  wakeServerService.startPeriodicWakeUp();
+  // Only start wake service if we haven't fetched recently
+  const shouldStartWakeService = shouldFetchExternalNews();
+  
+  if (shouldStartWakeService) {
+    console.log('🚀 Starting periodic server wake-up service');
+    wakeServerService.startPeriodicWakeUp();
+  } else {
+    console.log('⏭️ Skipping wake service start - recent fetch detected');
+  }
 }
