@@ -1,4 +1,4 @@
-// Enhanced main page component with fixed reload issues
+// Enhanced main page component with hybrid location tracking
 "use client"
 import Slide from "@/components/Headline_news_comps/Tabs/Slide";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -6,7 +6,7 @@ import { useAuth } from "./(auth)/AuthContext";
 import AuthModal from "@/components/Headline_news_comps/AuthModal";  
 import { useDispatch } from "react-redux";
 import { setJustInContent } from "@/Redux/Slices/ViewContentSlice";
-import useLocationTracker from "@/components/External_News/IpAddressTracker";
+import useHybridLocationTracker from "@/components/External_News/HybridLocationTracker";
 import { 
   ensureServerHasFreshNews,
   getContentWithFreshNews,
@@ -19,8 +19,6 @@ import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
 import SEO from "@/components/SeoDir/Seo";
-import wakeServerService from "@/components/External_News/WakeUpServiceServer";
-// import { aggressiveStartup } from "@/components/External_News/WakeUpServiceServer";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -33,19 +31,38 @@ const Page = () => {
   const dispatch = useDispatch();
   const [showTutorial, setShowTutorial] = useState(false);
   
-  // FIXED: Use refs to prevent unnecessary re-renders and state loops
+  // Use refs to prevent unnecessary re-renders and state loops
   const initializationRef = useRef({
     hasInitialized: false,
     freshNewsTriggered: false,
-    serverWakeAttempts: 0,
     isInitializing: false
   });
   
-  // Get user's location
-  const { ipInfo, isLoading: isLocationLoading } = useLocationTracker(300000);
+  // Use hybrid location tracker instead of IP-based tracking
+  const { 
+    locationData, 
+    isLoading: isLocationLoading,
+    permissionStatus,
+    requestGeolocationPermission,
+    isUsingBrowserLocation,
+    accuracy
+  } = useHybridLocationTracker(300000); // 5 minutes
   
   // Use the enhanced external news service hook
   const { fetchWithFreshNews, loading: freshNewsLoading, error: freshNewsError } = useFreshNewsContent();
+
+  // Location permission prompt (optional - shown once)
+  useEffect(() => {
+    if (permissionStatus === 'prompt' && !localStorage.getItem('locationPromptShown')) {
+      // Show a custom UI prompt after 5 seconds
+      setTimeout(() => {
+        if (window.confirm('Allow location access for more accurate local news?')) {
+          requestGeolocationPermission();
+        }
+        localStorage.setItem('locationPromptShown', 'true');
+      }, 5000);
+    }
+  }, [permissionStatus, requestGeolocationPermission]);
 
   useEffect(() => {
     if (user?.isNewUser && !localStorage.getItem('hasSeenHeadlineNewsTutorial')) {
@@ -58,7 +75,7 @@ const Page = () => {
     setShowTutorial(false);
   };
 
-  // FIXED: Simplified and more reliable data fetching function
+  // Improved data fetching function with hybrid location support
   const fetchInitialData = useCallback(async (forceRefresh = false) => {
     // Prevent multiple simultaneous fetches
     if (initializationRef.current.isInitializing && !forceRefresh) {
@@ -77,8 +94,8 @@ const Page = () => {
         (!initializationRef.current.freshNewsTriggered && shouldFetchExternalNews());
       
       if (shouldForceFresh) {
-        console.log('🚀 Triggering fresh news...');
-        const freshNewsSuccess = await ensureServerHasFreshNews(ipInfo);
+        console.log('🚀 Triggering fresh news with location:', locationData);
+        const freshNewsSuccess = await ensureServerHasFreshNews(locationData);
         
         if (freshNewsSuccess) {
           initializationRef.current.freshNewsTriggered = true;
@@ -86,7 +103,7 @@ const Page = () => {
         }
       }
       
-      // FIXED: Simple direct fetch without excessive wake calls
+      // Direct fetch
       const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
       
       const [channelsData, headlineContentsData, justInContentsData] = await Promise.all([
@@ -111,23 +128,13 @@ const Page = () => {
     } catch (error) {
       console.error('❌ Error fetching initial data:', error);
       setError(error.message);
-      
-      // Only retry on first failure
-      if (initializationRef.current.serverWakeAttempts === 0) {
-        initializationRef.current.serverWakeAttempts++;
-        console.log('🔄 First attempt failed, waking server and retrying...');
-        
-        await wakeServerService.wakeServer(1);
-        // Wait a bit and retry
-        setTimeout(() => fetchInitialData(forceRefresh), 3000);
-      }
     } finally {
       setIsLoading(false);
       initializationRef.current.isInitializing = false;
     }
-  }, [dispatch, ipInfo]);
+  }, [dispatch, locationData]);
 
-  // FIXED: Single initialization effect that runs only once
+  // Single initialization effect that runs only once  
   useEffect(() => {
     if (initializationRef.current.hasInitialized) {
       return; // Already initialized, don't run again
@@ -137,15 +144,7 @@ const Page = () => {
     
     const initializeApp = async () => {
       try {
-        // Only wake server if it's the very first load
-        if (initializationRef.current.serverWakeAttempts === 0) {
-          console.log('🚀 First time wake-up...');
-          await wakeServerService.wakeServer(1);
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Brief wait
-        }
-        
         await fetchInitialData(true);
-        
       } catch (error) {
         console.error('❌ App initialization failed:', error);
         setError('Failed to initialize app. Please refresh the page.');
@@ -158,9 +157,9 @@ const Page = () => {
     return () => {
       console.log('🛑 Component unmounting');
     };
-  }, []); // FIXED: Empty dependency array, runs only once
+  }, []); // Empty dependency array, runs only once
 
-  // FIXED: Simplified periodic refresh (less aggressive)
+  // Simplified periodic refresh (less aggressive)
   useEffect(() => {
     if (!initializationRef.current.hasInitialized) {
       return; // Don't start periodic refresh until initialized
@@ -171,12 +170,12 @@ const Page = () => {
         console.log('⏰ Periodic refresh triggered');
         fetchInitialData(false); // Don't force, just check if needed
       }
-    }, 30 * 60 * 1000); // Every 30 minutes (increased from 20)
+    }, 30 * 60 * 1000); // Every 30 minutes
     
     return () => clearInterval(intervalId);
-  }, [fetchInitialData]); // Only depend on fetchInitialData
+  }, [fetchInitialData]);
 
-  // FIXED: Less aggressive manual refresh
+  // Manual refresh
   const handleManualRefresh = useCallback(async () => {
     console.log('🔄 Manual refresh requested');
     
@@ -189,7 +188,7 @@ const Page = () => {
     }
   }, [fetchInitialData]);
 
-  // FIXED: Less aggressive visibility change handler
+  // Visibility change handler
   useEffect(() => {
     const handleVisibilityChange = async () => {
       if (!document.hidden && 
@@ -206,7 +205,7 @@ const Page = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [fetchInitialData]);
 
-  // FIXED: Simplified network status handler
+  // Network status handler
   useEffect(() => {
     const handleOnline = async () => {
       if (initializationRef.current.hasInitialized && !initializationRef.current.isInitializing) {
@@ -219,7 +218,7 @@ const Page = () => {
     return () => window.removeEventListener('online', handleOnline);
   }, [fetchInitialData]);
 
-  // Auth modal logic (unchanged)
+  // Auth modal logic
   useEffect(() => {
     if (!user) {
       const timer = setTimeout(() => {
@@ -230,7 +229,7 @@ const Page = () => {
     }
   }, [user]);
 
-  // FIXED: Simplified loading state check
+  // Simplified loading state check
   const isActuallyLoading = isLoading || (freshNewsLoading && !initializationRef.current.hasInitialized);
 
   if (isActuallyLoading) {
@@ -243,11 +242,6 @@ const Page = () => {
             </div>
           </div>
         ))}
-        {initializationRef.current.serverWakeAttempts > 0 && (
-          <div className="fixed bottom-4 left-4 bg-black bg-opacity-75 text-white p-2 rounded text-sm">
-            🔄 Starting server... (Attempt {initializationRef.current.serverWakeAttempts})
-          </div>
-        )}
       </div>
     );
   }
@@ -258,13 +252,10 @@ const Page = () => {
       <div className="h-screen flex items-center justify-center bg-red-50 dark:bg-gray-900">
         <div className="text-center p-8 bg-white dark:bg-gray-700 rounded-lg shadow-md border border-red-300 max-w-md tablet:max-w-lg desktop:max-w-xl">
           <h2 className="text-2xl font-bold mb-4 dark:text-gray-200">
-            {initializationRef.current.serverWakeAttempts > 0 ? 'Server Starting Up...' : 'Loading Fresh News...'}
+            Loading Fresh News...
           </h2>
           <p className="text-gray-600 dark:text-gray-200 mb-4">
-            {initializationRef.current.serverWakeAttempts > 0 
-              ? 'The server is waking up from sleep mode. This may take a moment on Render free tier.'
-              : (error || freshNewsError || 'Fetching the latest news for you.')
-            }
+            {error || freshNewsError || 'Fetching the latest news for you.'}
           </p>
           <button 
             onClick={handleManualRefresh}
@@ -321,7 +312,7 @@ const Page = () => {
       
       <div className="flex justify-center">
         <div className="w-full max-w-md tablet:max-w-2xl desktop:max-w-4xl h-screen">
-          {/* Simplified debug info */}
+          {/* Enhanced debug info with hybrid location tracking */}
           {process.env.NODE_ENV === 'development' && (
             <div className="fixed top-0 right-0 bg-black bg-opacity-75 text-white p-2 text-xs z-50 max-w-xs">
               <div>📺 Channels: {channels.length}</div>
@@ -330,7 +321,16 @@ const Page = () => {
               <div>📋 Just In: {justInContents.length}</div>
               <div className="text-green-400">🌐 External Just In: {justInContents.filter(c => c.source === 'external').length}</div>
               <div className="text-blue-400">🚀 Initialized: {initializationRef.current.hasInitialized ? '✅' : '⏳'}</div>
-              <div className="text-purple-400">📍 Location: {ipInfo?.city || 'Loading...'}</div>
+              <div className="text-purple-400">
+                📍 Location: {locationData?.city || 'Loading...'}
+                {isUsingBrowserLocation && ' 🎯'}
+              </div>
+              <div className="text-yellow-400">
+                📏 Accuracy: {accuracy ? `${Math.round(accuracy)}m` : 'City-level'}
+              </div>
+              <div className="text-cyan-400">
+                🔒 Permission: {permissionStatus}
+              </div>
               <button 
                 onClick={handleManualRefresh} 
                 className="mt-1 px-2 py-1 bg-blue-500 rounded text-xs hover:bg-blue-600 disabled:opacity-50"
