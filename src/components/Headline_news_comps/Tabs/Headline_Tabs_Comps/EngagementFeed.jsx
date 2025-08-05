@@ -1,16 +1,13 @@
-import React, { useState, useEffect, useCallback ,useRef} from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from 'react-redux';
-import { BiLike, BiDislike } from "react-icons/bi";
 import { FaRegComment } from "react-icons/fa";
-import { IoIosShareAlt } from "react-icons/io";
-import { RiScreenshot2Line } from "react-icons/ri";
+import { IoEyeOutline } from "react-icons/io5";
 import CommentSection from "./SubFeedComps/CommentSection";
 import { useAuth } from "@/app/(auth)/AuthContext";
 import { setCommentCount } from '../../../../Redux/Slices/CommentCountSlice';
 import { auth } from "@/app/(auth)/firebase/ClientApp";
 import socket from "@/components/Socket io/SocketClient";
 import { setContentInteractions } from "@/Redux/Slices/ContentInteractions";
-import { IoEyeOutline } from "react-icons/io5";
 import ShareComponent from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ShareComponent";
 import ScreenshotButton from "./ScreenshotButton";
 import LikeDislikeButtons from "./SubFeedComps/LikeDislikeButtons";
@@ -20,26 +17,53 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const EngagementFeed = ({ content, channel }) => {
   const dispatch = useDispatch();
   const { user } = useAuth();
-  const interactions = useSelector(state => state.contentInteractions[content._id] || {
-    likeCount: content.likeCount,
-    dislikeCount: content.dislikeCount,
-    shareCount: content.shareCount,
-    screenshotCount: content.screenshotCount,
-    viewCount: content.viewCount,
-    userInteractions: {}
+  
+  // Get Redux state with proper error handling
+  const reduxInteractions = useSelector(state => {
+    try {
+      return state.contentInteractions?.[content._id] || null;
+    } catch (error) {
+      console.error('Error accessing Redux state:', error);
+      return null;
+    }
   });
+
+  // Always show initial values immediately, update when Redux state changes
+  const interactions = {
+    likeCount: reduxInteractions?.likeCount ?? content.likeCount ?? 0,
+    dislikeCount: reduxInteractions?.dislikeCount ?? content.dislikeCount ?? 0,
+    shareCount: reduxInteractions?.shareCount ?? content.shareCount ?? 0,
+    screenshotCount: reduxInteractions?.screenshotCount ?? content.screenshotCount ?? 0,
+    viewCount: reduxInteractions?.viewCount ?? content.viewCount ?? 0,
+    userInteractions: reduxInteractions?.userInteractions ?? {}
+  };
+  
   const [isCommentOpen, setIsCommentOpen] = useState(false);
-  const commentCount = useSelector(state => state.commentCount[content._id] || 0);
+  const commentCount = useSelector(state => state.commentCount[content._id] || content.commentCount || 0);
   const [userLocation, setUserLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
   const timerRef = useRef(null);
   const observerRef = useRef(null);
   const viewedRef = useRef(false);
-  // Use optional chaining to avoid the TypeError
+  
   const userInteraction = user && interactions.userInteractions ? interactions.userInteractions[user.uid] || {} : {};
   const activeButton = userInteraction.activeButton;
 
+  // Initialize Redux state on mount - only once per content
+  useEffect(() => {
+    if (!reduxInteractions) {
+      dispatch(setContentInteractions({
+        contentId: content._id,
+        likeCount: content.likeCount,
+        dislikeCount: content.dislikeCount,
+        shareCount: content.shareCount,
+        screenshotCount: content.screenshotCount,
+        viewCount: content.viewCount,
+        userInteractions: {}
+      }));
+    }
+  }, [content._id, reduxInteractions, dispatch]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -64,14 +88,11 @@ const EngagementFeed = ({ content, channel }) => {
         }));
       }
     });
-  
+
     return () => {
       socket.off('updateContentInteractions');
     };
   }, [dispatch, user]);
-
-
-
 
   const handleView = useCallback(() => {
     if (user && !viewedRef.current) {
@@ -85,13 +106,14 @@ const EngagementFeed = ({ content, channel }) => {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
       },
-      { threshold: 0.5 } // At least 50% of the component is visible
+      { threshold: 0.5 }
     );
 
     const currentElement = observerRef.current;
+    const elementToObserve = document.getElementById(`engagement-feed-${content._id}`);
 
-    if (currentElement) {
-      currentElement.observe(document.getElementById(`engagement-feed-${content._id}`));
+    if (currentElement && elementToObserve) {
+      currentElement.observe(elementToObserve);
     }
 
     return () => {
@@ -103,9 +125,10 @@ const EngagementFeed = ({ content, channel }) => {
 
   useEffect(() => {
     if (isVisible && !viewedRef.current) {
+      // Keep the 20 seconds as requested
       timerRef.current = setTimeout(() => {
         handleView();
-      }, 20000); // 20 seconds
+      }, 20000);
     } else {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -118,8 +141,6 @@ const EngagementFeed = ({ content, channel }) => {
       }
     };
   }, [isVisible, handleView]);
-
-
 
   useEffect(() => {
     if (user && content._id) {
@@ -153,14 +174,12 @@ const EngagementFeed = ({ content, channel }) => {
     }
   };
 
-
-
   const recordAction = async (action) => {
     if (!user) {
       setError("You must be logged in to perform this action.");
       return;
     }
-  
+
     try {
       const token = await auth.currentUser.getIdToken();
       const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Content/action`, {
@@ -176,12 +195,12 @@ const EngagementFeed = ({ content, channel }) => {
           location: userLocation
         })
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to record action');
       }
-  
+
       const data = await response.json();
       dispatch(setContentInteractions({
         contentId: content._id,
@@ -194,11 +213,6 @@ const EngagementFeed = ({ content, channel }) => {
     }
   };
 
-
-
-
-
-  
   const handleShare = async (platform) => {
     if (user) {
       try {
@@ -208,28 +222,44 @@ const EngagementFeed = ({ content, channel }) => {
       }
     }
   };
-  
 
   const fetchCommentCount = useCallback(async () => {
     try {
       let token = null;
+      let headers = {};
+      
       if (user) {
         token = await auth.currentUser.getIdToken();
+        headers = { 'Authorization': `Bearer ${token}` };
       }
+      
       const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/Comment/${content._id}/count`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        headers
       });
-      if (!response.ok) throw new Error('Failed to fetch comment count');
+      
+      if (!response.ok) {
+        // If auth fails but we have a fallback count, use it
+        if (content.commentCount !== undefined) {
+          dispatch(setCommentCount({ contentId: content._id, count: content.commentCount }));
+          return;
+        }
+        throw new Error('Failed to fetch comment count');
+      }
+      
       const data = await response.json();
       dispatch(setCommentCount({ contentId: content._id, count: data.commentCount }));
     } catch (error) {
       console.error("Error fetching comment count:", error);
+      // Use fallback from content props if available
+      if (content.commentCount !== undefined) {
+        dispatch(setCommentCount({ contentId: content._id, count: content.commentCount }));
+      }
     }
-  }, [content._id, dispatch, user]);
+  }, [content._id, content.commentCount, dispatch, user]);
 
   useEffect(() => {
     fetchCommentCount();
-  }, [fetchCommentCount, user]);
+  }, [fetchCommentCount]);
 
   const handleCommentClick = (e) => {
     e.preventDefault();
@@ -242,46 +272,45 @@ const EngagementFeed = ({ content, channel }) => {
 
   return (
     <>
-    <div id={`engagement-feed-${content._id}`}>
-      <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
-        <div className="flex justify-between w-1/4 ">
-        <LikeDislikeButtons 
-  contentId={content._id}
-  initialLikes={interactions.likeCount}
-  initialDislikes={interactions.dislikeCount}
-  initialUserInteraction={activeButton}
-  onInteraction={async (action) => {
-    await recordAction(action);
-  }}
-/>
-        </div>
-        <button onClick={handleCommentClick} className="h-12">
-          <FaRegComment size='1.6em' className="m-auto" />
-          <p className="text-xs">({commentCount}) </p>
-        </button>
-        <ShareComponent 
+      <div id={`engagement-feed-${content._id}`}>
+        <div className="w-full flex mt-7 justify-between text-gray-500 text-sm text-center dark:text-gray-200">
+          <div className="flex justify-between w-1/4">
+            <LikeDislikeButtons 
+              contentId={content._id}
+              initialLikes={interactions.likeCount}
+              initialDislikes={interactions.dislikeCount}
+              initialUserInteraction={activeButton}
+              onInteraction={async (action) => {
+                await recordAction(action);
+              }}
+            />
+          </div>
+          
+          <button onClick={handleCommentClick} className="h-12">
+            <FaRegComment size='1.6em' className="m-auto" />
+            <p className="text-xs">({commentCount})</p>
+          </button>
+          
+          <ShareComponent 
             contentId={content._id} 
             onShare={handleShare} 
             shareCount={interactions.shareCount}
           />
 
-<ScreenshotButton content={content} channel={channel} />
+          <ScreenshotButton content={content} channel={channel} />
 
-        <button className="h-12">
-          <IoEyeOutline size='1.6em' className="m-auto" />
-          <p className="text-xs">({interactions.viewCount})</p>
+          <button className="h-12">
+            <IoEyeOutline size='1.6em' className="m-auto" />
+            <p className="text-xs">({interactions.viewCount})</p>
           </button>
-      </div>
-      <CommentSection
-        isOpen={isCommentOpen}
-        onClose={() => setIsCommentOpen(false)}
-        contentId={content._id}
-        onCommentAdded={handleCommentAdded}
-      />
-      <div>
-       
-      </div>
-
+        </div>
+        
+        <CommentSection
+          isOpen={isCommentOpen}
+          onClose={() => setIsCommentOpen(false)}
+          contentId={content._id}
+          onCommentAdded={handleCommentAdded}
+        />
       </div>
     </>
   );
