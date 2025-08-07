@@ -44,7 +44,7 @@ export function useScrollPosition() {
       // Also mark that we've scrolled on this page
       localStorage.setItem(FIRST_LOAD_PROCESSED_KEY, 'true');
       
-      // console.log(`Saved scroll position: ${position}px`);
+      console.log(`Saved scroll position: ${position}px`);
     }
   };
 
@@ -149,13 +149,13 @@ export function useScrollPosition() {
       const expiration = 30 * 60 * 1000; // 30 minutes
       
       if (now - saved < expiration) {
-        // console.log(`Restoring scroll position: ${savedPosition}px`);
+        console.log(`Restoring scroll position: ${savedPosition}px`);
         setTimeout(() => {
           contentContainer.scrollTop = parseInt(savedPosition, 10);
           scrollRestored.current = true;
         }, 200);
       } else {
-        // console.log('Scroll position expired, not restoring');
+        console.log('Scroll position expired, not restoring');
         clearScrollData();
       }
     }
@@ -179,7 +179,7 @@ export function useScrollPosition() {
     const handleBeforeUnload = (event) => {
       // This is a page reload, not navigation to another page
       localStorage.setItem(NAVIGATION_TYPE_KEY, 'reload');
-      // console.log('Setting navigation type to reload');
+      console.log('Setting navigation type to reload');
       
       // Reset the first load processed flag
       localStorage.removeItem(FIRST_LOAD_PROCESSED_KEY);
@@ -190,7 +190,7 @@ export function useScrollPosition() {
       // Check if this is a link click to another page
       if (event.target.tagName === 'A' || event.target.closest('a')) {
         localStorage.setItem(NAVIGATION_TYPE_KEY, 'internal-navigation');
-        // console.log('Setting navigation type to internal-navigation from link click');
+        console.log('Setting navigation type to internal-navigation from link click');
       }
     };
     
@@ -262,7 +262,7 @@ export function useScrollPosition() {
   // Set last clicked item
   const setLastClickedItem = (id) => {
     if (id && typeof window !== 'undefined') {
-      // console.log('Setting last clicked item:', id);
+      console.log('Setting last clicked item:', id);
       localStorage.setItem(LAST_CLICKED_ITEM_KEY, id);
       // Also mark that we're doing internal navigation
       localStorage.setItem(NAVIGATION_TYPE_KEY, 'internal-navigation');
