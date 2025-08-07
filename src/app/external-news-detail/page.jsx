@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { FaArrowLeft, FaExternalLinkAlt, FaClock, FaNewspaper, FaShare, FaBookmark } from 'react-icons/fa';
 import { BiGlobe } from 'react-icons/bi';
 
@@ -131,6 +132,12 @@ const ExternalNewsDetail = () => {
     e.target.src = '/NopicAvatar.png';
   };
 
+  // Helper function to check if image is from local domain
+  const isLocalImage = (src) => {
+    if (!src) return false;
+    return src.startsWith('/') || src.startsWith('/api/') || src.includes(window.location.hostname);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -158,7 +165,7 @@ const ExternalNewsDetail = () => {
             {error || 'Content Not Found'}
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The news article you're looking for is not available or may have expired.
+            The news article you&apos;re looking for is not available or may have expired.
           </p>
           <button
             onClick={handleBack}
@@ -227,12 +234,24 @@ const ExternalNewsDetail = () => {
           {/* Featured Image */}
           {newsContent.picture && (
             <div className="relative h-64 md:h-80 lg:h-96">
-              <img
-                src={newsContent.picture}
-                alt={title}
-                className="w-full h-full object-cover"
-                onError={handleImageError}
-              />
+              {isLocalImage(newsContent.picture) ? (
+                <Image
+                  src={newsContent.picture}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  onError={handleImageError}
+                  priority
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={newsContent.picture}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                  onError={handleImageError}
+                />
+              )}
             </div>
           )}
 
@@ -240,13 +259,24 @@ const ExternalNewsDetail = () => {
             {/* Channel Info */}
             {channel && (
               <div className="flex items-center mb-4">
-                <div className="flex-shrink-0 w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mr-3">
-                  <img
-                    src={channel.picture || '/NopicAvatar.png'}
-                    alt={channel.name}
-                    className="w-full h-full object-cover"
-                    onError={handleImageError}
-                  />
+                <div className="flex-shrink-0 w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mr-3 relative">
+                  {isLocalImage(channel.picture) ? (
+                    <Image
+                      src={channel.picture || '/NopicAvatar.png'}
+                      alt={channel.name}
+                      fill
+                      className="object-cover"
+                      onError={handleImageError}
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={channel.picture || '/NopicAvatar.png'}
+                      alt={channel.name}
+                      className="w-full h-full object-cover"
+                      onError={handleImageError}
+                    />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -285,7 +315,7 @@ const ExternalNewsDetail = () => {
                 </div>
               ) : (
                 <div className="text-gray-600 dark:text-gray-400 italic">
-                  This article contains only a headline. Click "Read Full Article" below to view the complete story on the original source.
+                  This article contains only a headline. Click &ldquo;Read Full Article&rdquo; below to view the complete story on the original source.
                 </div>
               )}
             </div>
