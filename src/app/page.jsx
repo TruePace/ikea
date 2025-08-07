@@ -188,22 +188,41 @@ const Page = () => {
     }
   }, [fetchInitialData]);
 
-  // Visibility change handler
   useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (!document.hidden && 
+  let tabHiddenTime = null;
+
+  // Enhanced visibility change handler with minimum away time
+  const handleVisibilityChange = async () => {
+    if (document.hidden) {
+      // Tab became hidden - record the time
+      tabHiddenTime = Date.now();
+      console.log('👋 User left tab at:', new Date().toLocaleTimeString());
+    } else {
+      // Tab became visible - check how long user was away
+      const now = Date.now();
+      const awayTime = tabHiddenTime ? now - tabHiddenTime : 0;
+      const minimumAwayTime = 5 * 60 * 1000; // 5 minutes minimum
+      
+      console.log('👀 User returned to tab after:', Math.round(awayTime / 1000), 'seconds');
+      
+      if (awayTime > minimumAwayTime && 
           initializationRef.current.hasInitialized && 
           !initializationRef.current.isInitializing &&
           shouldFetchExternalNews()) {
         
-        console.log('👀 User returned to tab - checking for fresh news');
-        fetchInitialData(false); // Don't force, just check
+        console.log('🔄 User was away long enough - checking for fresh news');
+        fetchInitialData(false);
+      } else {
+        console.log('⏭️ User returned too quickly, skipping refresh');
       }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [fetchInitialData]);
+      
+      tabHiddenTime = null; // Reset
+    }
+  };
+  
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+}, [fetchInitialData]);
 
   // Network status handler
   useEffect(() => {
