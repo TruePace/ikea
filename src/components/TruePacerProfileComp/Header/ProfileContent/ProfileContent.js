@@ -28,11 +28,12 @@ const ProfileContent = ({profile}) => {
     const tabsRef = useRef(null);
     const tabsContainerRef = useRef(null);
     const [tabsHeight, setTabsHeight] = useState(0);
-
+    const [containerWidth, setContainerWidth] = useState(0);
+    const [containerLeft, setContainerLeft] = useState(0);
 
     const handleImageError = () => {
         setImageError(true);
-      };
+    };
 
     useEffect(() => {
         const fetchCreatorContent = async () => {
@@ -51,28 +52,44 @@ const ProfileContent = ({profile}) => {
             setTabsHeight(tabsRef.current.offsetHeight);
         }
 
+        const updateDimensions = () => {
+            if (tabsContainerRef.current) {
+                const rect = tabsContainerRef.current.getBoundingClientRect();
+                setContainerWidth(rect.width);
+                setContainerLeft(rect.left);
+            }
+        };
+
         const handleScroll = () => {
             if (tabsRef.current && tabsContainerRef.current) {
                 const containerRect = tabsContainerRef.current.getBoundingClientRect();
                 
                 if (containerRect.top <= 0) {
                     if (!isSticky) {
+                        updateDimensions();
                         setIsSticky(true);
-                        tabsRef.current.classList.add('fixed', 'top-0', 'left-0', 'tablet:left-16', 'desktop:left-64', 'right-0', 'z-50');
-                        tabsContainerRef.current.style.paddingTop = `${tabsHeight}px`;
                     }
                 } else {
                     if (isSticky) {
                         setIsSticky(false);
-                        tabsRef.current.classList.remove('fixed', 'top-0', 'left-0', 'tablet:left-16', 'desktop:left-64', 'right-0', 'z-50');
-                        tabsContainerRef.current.style.paddingTop = '0';
                     }
                 }
             }
         };
 
+        const handleResize = () => {
+            if (isSticky) {
+                updateDimensions();
+            }
+        };
+
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('resize', handleResize);
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleResize);
+        };
     }, [tabsHeight, isSticky]);
 
     const handleSubscribe = async () => {
@@ -166,49 +183,53 @@ const ProfileContent = ({profile}) => {
                     </div>
                 </div>
             </div>
-<div ref={tabsContainerRef} className="w-full overflow-x-hidden">
-    <div 
-        ref={tabsRef} 
-        className={`w-full flex bg-red-600 p-1 ${
-            isSticky 
-                ? 'fixed top-0 left-0 tablet:left-16 desktop:left-64 right-0 z-50 rounded-none' 
-                : 'rounded-lg mx-0 tablet:mx-4 desktop:mx-4 mt-4'
-        }`}
-        style={{
-            width: isSticky ? '100%' : 'auto'
-        }}
-    >
-        <button 
-            className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
-                activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"
-            }`}
-            onClick={() => setActiveTab("Beyond Headline")}
-            aria-label="Show Beyond Headline content"
-        >
-            Beyond Headline
-        </button>
-        <button 
-            className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
-                activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"
-            }`}
-            onClick={() => setActiveTab("Headline News")}
-            aria-label="Show Headline News content"
-        >
-            Headline News
-        </button>
-    </div>
 
-    {/* This div maintains spacing when tabs become fixed */}
-    {isSticky && <div style={{ height: `${tabsHeight}px` }} />}
+            <div ref={tabsContainerRef} className="w-full overflow-x-hidden">
+                <div 
+                    ref={tabsRef} 
+                    className={`w-full flex bg-red-600 p-1 transition-all duration-200 ${
+                        isSticky 
+                            ? 'fixed top-0 z-30 rounded-none' 
+                            : 'rounded-lg mx-0 tablet:mx-4 desktop:mx-4 mt-4'
+                    }`}
+                    style={{
+                        ...(isSticky && {
+                            left: `${containerLeft}px`,
+                            width: `${containerWidth}px`,
+                        })
+                    }}
+                >
+                    <button 
+                        className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
+                            activeTab === "Beyond Headline" ? "bg-white text-black" : "text-white hover:bg-red-400"
+                        }`}
+                        onClick={() => setActiveTab("Beyond Headline")}
+                        aria-label="Show Beyond Headline content"
+                    >
+                        Beyond Headline
+                    </button>
+                    <button 
+                        className={`flex-1 text-center py-2 px-4 rounded-md cursor-pointer whitespace-nowrap transition-colors duration-300 ${
+                            activeTab === "Headline News" ? "bg-white text-black" : "text-white hover:bg-red-400"
+                        }`}
+                        onClick={() => setActiveTab("Headline News")}
+                        aria-label="Show Headline News content"
+                    >
+                        Headline News
+                    </button>
+                </div>
 
-    <div className="mt-4 bg-base-200 rounded-lg mb-16 mx-4">
-        {activeTab === "Beyond Headline" ? (
-            <BeyondHeadlineContent channelId={profile._id}/>
-        ) : (
-            <HeadlineNewsContent initialContents={headlineContents} channel={profile} />
-        )}
-    </div>
-</div>
+                {/* This div maintains spacing when tabs become fixed */}
+                {isSticky && <div style={{ height: `${tabsHeight}px` }} />}
+
+                <div className="mt-4 bg-base-200 rounded-lg mb-16 mx-4">
+                    {activeTab === "Beyond Headline" ? (
+                        <BeyondHeadlineContent channelId={profile._id}/>
+                    ) : (
+                        <HeadlineNewsContent initialContents={headlineContents} channel={profile} />
+                    )}
+                </div>
+            </div>
         </>
     );
 }

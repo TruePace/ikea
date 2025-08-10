@@ -31,9 +31,9 @@ const HeadlineNewsContent = ({ initialContents,channel }) => {
       hasMore={hasMore}
     
     >
-       <div className="space-y-4">
+       <div className="space-y-4 ">
       {contents.map((content) => (
-        <div key={content._id} className="bg-white p-4 rounded-lg shadow">
+        <div key={content._id} className="bg-white p-4 rounded-lg shadow dark:bg-gray-800 dark:text-gray-200">
          <ContentFeed 
               content={content} 
               onView={() => handleView(content._id)}
