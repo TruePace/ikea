@@ -997,7 +997,7 @@ const PremiumSearchBar = ({ onClose, channels }) => {
               <FaSearch size="3em" className="mx-auto mb-4 text-gray-300" />
               <h3 className="text-lg font-medium mb-2">No results found</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                No results for "<strong>{searchQuery}</strong>"
+                No results for &ldquo;<strong>{searchQuery}</strong>&rdquo;
               </p>
               <div className="text-sm text-gray-500">
                 <p>Try:</p>
