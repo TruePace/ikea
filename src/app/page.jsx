@@ -19,6 +19,7 @@ import HeadlineSocket from "@/components/Socket io/HeadlineSocket";
 import ContentFeedSkeleton from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/ContentFeedSkeleton";
 import SwipeTutorial from "@/components/Headline_news_comps/Tabs/Headline_Tabs_Comps/SubFeedComps/SwipeTutorial";
 import SEO from "@/components/SeoDir/Seo";
+import { MissedContentChecker } from "@/components/Missed_just_in_comps/UseMissedContentChecker";
 
 const Page = () => {
   const [channels, setChannels] = useState([]);
@@ -189,40 +190,40 @@ const Page = () => {
   }, [fetchInitialData]);
 
   useEffect(() => {
-  let tabHiddenTime = null;
+    let tabHiddenTime = null;
 
-  // Enhanced visibility change handler with minimum away time
-  const handleVisibilityChange = async () => {
-    if (document.hidden) {
-      // Tab became hidden - record the time
-      tabHiddenTime = Date.now();
-      console.log('👋 User left tab at:', new Date().toLocaleTimeString());
-    } else {
-      // Tab became visible - check how long user was away
-      const now = Date.now();
-      const awayTime = tabHiddenTime ? now - tabHiddenTime : 0;
-      const minimumAwayTime = 5 * 60 * 1000; // 5 minutes minimum
-      
-      console.log('👀 User returned to tab after:', Math.round(awayTime / 1000), 'seconds');
-      
-      if (awayTime > minimumAwayTime && 
-          initializationRef.current.hasInitialized && 
-          !initializationRef.current.isInitializing &&
-          shouldFetchExternalNews()) {
-        
-        console.log('🔄 User was away long enough - checking for fresh news');
-        fetchInitialData(false);
+    // Enhanced visibility change handler with minimum away time
+    const handleVisibilityChange = async () => {
+      if (document.hidden) {
+        // Tab became hidden - record the time
+        tabHiddenTime = Date.now();
+        console.log('👋 User left tab at:', new Date().toLocaleTimeString());
       } else {
-        console.log('⏭️ User returned too quickly, skipping refresh');
+        // Tab became visible - check how long user was away
+        const now = Date.now();
+        const awayTime = tabHiddenTime ? now - tabHiddenTime : 0;
+        const minimumAwayTime = 5 * 60 * 1000; // 5 minutes minimum
+        
+        console.log('👀 User returned to tab after:', Math.round(awayTime / 1000), 'seconds');
+        
+        if (awayTime > minimumAwayTime && 
+            initializationRef.current.hasInitialized && 
+            !initializationRef.current.isInitializing &&
+            shouldFetchExternalNews()) {
+          
+          console.log('🔄 User was away long enough - checking for fresh news');
+          fetchInitialData(false);
+        } else {
+          console.log('⏭️ User returned too quickly, skipping refresh');
+        }
+        
+        tabHiddenTime = null; // Reset
       }
-      
-      tabHiddenTime = null; // Reset
-    }
-  };
-  
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-}, [fetchInitialData]);
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchInitialData]);
 
   // Network status handler
   useEffect(() => {
@@ -326,6 +327,9 @@ const Page = () => {
       />
       
       <HeadlineSocket/>
+      
+      {/* Include the missed content checker */}
+      <MissedContentChecker />
       
       {showTutorial && <SwipeTutorial onComplete={handleTutorialComplete} />}
       

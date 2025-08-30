@@ -1,34 +1,59 @@
+// Redux/Slices/MissedNotificationSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const notificationSlice = createSlice({
+const initialState = {
+  hasMissedContent: false,
+  missedContentCount: 0,
+  lastChecked: null,
+  isChecking: false
+};
+
+const missedNotificationSlice = createSlice({
   name: 'notification',
-  initialState: {
-    hasMissedContent: false,
-    missedContentCount: 0,
-  },
+  initialState,
   reducers: {
     setHasMissedContent: (state, action) => {
       state.hasMissedContent = action.payload;
+      console.log('🔔 Redux: Set hasMissedContent to:', action.payload);
     },
     setMissedContentCount: (state, action) => {
-      state.missedContentCount = action.payload;
+      const newCount = Math.max(0, action.payload); // Ensure count is never negative
+      state.missedContentCount = newCount;
+      state.hasMissedContent = newCount > 0;
+      state.lastChecked = new Date().toISOString();
+      console.log('🔔 Redux: Set missedContentCount to:', newCount);
+    },
+    resetMissedContentCount: (state) => {
+      state.hasMissedContent = false;
+      state.missedContentCount = 0;
+      state.lastChecked = new Date().toISOString();
+      console.log('🔔 Redux: Reset missed content notification');
+    },
+    setIsChecking: (state, action) => {
+      state.isChecking = action.payload;
     },
     incrementMissedContentCount: (state) => {
       state.missedContentCount += 1;
       state.hasMissedContent = true;
+      console.log('🔔 Redux: Incremented missedContentCount to:', state.missedContentCount);
     },
-    resetMissedContentCount: (state) => {
-      state.missedContentCount = 0;
-      state.hasMissedContent = false;
-    },
+    decrementMissedContentCount: (state) => {
+      if (state.missedContentCount > 0) {
+        state.missedContentCount -= 1;
+        state.hasMissedContent = state.missedContentCount > 0;
+        console.log('🔔 Redux: Decremented missedContentCount to:', state.missedContentCount);
+      }
+    }
   },
 });
 
 export const { 
   setHasMissedContent, 
   setMissedContentCount, 
-  incrementMissedContentCount, 
-  resetMissedContentCount 
-} = notificationSlice.actions;
+  resetMissedContentCount,
+  setIsChecking,
+  incrementMissedContentCount,
+  decrementMissedContentCount
+} = missedNotificationSlice.actions;
 
-export default notificationSlice.reducer;
+export default missedNotificationSlice.reducer;

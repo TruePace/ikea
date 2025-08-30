@@ -6,6 +6,7 @@ import { AuthProvider } from "./(auth)/AuthContext";
 import { Provider } from "react-redux";
 import { store, persistor } from "@/Redux/store";
 import { ThemeProvider } from "@/components/ThemeProvider/ThemeProvider";
+import { MissedContentChecker } from "@/components/Missed_just_in_comps/UseMissedContentChecker";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -45,6 +46,8 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <ThemeProvider>
               <NavBar />
+              {/* Background service to check for missed content */}
+              <MissedContentChecker />
               <main className="flex-grow tablet:ml-16 desktop:ml-64 overflow-y-auto bg-inherit">
                 {children}
               </main>

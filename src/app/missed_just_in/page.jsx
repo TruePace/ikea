@@ -6,11 +6,10 @@ import MissedJustInContainer from "@/components/Missed_just_in_comps/MissedJustI
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 import { useAuth } from "../(auth)/AuthContext";
 import { useDispatch } from 'react-redux';
-import { setHasMissedContent, setMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
+import { setHasMissedContent, setMissedContentCount, resetMissedContentCount } from '@/Redux/Slices/MissedNotificationSlice';
 import MissedJustInSkeleton from '@/components/Missed_just_in_comps/MissedJustInSkeleton';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import SEO from '@/components/SeoDir/Seo'
-
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,22 +18,54 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [hasViewedPage, setHasViewedPage] = useState(false);
   const { user } = useAuth();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // Reset content when user changes
     setMissedContent([]);
     setPage(1);
     setHasMore(true);
+    setHasViewedPage(false);
     fetchMissedContent(1, true); // Pass page 1 and reset flag
   }, [user]);
-  
+
+  // Mark content as viewed in backend after user views the page
+  useEffect(() => {
+    if (missedContent.length > 0 && !hasViewedPage) {
+      const timer = setTimeout(async () => {
+        setHasViewedPage(true);
+        
+        // Mark content as viewed in backend
+        try {
+          await fetch(`${API_BASE_URL}/api/HeadlineNews/MissedJustIn/${user.uid}/mark-viewed`, {
+            method: 'POST'
+          });
+          console.log('Marked missed content as viewed in backend');
+        } catch (error) {
+          console.error('Error marking content as viewed:', error);
+        }
+        
+        // Clear frontend notification
+        dispatch(resetMissedContentCount());
+        console.log('Notification cleared - user viewed missed content page');
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [missedContent, hasViewedPage, dispatch, user?.uid]);
+
   const fetchMissedContent = async (pageNum = page, reset = false) => {
     if (user) {
       setIsLoading(true);
       try {
         const response = await fetch(`${API_BASE_URL}/api/HeadlineNews/MissedJustIn/${user.uid}?page=${pageNum}&limit=10`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         // If reset is true, replace content instead of appending
@@ -44,10 +75,13 @@ const Page = () => {
         
         setHasMore(data.hasMore);
         setPage(pageNum + 1);
-        dispatch(setHasMissedContent(data.content.length > 0));
-        dispatch(setMissedContentCount(data.content.length));
+        
+        console.log(`📋 Fetched missed content: ${data.content.length} items (page ${pageNum})`);
+        
       } catch (error) {
         console.error('Error fetching missed content:', error);
+        // On error, show user-friendly message but don't break the app
+        setHasMore(false);
       } finally {
         setIsLoading(false);
       }
@@ -68,12 +102,12 @@ const Page = () => {
           <MissedJustInSkeleton/>
         ) : missedContent.length > 0 ? (
           <InfiniteScroll
-  dataLength={missedContent.length}
-  next={() => fetchMissedContent()}
-  hasMore={hasMore}
-  loader={<MissedJustInSkeleton />}
+            dataLength={missedContent.length}
+            next={() => fetchMissedContent()}
+            hasMore={hasMore}
+            loader={<MissedJustInSkeleton />}
             endMessage={
-              <p style={{ textAlign: 'center' }}>
+              <p style={{ textAlign: 'center' }} className="mt-8 text-gray-600 dark:text-gray-400">
                 <b>You&apos;re all caught up!</b>
               </p>
             }
@@ -92,7 +126,7 @@ const Page = () => {
             ))}
           </InfiniteScroll>
         ) : (
-          <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded" role="alert">
+          <div className="bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-500 text-blue-700 dark:text-blue-300 p-4 rounded mx-4" role="alert">
             <p className="font-bold">Good news!</p>
             <p>You haven&apos;t missed any Just In content. You&apos;re all caught up!</p>
           </div>
